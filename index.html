@@ -73,10 +73,61 @@
         .splash-version { position: absolute; bottom: 30px; left: 0; right: 0; text-align: center; color: rgba(255,255,255,0.4); font-size: 0.75rem; font-weight: 500; }
 
         /* Auth */
-        .auth-screen { position: fixed; inset: 0; background: var(--bg); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
-        .auth-card { background: var(--surface); padding: 30px 20px; border-radius: var(--radius); width: 100%; max-width: 400px; box-shadow: var(--shadow-md); display: flex; flex-direction: column; gap: 16px; }
-        .auth-title { font-size: 1.5rem; font-weight: 700; text-align: center; margin-bottom: 10px; color: var(--text); }
-        .auth-switch { font-size: 0.85rem; color: var(--text-2); text-align: center; cursor: pointer; margin-top: 10px; font-weight: 500; }
+        .auth-screen {
+            position: fixed; inset: 0; background: #0A0A0A;
+            display: none; flex-direction: column; align-items: center; justify-content: flex-end;
+            z-index: 1000; padding: 0;
+            padding-bottom: max(0px, env(safe-area-inset-bottom));
+        }
+        .auth-bg-glow {
+            position: absolute; top: -80px; left: 50%; transform: translateX(-50%);
+            width: 340px; height: 340px;
+            background: radial-gradient(circle, rgba(255,221,45,0.18) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .auth-logo-area {
+            position: absolute; top: 0; left: 0; right: 0;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding-top: max(60px, env(safe-area-inset-top));
+            bottom: 420px;
+        }
+        .auth-logo-icon { font-size: 3rem; margin-bottom: 10px; }
+        .auth-logo-title { font-size: 1.6rem; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+        .auth-logo-sub { font-size: 0.85rem; color: rgba(255,255,255,0.45); margin-top: 4px; font-weight: 500; }
+        .auth-sheet {
+            position: relative; width: 100%; background: #161616;
+            border-radius: 24px 24px 0 0;
+            padding: 28px 24px 20px;
+            display: flex; flex-direction: column; gap: 14px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+        .auth-sheet-handle { width: 36px; height: 4px; background: rgba(255,255,255,0.15); border-radius: 2px; margin: 0 auto 6px; }
+        .auth-sheet-title { font-size: 1.1rem; font-weight: 700; color: #fff; text-align: center; margin-bottom: 2px; }
+        .auth-input-group { display: flex; flex-direction: column; gap: 10px; }
+        .auth-field {
+            display: flex; flex-direction: column; gap: 5px;
+        }
+        .auth-field-label { font-size: 0.72rem; font-weight: 600; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.06em; }
+        .auth-field input {
+            background: #222; border: 1.5px solid rgba(255,255,255,0.1); border-radius: 12px;
+            color: #fff; padding: 13px 16px; font-size: 0.95rem; font-family: inherit;
+            font-weight: 500; outline: none; transition: border-color 0.15s; width: 100%;
+            -webkit-appearance: none;
+        }
+        .auth-field input:focus { border-color: #FFDD2D; }
+        .auth-field input::placeholder { color: rgba(255,255,255,0.2); }
+        .auth-submit-btn {
+            width: 100%; padding: 15px; background: #FFDD2D; border: none; border-radius: 14px;
+            font-family: inherit; font-size: 1rem; font-weight: 700; color: #1A1A1A;
+            cursor: pointer; transition: all 0.15s; margin-top: 2px; letter-spacing: -0.2px;
+        }
+        .auth-submit-btn:active { transform: scale(0.97); background: #F0C800; }
+        .auth-submit-btn:disabled { opacity: 0.6; }
+        .auth-switch-link {
+            font-size: 0.85rem; color: rgba(255,255,255,0.4); text-align: center;
+            cursor: pointer; font-weight: 500; padding: 4px 0;
+        }
+        .auth-switch-link span { color: #FFDD2D; font-weight: 600; }
 
         .app { opacity: 0; visibility: hidden; transition: opacity 0.4s ease; }
         .app.visible { opacity: 1; visibility: visible; }
@@ -306,18 +357,27 @@
 </div>
 
 <div class="auth-screen" id="authScreen">
-    <div class="auth-card">
-        <h2 class="auth-title" id="authTitle">Вход</h2>
-        <div class="form-group">
-            <label class="form-label">Email</label>
-            <input type="email" id="authEmail" placeholder="mail@example.com" autocomplete="email">
+    <div class="auth-bg-glow"></div>
+    <div class="auth-logo-area">
+        <div class="auth-logo-icon">💳</div>
+        <div class="auth-logo-title">My Credits</div>
+        <div class="auth-logo-sub">Думай о более важном!</div>
+    </div>
+    <div class="auth-sheet">
+        <div class="auth-sheet-handle"></div>
+        <div class="auth-sheet-title" id="authTitle">Войти в аккаунт</div>
+        <div class="auth-input-group">
+            <div class="auth-field">
+                <div class="auth-field-label">Email</div>
+                <input type="email" id="authEmail" placeholder="mail@example.com" autocomplete="email">
+            </div>
+            <div class="auth-field">
+                <div class="auth-field-label">Пароль</div>
+                <input type="password" id="authPassword" placeholder="••••••••" autocomplete="current-password">
+            </div>
         </div>
-        <div class="form-group">
-            <label class="form-label">Пароль</label>
-            <input type="password" id="authPassword" placeholder="••••••••" autocomplete="current-password">
-        </div>
-        <button class="btn btn-primary" id="authBtn" onclick="doAuth()" style="margin-top:10px;">Войти</button>
-        <div class="auth-switch" onclick="toggleAuthMode()">Нет аккаунта? Зарегистрироваться</div>
+        <button class="auth-submit-btn" id="authBtn" onclick="doAuth()">Войти</button>
+        <div class="auth-switch-link" onclick="toggleAuthMode()">Нет аккаунта? <span>Зарегистрироваться</span></div>
     </div>
 </div>
 
@@ -832,28 +892,35 @@ async function handleSave() {
     if (!amount || amount <= 0)      { showToast('Введите сумму'); return; }
     if (!day || day < 1 || day > 31) { showToast('День оплаты: 1–31'); return; }
 
+    // Capture BEFORE closeForm() resets them
+    const isEdit    = editMode;
+    const saveId    = editId;
+    const saveCat   = selectedCat;
+    const endDate   = getEndDate();
+
     _isSaving = true;
     const saveBtn = document.getElementById('formSaveBtn');
     saveBtn.disabled = true;
     saveBtn.textContent = 'Сохранение...';
-    
+
     closeForm();
     showToast('Сохранение...');
 
     try {
-        const endDate = getEndDate();
-        await saveCredit({ 
-            name, 
-            amount, 
-            day, 
-            category: selectedCat, 
-            endDate, 
-            paid: false, 
-            completed: false, 
-            partial: 0,
-            createdAt: new Date().toISOString()
-        });
-        showToast('Кредит добавлен');
+        const creditData = { name, amount, day, category: saveCat, endDate };
+        if (isEdit && saveId) {
+            creditData.userId = authUser.uid;
+            await db.collection('credits').doc(saveId).update(creditData);
+            showToast('Кредит обновлён');
+        } else {
+            creditData.paid = false;
+            creditData.completed = false;
+            creditData.partial = 0;
+            creditData.createdAt = new Date().toISOString();
+            creditData.userId = authUser.uid;
+            await db.collection('credits').add(creditData);
+            showToast('Кредит добавлен');
+        }
     } catch(e) {
         console.error('Ошибка сохранения:', e);
         let errMsg = 'Ошибка сохранения';
@@ -862,8 +929,6 @@ async function handleSave() {
         showToast(errMsg);
     } finally {
         _isSaving = false;
-        saveBtn.disabled = false;
-        saveBtn.textContent = editMode ? 'Сохранить' : 'Добавить';
     }
 }
 
@@ -969,18 +1034,38 @@ async function doChangePassword() {
 // ======================== АВТОРИЗАЦИЯ ========================
 function toggleAuthMode() {
     isLoginMode=!isLoginMode;
-    document.getElementById('authTitle').textContent=isLoginMode?'Вход':'Регистрация';
-    document.getElementById('authBtn').textContent=isLoginMode?'Войти':'Создать аккаунт';
-    document.querySelector('.auth-switch').textContent=isLoginMode?'Нет аккаунта? Зарегистрироваться':'Уже есть аккаунт? Войти';
+    document.getElementById('authTitle').textContent=isLoginMode?'Войти в аккаунт':'Создать аккаунт';
+    document.getElementById('authBtn').textContent=isLoginMode?'Войти':'Зарегистрироваться';
+    const sw=document.querySelector('.auth-switch-link');
+    sw.innerHTML=isLoginMode?'Нет аккаунта? <span>Зарегистрироваться</span>':'Уже есть аккаунт? <span>Войти</span>';
 }
 async function doAuth() {
     const email=document.getElementById('authEmail').value.trim();
     const pass=document.getElementById('authPassword').value;
     if(!email||!pass) { showToast('Заполните все поля'); return; }
+    const btn=document.getElementById('authBtn');
+    btn.disabled=true; btn.textContent='Подождите...';
     try {
-        if(isLoginMode) await auth.signInWithEmailAndPassword(email,pass);
-        else            await auth.createUserWithEmailAndPassword(email,pass);
-    } catch(e) { showToast('Ошибка: '+e.message); }
+        // При входе на новом устройстве (нет активной сессии) — сбрасываем ПИН
+        const isNewDevice=!sessionStorage.getItem('session_started');
+        if(isLoginMode) {
+            await auth.signInWithEmailAndPassword(email,pass);
+            if(isNewDevice){ ls.rm(PIN_K); ls.rm(PIN_LEN_K); }
+        } else {
+            await auth.createUserWithEmailAndPassword(email,pass);
+            ls.rm(PIN_K); ls.rm(PIN_LEN_K);
+        }
+    } catch(e) {
+        let msg='Ошибка входа';
+        if(e.code==='auth/user-not-found'||e.code==='auth/wrong-password'||e.code==='auth/invalid-credential') msg='Неверный email или пароль';
+        else if(e.code==='auth/email-already-in-use') msg='Этот email уже зарегистрирован';
+        else if(e.code==='auth/invalid-email') msg='Некорректный email';
+        else if(e.code==='auth/weak-password') msg='Пароль слишком простой (минимум 6 символов)';
+        else msg=e.message;
+        showToast(msg);
+    } finally {
+        btn.disabled=false; btn.textContent=isLoginMode?'Войти':'Создать аккаунт';
+    }
 }
 async function doLogout() {
     if(creditsUnsubscribe) { creditsUnsubscribe(); creditsUnsubscribe=null; }
@@ -990,6 +1075,8 @@ async function doLogout() {
     sessionStorage.removeItem('session_started');
     monthResetDone=false;
     credits=[]; render();
+    document.getElementById('app').classList.remove('visible');
+    document.getElementById('authScreen').style.display='flex';
     showToast('Вы вышли из аккаунта');
 }
 
