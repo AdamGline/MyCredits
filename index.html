@@ -10,11 +10,10 @@
     <meta name="format-detection" content="telephone=no">
     <title>Кредиты — Финансовый трекер</title>
     
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
+
+    <script>if(sessionStorage.getItem('session_started')==='1'){document.documentElement.classList.add('no-splash');}</script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -54,6 +53,10 @@
             color: var(--text);
             min-height: 100vh;
             -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
+            overscroll-behavior: none;
             padding-top: env(safe-area-inset-top);
             padding-bottom: max(80px, env(safe-area-inset-bottom));
             padding-left: env(safe-area-inset-left);
@@ -73,10 +76,11 @@
             display: flex; flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: 10000;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
+            z-index: 9999;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
         }
         .splash.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        .no-splash .splash { display: none !important; }
         .splash-content {
             display: flex;
             flex-direction: column;
@@ -113,89 +117,32 @@
             letter-spacing: 0.3px;
         }
 
-        /* Auth Screens */
-        .auth-container {
-            position: fixed;
-            inset: 0;
+        /* Auth Screen */
+        .auth-screen {
+            position: fixed; inset: 0;
             background: var(--bg);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
+            display: none; 
+            flex-direction: column;
+            align-items: center; justify-content: center;
+            z-index: 1000;
             padding: 20px;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-        }
-        .auth-container.visible {
-            opacity: 1;
-            visibility: visible;
         }
         .auth-card {
             background: var(--surface);
+            padding: 30px 20px;
             border-radius: var(--radius);
-            padding: 32px 24px;
-            width: 100%;
-            max-width: 340px;
+            width: 100%; max-width: 400px;
             box-shadow: var(--shadow-md);
+            display: flex; flex-direction: column; gap: 16px;
         }
-        .auth-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 24px;
-            color: var(--text);
-        }
-        .auth-input {
-            width: 100%;
-            padding: 14px;
-            background: var(--surface-2);
-            border: 1.5px solid var(--border);
-            border-radius: var(--radius-sm);
-            color: var(--text);
-            font-size: 1rem;
-            margin-bottom: 12px;
-            outline: none;
-        }
-        .auth-input:focus { border-color: var(--accent-dark); }
-        .auth-btn {
-            width: 100%;
-            padding: 14px;
-            background: var(--text);
-            color: var(--bg);
-            border: none;
-            border-radius: var(--radius-sm);
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            margin-bottom: 12px;
-        }
-        [data-theme="dark"] .auth-btn { background: #FFDD2D; color: #1A1A1A; }
-        .auth-link {
-            text-align: center;
-            font-size: 0.85rem;
-            color: var(--text-2);
-            cursor: pointer;
-        }
-        .auth-error {
-            color: var(--danger);
-            font-size: 0.8rem;
-            text-align: center;
-            margin-bottom: 12px;
-        }
+        .auth-title { font-size: 1.5rem; font-weight: 700; text-align: center; margin-bottom: 10px; color: var(--text); }
+        .auth-switch { font-size: 0.85rem; color: var(--text-2); text-align: center; cursor: pointer; margin-top: 10px; font-weight: 500; transition: color 0.2s;}
+        .auth-switch:active { color: var(--text); }
 
-        /* Main App */
-        .main-app {
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-        }
-        .main-app.visible {
-            opacity: 1;
-            visibility: visible;
-        }
+        .app { opacity: 0; visibility: hidden; transition: opacity 0.4s ease; }
+        .app.visible { opacity: 1; visibility: visible; }
 
-        /* Summary card */
+        /* Summary card (содержит настройки в правом верхнем углу) */
         .summary-card {
             margin: 16px 16px 0;
             background: var(--text);
@@ -240,7 +187,7 @@
             background: rgba(0,0,0,0.2);
             color: #1A1A1A;
         }
-        .summary-settings-btn:active { transform: scale(0.92); }
+        .summary-settings-btn:active { transform: scale(0.92); background: rgba(255,255,255,0.3); }
         .summary-settings-btn svg { width: 18px; height: 18px; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .summary-settings-btn.spinning svg { animation: spin 0.5s ease; }
@@ -425,19 +372,6 @@
         .empty-title { font-size: 0.95rem; font-weight: 600; color: var(--text-2); }
         .empty-sub { font-size: 0.82rem; color: var(--text-3); text-align: center; }
 
-        .total-bar {
-            margin: 8px 16px 0;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 12px 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .total-label { font-size: 0.82rem; color: var(--text-2); font-weight: 500; }
-        .total-val { font-size: 1rem; font-weight: 700; color: var(--text); }
-
         /* FAB */
         .fab {
             position: fixed; bottom: calc(28px + env(safe-area-inset-bottom));
@@ -458,7 +392,7 @@
         .overlay {
             position: fixed; inset: 0;
             background: rgba(0,0,0,0.55);
-            backdrop-filter: blur(6px);
+            backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
             display: none; align-items: flex-end; justify-content: center;
             z-index: 500; opacity: 0; transition: opacity 0.25s ease;
         }
@@ -500,7 +434,7 @@
         .form-group { display: flex; flex-direction: column; gap: 6px; }
         .form-label { font-size: 0.75rem; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.04em; }
         .form-row { display: flex; gap: 10px; }
-        input[type="text"], input[type="number"], input[type="date"], select {
+        input[type="text"], input[type="number"], input[type="date"], input[type="email"], input[type="password"], select {
             width: 100%; padding: 13px 14px;
             background: var(--surface-2); border: 1.5px solid var(--border);
             border-radius: var(--radius-sm); color: var(--text);
@@ -680,23 +614,10 @@
         .lock-btn-set { border-color: rgba(102,126,234,0.3); color: #667eea; background: rgba(102,126,234,0.08); }
         .lock-btn-remove { border-color: rgba(231,76,60,0.2); color: #e74c3c; background: rgba(231,76,60,0.06); }
         .lock-btn:active { transform: scale(0.97); }
-        .logout-settings-btn {
-            width: 100%;
-            padding: 14px;
-            background: var(--surface-2);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--danger);
-            cursor: pointer;
-            margin-top: 16px;
-        }
-        .logout-settings-btn:active { transform: scale(0.97); }
 
         /* PIN */
         .pin-overlay {
-            position: fixed; inset: 0; z-index: 9999;
+            position: fixed; inset: 0; z-index: 9998;
             background: var(--bg);
             display: none; flex-direction: column;
             align-items: center; justify-content: flex-end;
@@ -791,7 +712,6 @@
 </head>
 <body>
 
-<!-- SPLASH -->
 <div class="splash" id="splash">
     <div class="splash-content">
         <img class="splash-logo" src="logo.png" alt="Logo">
@@ -800,38 +720,29 @@
     <div class="splash-version">Версия 1.0</div>
 </div>
 
-<!-- LOGIN SCREEN -->
-<div id="loginScreen" class="auth-container">
+<div class="auth-screen" id="authScreen">
     <div class="auth-card">
-        <div class="auth-title">💰 Кредитный трекер</div>
-        <div id="loginError" class="auth-error"></div>
-        <input type="email" id="loginEmail" class="auth-input" placeholder="Email">
-        <input type="password" id="loginPassword" class="auth-input" placeholder="Пароль">
-        <button class="auth-btn" id="doLoginBtn">Войти</button>
-        <div class="auth-link" id="goToRegister">Нет аккаунта? Зарегистрироваться</div>
+        <h2 class="auth-title" id="authTitle">Вход</h2>
+        <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" id="authEmail" placeholder="mail@example.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Пароль</label>
+            <input type="password" id="authPassword" placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <button class="btn btn-primary" id="authBtn" onclick="doAuth()" style="margin-top: 10px;">Войти</button>
+        <div class="auth-switch" onclick="toggleAuthMode()">Нет аккаунта? Зарегистрироваться</div>
     </div>
 </div>
 
-<!-- REGISTER SCREEN -->
-<div id="registerScreen" class="auth-container">
-    <div class="auth-card">
-        <div class="auth-title">📝 Регистрация</div>
-        <div id="registerError" class="auth-error"></div>
-        <input type="email" id="regEmail" class="auth-input" placeholder="Email">
-        <input type="password" id="regPassword" class="auth-input" placeholder="Пароль (минимум 6 символов)">
-        <button class="auth-btn" id="doRegisterBtn">Зарегистрироваться</button>
-        <div class="auth-link" id="goToLogin">Уже есть аккаунт? Войти</div>
-    </div>
-</div>
-
-<!-- MAIN APP -->
-<div class="main-app" id="mainApp">
+<div class="app" id="app">
     <div class="summary-card" id="summaryCard">
         <div class="summary-header">
             <div class="summary-header-left">
                 <div class="summary-label">К оплате в этом месяце</div>
             </div>
-            <button class="summary-settings-btn" id="settingsBtn">
+            <button class="summary-settings-btn" id="settingsBtn" onclick="gearClick(event)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="3"/>
                     <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
@@ -849,7 +760,6 @@
     <div class="section" id="activeSection">
         <div class="section-header"><span class="section-title">Активные</span><span class="section-count" id="activeCount"></span></div>
         <div class="credit-list" id="creditList"></div>
-        <div class="total-bar" id="totalBar" style="display:none"><span class="total-label">Итого к оплате:</span><span class="total-val" id="totalDisplay">0 ₽</span></div>
     </div>
 
     <div class="completed-section" id="completedSection" style="display:none">
@@ -859,9 +769,8 @@
     <div style="height:20px"></div>
 </div>
 
-<button class="fab" id="fab">+</button>
+<button class="fab" id="fab" onclick="fabClick(event)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
 
-<!-- FORM OVERLAY -->
 <div class="overlay" id="formOverlay" onclick="if(event.target===this)closeForm()">
     <div class="sheet">
         <div class="sheet-handle"></div>
@@ -869,75 +778,77 @@
         <div class="form-body">
             <div class="form-group"><label class="form-label">Название</label><input type="text" id="nameInput" placeholder="Например: Ипотека Сбербанк" autocomplete="off"></div>
             <div class="form-group"><label class="form-label">Тип</label><div class="cat-grid" id="catGrid">
-                <div class="cat-item" data-cat="mortgage"><span>🏠</span><span class="cat-label">Ипотека</span></div>
-                <div class="cat-item" data-cat="auto"><span>🚗</span><span class="cat-label">Авто</span></div>
-                <div class="cat-item" data-cat="consumer"><span>💳</span><span class="cat-label">Потреб.</span></div>
-                <div class="cat-item" data-cat="card"><span>💰</span><span class="cat-label">Карта</span></div>
-                <div class="cat-item" data-cat="other"><span>📄</span><span class="cat-label">Прочее</span></div>
+                <div class="cat-item" data-cat="mortgage" onclick="selectCat('mortgage')"><span>🏠</span><span class="cat-label">Ипотека</span></div>
+                <div class="cat-item" data-cat="auto" onclick="selectCat('auto')"><span>🚗</span><span class="cat-label">Авто</span></div>
+                <div class="cat-item" data-cat="consumer" onclick="selectCat('consumer')"><span>💳</span><span class="cat-label">Потреб.</span></div>
+                <div class="cat-item" data-cat="card" onclick="selectCat('card')"><span>💰</span><span class="cat-label">Карта</span></div>
+                <div class="cat-item" data-cat="other" onclick="selectCat('other')"><span>📄</span><span class="cat-label">Прочее</span></div>
             </div></div>
             <div class="form-group"><label class="form-label">Ежемесячный платёж и день оплаты</label><div class="form-row"><input type="number" id="amountInput" placeholder="Сумма, ₽" inputmode="decimal" style="flex:2"><input type="number" id="dayInput" placeholder="День" min="1" max="31" inputmode="numeric" style="flex:1"></div></div>
-            <div class="form-group"><label class="form-label">Дата окончания</label><div class="date-toggle"><button class="date-toggle-btn active" id="dtBtnCal">Календарь</button><button class="date-toggle-btn" id="dtBtnMan">Вручную</button></div>
+            <div class="form-group"><label class="form-label">Дата окончания</label><div class="date-toggle"><button class="date-toggle-btn active" id="dtBtnCal" onclick="setDateMode('cal')">Календарь</button><button class="date-toggle-btn" id="dtBtnMan" onclick="setDateMode('man')">Вручную</button></div>
             <div class="date-inputs active" id="calInput"><input type="date" id="endDateCal"></div>
             <div class="date-inputs" id="manInput"><div class="form-row"><select id="endMonth"><option value="0">Январь</option><option value="1">Февраль</option><option value="2">Март</option><option value="3">Апрель</option><option value="4">Май</option><option value="5">Июнь</option><option value="6">Июль</option><option value="7">Август</option><option value="8">Сентябрь</option><option value="9">Октябрь</option><option value="10">Ноябрь</option><option value="11">Декабрь</option></select><input type="number" id="endYear" placeholder="Год" min="2024" max="2050"></div></div><span class="form-hint">Оставьте пустым для бессрочного кредита</span></div>
         </div>
-        <div class="form-actions"><button class="btn btn-primary" id="formSaveBtn">Сохранить</button></div>
+        <div class="form-actions"><button class="btn btn-primary" id="formSaveBtn" onclick="handleSave()">Добавить</button></div>
         <div style="height:8px"></div>
     </div>
 </div>
 
-<!-- ACTION OVERLAY -->
 <div class="overlay" id="actionOverlay" onclick="if(event.target===this)closeAction()">
     <div class="sheet action-sheet">
         <div class="sheet-handle"></div>
         <div class="sheet-title"><span>Действия с кредитом</span><button class="sheet-close" onclick="closeAction()">✕</button></div>
         <div class="action-credit-name" id="actionName"><div id="actionNameText"></div><div class="action-credit-sub" id="actionSub"></div></div>
-        <div class="partial-section" id="partialSection"><div class="partial-label">Частичная оплата</div><div class="partial-info"><div><div class="partial-info-label">Внесено</div><div class="partial-info-val credit-amount" id="partialPaidDisplay">0 ₽</div></div><div style="text-align:right"><div class="partial-info-label">Остаток</div><div class="partial-info-val credit-amount" id="partialRemainDisplay">0 ₽</div></div></div><div class="partial-input-wrap"><input type="number" id="partialInput" placeholder="Сумма взноса, ₽" inputmode="decimal"><button class="btn btn-primary" id="savePartialBtn" style="flex:0 0 auto;min-width:90px;padding:13px 16px">Внести</button></div></div>
-        <div style="padding: 0 12px"><button class="action-btn" id="editCreditBtn"><div class="action-btn-icon">✎</div>Редактировать</button><button class="action-btn" id="resetPartialBtn" style="display:none"><div class="action-btn-icon">↺</div>Сбросить частичную оплату</button><button class="action-btn danger" id="deleteCreditBtn"><div class="action-btn-icon">🗑</div>Удалить кредит</button></div>
+        <div class="partial-section" id="partialSection"><div class="partial-label">Частичная оплата</div><div class="partial-info"><div><div class="partial-info-label">Внесено</div><div class="partial-info-val credit-amount" id="partialPaidDisplay">0 ₽</div></div><div style="text-align:right"><div class="partial-info-label">Остаток</div><div class="partial-info-val credit-amount" id="partialRemainDisplay">0 ₽</div></div></div><div class="partial-input-wrap"><input type="number" id="partialInput" placeholder="Сумма взноса, ₽" inputmode="decimal"><button class="btn btn-primary" onclick="savePartial()" style="flex:0 0 auto;min-width:90px;padding:13px 16px">Внести</button></div></div>
+        <div style="padding: 0 12px"><button class="action-btn" onclick="openEdit()"><div class="action-btn-icon">✎</div>Редактировать</button><button class="action-btn" id="resetPartialBtn" style="display:none" onclick="resetPartial()"><div class="action-btn-icon">↺</div>Сбросить частичную оплату</button><button class="action-btn danger" onclick="showDeleteConfirm()"><div class="action-btn-icon">🗑</div>Удалить кредит</button></div>
         <div style="height:4px"></div>
     </div>
 </div>
 
-<!-- DELETE CONFIRM -->
 <div class="overlay" id="deleteOverlay" onclick="if(event.target===this)closeDelete()">
     <div class="sheet" style="padding-bottom: max(16px, env(safe-area-inset-bottom))">
         <div class="sheet-handle"></div>
         <div class="sheet-title"><span>Удаление кредита</span><button class="sheet-close" onclick="closeDelete()">✕</button></div>
-        <div class="confirm-body"><div class="confirm-text">Вы уверены, что хотите удалить этот кредит? Это действие нельзя отменить.</div><button class="btn" style="background:var(--danger);color:#fff;margin-bottom:10px;width:100%" id="confirmDeleteBtn">Удалить</button></div>
+        <div class="confirm-body"><div class="confirm-text">Вы уверены, что хотите удалить этот кредит? Это действие нельзя отменить.</div><button class="btn" style="background:var(--danger);color:#fff;margin-bottom:10px;width:100%" onclick="doDelete()">Удалить</button></div>
     </div>
 </div>
 
-<!-- SETTINGS OVERLAY -->
 <div class="overlay" id="settingsOverlay" onclick="if(event.target===this)closeSettings()">
     <div class="sheet settings-sheet">
         <div class="sheet-handle"></div>
         <div class="sheet-title">Настройки <button class="sheet-close" onclick="closeSettings()">✕</button></div>
+        
+        <div class="settings-section">
+            <div class="settings-section-label">Аккаунт</div>
+            <button class="action-btn danger" onclick="doLogout()" style="margin-bottom:0;">
+                <div class="action-btn-icon" style="display:inline-block; margin-right:8px;">🚪</div> Выйти
+            </button>
+        </div>
+
         <div class="settings-section"><div class="settings-section-label">Внешний вид</div>
             <div class="settings-two-controls">
-                <div class="settings-control-item"><span class="settings-control-label">Тема</span><div class="theme-toggle-row"><span class="theme-icon-label">☀️</span><div class="theme-switch-track" id="themeSwitchTrack"><div class="theme-switch-thumb" id="themeSwitchThumb"></div></div><span class="theme-icon-label">🌙</span></div></div>
-                <div class="settings-control-item"><span class="settings-control-label">Суммы</span><div class="theme-toggle-row"><span class="theme-icon-label">🐵</span><div class="theme-switch-track" id="amountsSwitchTrack"><div class="theme-switch-thumb" id="amountsSwitchThumb"></div></div><span class="theme-icon-label">🙈</span></div></div>
+                <div class="settings-control-item"><span class="settings-control-label">Тема</span><div class="theme-toggle-row"><span class="theme-icon-label">☀️</span><div class="theme-switch-track" id="themeSwitchTrack" onclick="toggleThemeFromSettings(); event.stopPropagation();"><div class="theme-switch-thumb" id="themeSwitchThumb"></div></div><span class="theme-icon-label">🌙</span></div></div>
+                <div class="settings-control-item"><span class="settings-control-label">Суммы</span><div class="theme-toggle-row"><span class="theme-icon-label">🐵</span><div class="theme-switch-track" id="amountsSwitchTrack" onclick="toggleAmountsFromSettings(); event.stopPropagation();"><div class="theme-switch-thumb" id="amountsSwitchThumb"></div></div><span class="theme-icon-label">🙈</span></div></div>
             </div>
         </div>
         <div class="settings-section"><div class="settings-section-label">Размер текста</div><div class="font-size-steps-full">
-            <div class="font-step" data-size="s"><span>А</span><span class="font-step-label">Мелкий</span></div>
-            <div class="font-step" data-size="m"><span>А</span><span class="font-step-label">Обычный</span></div>
-            <div class="font-step" data-size="l"><span>А</span><span class="font-step-label">Крупный</span></div>
+            <div class="font-step" data-size="s" onclick="setFontSize('s')"><span>А</span><span class="font-step-label">Мелкий</span></div>
+            <div class="font-step" data-size="m" onclick="setFontSize('m')"><span>А</span><span class="font-step-label">Обычный</span></div>
+            <div class="font-step" data-size="l" onclick="setFontSize('l')"><span>А</span><span class="font-step-label">Крупный</span></div>
         </div></div>
-        <div class="settings-section"><div class="settings-section-label">Защита</div><div class="lock-status-row" id="lockStatusRow"><div class="lock-status-icon" id="lockStatusIcon">🔓</div><div class="lock-status-text"><span class="lock-status-title" id="lockStatusTitle">Защита не установлена</span><span class="lock-status-sub" id="lockStatusSub">Нажмите чтобы настроить</span></div><div class="lock-chevron">›</div></div><div class="lock-buttons" id="lockButtons" style="display:none;"><button class="lock-btn lock-btn-set" id="setPinBtn">🔢 ПИН-код</button><button class="lock-btn lock-btn-remove" id="removeLockBtn" style="display:none;">🗑 Убрать защиту</button></div></div>
-        <button class="logout-settings-btn" id="logoutSettingsBtn">🚪 Выйти из аккаунта</button>
+        <div class="settings-section"><div class="settings-section-label">Защита</div><div class="lock-status-row" id="lockStatusRow"><div class="lock-status-icon" id="lockStatusIcon">🔓</div><div class="lock-status-text"><span class="lock-status-title" id="lockStatusTitle">Защита не установлена</span><span class="lock-status-sub" id="lockStatusSub">Нажмите чтобы настроить</span></div><div class="lock-chevron">›</div></div><div class="lock-buttons" id="lockButtons" style="display:none;"><button class="lock-btn lock-btn-set" onclick="startSetPin()">🔢 ПИН-код</button><button class="lock-btn lock-btn-remove" id="removeLockBtn" onclick="doRemoveLock()" style="display:none;">🗑 Убрать защиту</button></div></div>
     </div>
 </div>
 
-<!-- ALL PAID OVERLAY -->
 <div class="all-paid-overlay" id="allPaidOverlay" onclick="if(event.target===this)closeAllPaid()"><div class="all-paid-card"><span class="all-paid-icon">🎉</span><div class="all-paid-title">В этом месяце все платежи выполнены!</div><div class="all-paid-sub">Отличная работа — все кредиты за этот месяц отмечены как оплаченные.</div><button class="all-paid-btn" onclick="closeAllPaid()">Отлично!</button></div></div>
 
-<!-- PIN SET OVERLAY -->
 <div class="pin-overlay" id="pinSetOverlay">
     <div class="pin-top">
-        <button class="pin-close" id="pinSetClose">✕</button>
+        <button class="pin-close" onclick="cancelPinSet()">✕</button>
         <div class="pin-lock-icon">🔒</div>
         <div class="pin-title" id="pinSetTitle">Создайте ПИН-код</div>
         <div class="pin-sub" id="pinSetSub">Выберите длину</div>
-        <div class="pin-length-row" id="pinLenRow"><button class="pin-len-btn" data-len="4">4 цифры</button><button class="pin-len-btn" data-len="6">6 цифр</button></div>
+        <div class="pin-length-row" id="pinLenRow"><button class="pin-len-btn active" onclick="selectPinLen(4)">4 цифры</button><button class="pin-len-btn" onclick="selectPinLen(6)">6 цифр</button></div>
         <div class="pin-dots" id="pinSetDots"></div>
     </div>
     <div class="pin-pad" id="pinSetPad">
@@ -956,7 +867,6 @@
     </div>
 </div>
 
-<!-- PIN LOCK OVERLAY -->
 <div class="pin-overlay" id="pinLockOverlay">
     <div class="pin-top">
         <div class="pin-lock-icon">🔐</div>
@@ -981,34 +891,31 @@
 </div>
 
 <script>
-// ======================== FIREBASE ========================
+// ======================== ПОЛНЫЙ РАБОЧИЙ JS ========================
 const firebaseConfig = {
-    apiKey: "AIzaSyD_AVvoPQ1CLVbc_xxlPXLE-DyTcVZrL8Y",
-    authDomain: "my-credits-804ab.firebaseapp.com",
-    projectId: "my-credits-804ab",
-    storageBucket: "my-credits-804ab.firebasestorage.app",
-    messagingSenderId: "602702013620",
-    appId: "1:602702013620:web:1babc849f5ed8bcdaee3e1"
+  apiKey: "AIzaSyD_AVvoPQ1CLVbc_xxlPXLE-DyTcVZrL8Y",
+  authDomain: "my-credits-804ab.firebaseapp.com",
+  projectId: "my-credits-804ab",
+  storageBucket: "my-credits-804ab.firebasestorage.app",
+  messagingSenderId: "602702013620",
+  appId: "1:602702013620:web:1babc849f5ed8bcdaee3e1"
 };
 
+// Инициализация Firebase
 firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
 
-// ======================== ПЕРЕМЕННЫЕ ========================
 const SK = 'crt_v4';
 const MONTH_K = 'crt_month_v4';
 const THEME_K = 'crt_theme_v4';
-const AMT_K = 'crt_amounts_v4';
-const FONT_K = 'crt_font_v4';
-const PIN_K = 'crt_pin_v4';
+const AMT_K   = 'crt_amounts_v4';
+const FONT_K  = 'crt_font_v4';
+const PIN_K   = 'crt_pin_v4';
 const PIN_LEN_K = 'crt_pin_len_v4';
 
-const CATS = { mortgage: '🏠', auto: '🚗', consumer: '💳', card: '💰', other: '📄' };
+const CATS = { mortgage: { emoji: '🏠', label: 'Ипотека' }, auto: { emoji: '🚗', label: 'Автокредит' }, consumer: { emoji: '💳', label: 'Потребительский' }, card: { emoji: '💰', label: 'Кредитная карта' }, other: { emoji: '📄', label: 'Прочее' } };
 
 let credits = [];
-let editMode = false;
-let editId = null;
+let editMode = false, editId = null;
 let selectedCreditId = null;
 let selectedCat = 'mortgage';
 let dateMode = 'cal';
@@ -1018,332 +925,141 @@ let fontSize = 'm';
 let allPaidShown = false;
 let lockPanelOpen = false;
 let backPressedOnce = false;
-let currentUser = null;
-let authReady = false;
 
 let pinSetBuf = '', pinSetStep = 0, pinSetFirst = '', pinSetLen = 4, pinSetVerifyMode = null;
 let pinLockBuf = '', pinLockLen = 4;
-let pendingAfterPin = null;
 
-const ls = {
-    get: k => { try { return localStorage.getItem(k); } catch(e) { return null; } },
-    set: (k, v) => { try { localStorage.setItem(k, v); return true; } catch(e) { return false; } },
-    rm: k => { try { localStorage.removeItem(k); } catch(e) {} }
+let isLoginMode = true;
+let authResolved = false;
+let authUser = null;
+let splashTimerDone = false;
+
+const ls = { get: k => { try { return localStorage.getItem(k); } catch(e) { return null; } }, set: (k,v) => { try { localStorage.setItem(k,v); return true; } catch(e) { return false; } }, rm: k => { try { localStorage.removeItem(k); } catch(e) {} } };
+
+window.onload = () => {
+    loadTheme(); loadFontSize(); loadAmounts(); loadData();
+    checkMonthReset(); checkCompleted();
+    render();
+    setupBackBtn();
+
+    const isNoSplash = document.documentElement.classList.contains('no-splash');
+
+    if (isNoSplash) {
+        splashTimerDone = true;
+    } else {
+        setTimeout(() => {
+            splashTimerDone = true;
+            evaluateLaunch();
+        }, 1000);
+    }
 };
 
-// ======================== ВСПОМОГАТЕЛЬНЫЕ ========================
-function fmt(n) { return Math.round(n).toLocaleString('ru-RU'); }
-function esc(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
-function showToast(msg) {
-    document.querySelectorAll('.toast').forEach(t => t.remove());
-    const d = document.createElement('div');
-    d.className = 'toast';
-    d.textContent = msg;
-    document.body.appendChild(d);
-    setTimeout(() => d.remove(), 2200);
-}
+// Отслеживание состояния авторизации
+firebase.auth().onAuthStateChanged(user => {
+    authResolved = true;
+    authUser = user;
+    evaluateLaunch();
+});
 
-function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-function openModal(id) { document.getElementById(id).classList.add('active'); }
-function closeForm() { closeModal('formOverlay'); updateFab(false); resetForm(); }
-function closeAction() { closeModal('actionOverlay'); selectedCreditId = null; }
-function closeDelete() { closeModal('deleteOverlay'); }
-function closeSettings() { closeModal('settingsOverlay'); }
-function closeAllPaid() { document.getElementById('allPaidOverlay').classList.remove('active'); }
-function updateFab(active) { document.getElementById('fab').classList.toggle('active', active); }
+function evaluateLaunch() {
+    if (!authResolved || !splashTimerDone) return;
 
-function resetForm() {
-    editMode = false;
-    editId = null;
-    document.getElementById('nameInput').value = '';
-    document.getElementById('amountInput').value = '';
-    document.getElementById('dayInput').value = '';
-    document.getElementById('endDateCal').value = '';
-    document.getElementById('formTitleText').innerText = 'Новый кредит';
-    document.getElementById('formSaveBtn').innerText = 'Сохранить';
-    selectCat('mortgage');
-    setDateMode('cal');
-}
+    const splash = document.getElementById('splash');
+    const authScreen = document.getElementById('authScreen');
+    const app = document.getElementById('app');
 
-function selectCat(cat) {
-    selectedCat = cat;
-    document.querySelectorAll('.cat-item').forEach(el => el.classList.toggle('selected', el.dataset.cat === cat));
-}
+    splash.classList.add('hidden');
 
-function setDateMode(m) {
-    dateMode = m;
-    document.getElementById('dtBtnCal').classList.toggle('active', m === 'cal');
-    document.getElementById('dtBtnMan').classList.toggle('active', m === 'man');
-    document.getElementById('calInput').classList.toggle('active', m === 'cal');
-    document.getElementById('manInput').classList.toggle('active', m === 'man');
-}
-
-function getEndDate() {
-    if (dateMode === 'cal') return document.getElementById('endDateCal').value || null;
-    const mo = document.getElementById('endMonth').value;
-    const yr = document.getElementById('endYear').value;
-    return (mo !== '' && yr) ? `${yr}-${String(parseInt(mo) + 1).padStart(2, '0')}-01` : null;
-}
-
-function toggleCompleted() {
-    const list = document.getElementById('completedList');
-    const arrow = document.getElementById('completedArrow');
-    const open = !list.classList.contains('open');
-    list.classList.toggle('open', open);
-    arrow.classList.toggle('open', open);
-    if (open) {
-        const cm = new Date().getMonth(), cy = new Date().getFullYear();
-        list.innerHTML = '';
-        credits.filter(c => c.completed).forEach(c => list.appendChild(buildCreditItem(c, cm, cy)));
-    }
-}
-
-// ======================== ТЕМА И ШРИФТ ========================
-function applyTheme() {
-    document.documentElement.setAttribute('data-theme', theme);
-    const themeTrack = document.getElementById('themeSwitchTrack');
-    if (themeTrack) {
-        if (theme === 'dark') themeTrack.classList.add('dark-on');
-        else themeTrack.classList.remove('dark-on');
-    }
-    if (!amountsVisible) { stopSpoilers(); startSpoilers(); }
-}
-
-function applyFont() {
-    const sizes = { s: '13px', m: '16px', l: '19px' };
-    document.documentElement.style.fontSize = sizes[fontSize];
-    document.querySelectorAll('.font-step').forEach(el => {
-        if (el.getAttribute('data-size') === fontSize) el.classList.add('active');
-        else el.classList.remove('active');
-    });
-    if (!amountsVisible) { stopSpoilers(); startSpoilers(); }
-}
-
-function setFontSize(s) {
-    fontSize = s;
-    ls.set(FONT_K, s);
-    applyFont();
-    updateSettingsUI();
-}
-
-function toggleThemeFromSettings() {
-    theme = theme === 'light' ? 'dark' : 'light';
-    ls.set(THEME_K, theme);
-    applyTheme();
-    updateSettingsUI();
-}
-
-function toggleAmountsFromSettings() {
-    amountsVisible = !amountsVisible;
-    ls.set(AMT_K, amountsVisible);
-    document.body.classList.toggle('amounts-hidden', !amountsVisible);
-    if (!amountsVisible) startSpoilers();
-    else stopSpoilers();
-    updateSettingsUI();
-}
-
-// ======================== СПОЙЛЕРЫ ========================
-let spoilerRAF = null;
-const spoilerMap = new Map();
-
-function makeDotColor() {
-    const dark = theme === 'dark';
-    const v = dark ? (160 + Math.random() * 90) | 0 : (50 + Math.random() * 80) | 0;
-    return `rgba(${v},${v},${v},${(0.08 + Math.random() * 0.22).toFixed(2)})`;
-}
-
-function initSpoilerCanvas(el) {
-    if (el.querySelector('.spoiler-canvas')) return;
-    const cv = document.createElement('canvas');
-    cv.className = 'spoiler-canvas';
-    el.appendChild(cv);
-    const r = el.getBoundingClientRect();
-    cv.width = r.width + 8;
-    cv.height = r.height + 4;
-    const count = Math.ceil((cv.width * cv.height) / 6);
-    const pts = [];
-    for (let i = 0; i < count; i++) {
-        pts.push({
-            x: Math.random() * cv.width,
-            y: Math.random() * cv.height,
-            r: 0.5 + Math.random() * 1.1,
-            vx: (Math.random() - 0.5) * 0.35,
-            vy: (Math.random() - 0.5) * 0.35,
-            color: makeDotColor()
-        });
-    }
-    spoilerMap.set(cv, pts);
-}
-
-function animateSpoilers() {
-    document.querySelectorAll('.spoiler-canvas').forEach(cv => {
-        const pts = spoilerMap.get(cv);
-        if (!pts) return;
-        const ctx = cv.getContext('2d');
-        ctx.clearRect(0, 0, cv.width, cv.height);
-        pts.forEach(p => {
-            p.x += p.vx;
-            p.y += p.vy;
-            if (p.x < 0) p.x = cv.width;
-            else if (p.x > cv.width) p.x = 0;
-            if (p.y < 0) p.y = cv.height;
-            else if (p.y > cv.height) p.y = 0;
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-            ctx.fillStyle = p.color;
-            ctx.fill();
-        });
-    });
-    spoilerRAF = requestAnimationFrame(animateSpoilers);
-}
-
-function startSpoilers() {
-    document.querySelectorAll('.credit-amount, .total-val, .s-amount, .s-paid-val, .s-remain-val').forEach(initSpoilerCanvas);
-    if (!spoilerRAF) spoilerRAF = requestAnimationFrame(animateSpoilers);
-}
-
-function stopSpoilers() {
-    if (spoilerRAF) {
-        cancelAnimationFrame(spoilerRAF);
-        spoilerRAF = null;
-    }
-    document.querySelectorAll('.spoiler-canvas').forEach(cv => {
-        spoilerMap.delete(cv);
-        cv.remove();
-    });
-}
-
-// ======================== FIRESTORE ОПЕРАЦИИ ========================
-async function loadUserData() {
-    if (!currentUser) return;
-    try {
-        const snapshot = await db.collection('credits').where('userId', '==', currentUser.uid).get();
-        credits = [];
-        snapshot.forEach(doc => {
-            credits.push({ id: doc.id, ...doc.data() });
-        });
-        render();
-    } catch (e) {
-        console.error('Ошибка загрузки:', e);
-    }
-}
-
-async function saveCreditToFirestore(credit) {
-    if (!currentUser) return;
-    credit.userId = currentUser.uid;
-    if (credit.id) {
-        await db.collection('credits').doc(credit.id).update(credit);
+    if (authUser) {
+        authScreen.style.display = 'none';
+        const hasPin = ls.get(PIN_K);
+        if (hasPin && !sessionStorage.getItem('pin_ok')) {
+            openPinLock();
+        } else {
+            sessionStorage.setItem('pin_ok', '1');
+            sessionStorage.setItem('session_started', '1');
+            app.classList.add('visible');
+        }
     } else {
-        const docRef = await db.collection('credits').add(credit);
-        credit.id = docRef.id;
+        app.classList.remove('visible');
+        authScreen.style.display = 'flex';
     }
-    await loadUserData();
 }
 
-async function deleteCreditFromFirestore(id) {
-    await db.collection('credits').doc(id).delete();
-    await loadUserData();
+// Функции авторизации
+function toggleAuthMode() {
+    isLoginMode = !isLoginMode;
+    document.getElementById('authTitle').textContent = isLoginMode ? 'Вход' : 'Регистрация';
+    document.getElementById('authBtn').textContent = isLoginMode ? 'Войти' : 'Создать аккаунт';
+    document.querySelector('.auth-switch').textContent = isLoginMode ? 'Нет аккаунта? Зарегистрироваться' : 'Уже есть аккаунт? Войти';
 }
 
-async function updateCreditInFirestore(id, data) {
-    await db.collection('credits').doc(id).update(data);
-    await loadUserData();
+function doAuth() {
+    const email = document.getElementById('authEmail').value.trim();
+    const pass = document.getElementById('authPassword').value;
+    if(!email || !pass) { showToast('Заполните все поля'); return; }
+
+    if(isLoginMode) {
+        firebase.auth().signInWithEmailAndPassword(email, pass)
+            .catch(err => showToast('Ошибка входа: ' + err.message));
+    } else {
+        firebase.auth().createUserWithEmailAndPassword(email, pass)
+            .catch(err => showToast('Ошибка регистрации: ' + err.message));
+    }
 }
 
-async function checkMonthReset() {
+function doLogout() {
+    firebase.auth().signOut().then(() => {
+        closeSettings();
+        sessionStorage.removeItem('session_started');
+        sessionStorage.removeItem('pin_ok');
+        window.location.reload();
+    });
+}
+
+function loadData() { const s = ls.get(SK); if (s) try { credits = JSON.parse(s); if (!Array.isArray(credits)) credits = []; } catch(e) { credits = []; } }
+function saveData() { ls.set(SK, JSON.stringify(credits)); render(); }
+
+function checkMonthReset() {
     const n = new Date();
     const key = `${n.getMonth()}-${n.getFullYear()}`;
-    if (ls.get(MONTH_K) !== key && currentUser) {
-        for (let c of credits) {
-            if (!c.completed) {
-                c.paid = false;
-                c.partial = 0;
-                await updateCreditInFirestore(c.id, { paid: false, partial: 0 });
-            }
-        }
-        ls.set(MONTH_K, key);
-        const m = document.getElementById('resetMsg');
-        m.style.display = 'block';
-        setTimeout(() => m.style.display = 'none', 5000);
+    if (ls.get(MONTH_K) !== key) {
+        credits.forEach(c => { if (!c.completed) { c.paid = false; c.partial = 0; } });
+        saveData(); ls.set(MONTH_K, key);
+        const m = document.getElementById('resetMsg'); m.style.display = 'block'; setTimeout(() => m.style.display = 'none', 5000);
     }
 }
-
 function checkCompleted() {
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-    credits.forEach(async c => {
-        if (c.endDate && !c.completed && new Date(c.endDate) <= now) {
-            c.completed = true;
-            c.paid = true;
-            await updateCreditInFirestore(c.id, { completed: true, paid: true });
-        }
-    });
+    const now = new Date(); now.setHours(0,0,0,0); let changed = false;
+    credits.forEach(c => { if (c.endDate && !c.completed && new Date(c.endDate) <= now) { c.completed = true; c.paid = true; changed = true; } });
+    if (changed) saveData();
 }
 
-// ======================== РЕНДЕР ========================
 function render() {
-    const now = new Date();
-    const cm = now.getMonth(), cy = now.getFullYear();
+    const now = new Date(); const cm = now.getMonth(), cy = now.getFullYear();
     const active = credits.filter(c => !c.completed);
     const completed = credits.filter(c => c.completed);
-    active.sort((a, b) => a.paid === b.paid ? a.day - b.day : a.paid ? 1 : -1);
-
-    const list = document.getElementById('creditList');
-    list.innerHTML = '';
-    if (!active.length) {
-        list.innerHTML = `<div class="empty-state"><div class="empty-icon">💳</div><div class="empty-title">Нет активных кредитов</div><div class="empty-sub">Нажмите + чтобы добавить первый</div></div>`;
-    } else {
-        active.forEach(c => list.appendChild(buildCreditItem(c, cm, cy)));
-    }
-
-    const totalBar = document.getElementById('totalBar');
-    if (active.length) {
-        const unpaidSum = active.filter(c => !c.paid).reduce((s, c) => s + (c.amount - (c.partial || 0)), 0);
-        document.getElementById('totalDisplay').textContent = fmt(unpaidSum);
-        totalBar.style.display = 'flex';
-    } else {
-        totalBar.style.display = 'none';
-    }
-
+    active.sort((a,b) => a.paid === b.paid ? a.day - b.day : a.paid ? 1 : -1);
+    const list = document.getElementById('creditList'); list.innerHTML = '';
+    if (!active.length) list.innerHTML = `<div class="empty-state"><div class="empty-icon">💳</div><div class="empty-title">Нет активных кредитов</div><div class="empty-sub">Нажмите + чтобы добавить первый</div></div>`;
+    else active.forEach(c => list.appendChild(buildCreditItem(c, cm, cy)));
+    
     const compSec = document.getElementById('completedSection');
-    if (completed.length) {
-        compSec.style.display = '';
-        document.getElementById('completedLabel').textContent = `Завершённые (${completed.length})`;
-        const compList = document.getElementById('completedList');
-        if (compList.classList.contains('open')) {
-            compList.innerHTML = '';
-            completed.forEach(c => compList.appendChild(buildCreditItem(c, cm, cy)));
-        }
-    } else {
-        compSec.style.display = 'none';
-    }
-
+    if (completed.length) { compSec.style.display = ''; document.getElementById('completedLabel').textContent = `Завершённые (${completed.length})`; const compList = document.getElementById('completedList'); if (compList.classList.contains('open')) { compList.innerHTML = ''; completed.forEach(c => compList.appendChild(buildCreditItem(c, cm, cy))); } }
+    else compSec.style.display = 'none';
     document.getElementById('activeCount').textContent = active.length ? `${active.length}` : '';
     updateSummary(active);
     if (!amountsVisible) setTimeout(startSpoilers, 30);
 }
-
 function buildCreditItem(c, cm, cy) {
-    const partial = c.partial || 0;
-    const remain = Math.max(0, c.amount - partial);
+    const partial = c.partial || 0, remain = Math.max(0, c.amount - partial);
     const percent = c.amount > 0 ? (partial / c.amount) * 100 : 0;
-
     let termHtml = '';
-    if (c.endDate) {
-        const ed = new Date(c.endDate);
-        const ml = (ed.getFullYear() - cy) * 12 + (ed.getMonth() - cm);
-        if (ml <= 0) termHtml = `<span class="credit-term-tag ending">Завершается</span>`;
-        else if (ml <= 3) termHtml = `<span class="credit-term-tag soon">Ещё ${ml} мес.</span>`;
-        else termHtml = `<span class="credit-term-tag ok">${ml} мес.</span>`;
-    } else {
-        termHtml = `<span class="credit-term-tag infinite">Бессрочный</span>`;
-    }
-
-    const cat = CATS[c.category] || '💳';
-    const wrap = document.createElement('div');
-    wrap.style.background = 'var(--surface)';
-    const item = document.createElement('div');
-    item.className = 'credit-item' + (c.completed ? ' completed' : c.paid ? ' paid' : '');
+    if (c.endDate) { const ed = new Date(c.endDate); const ml = (ed.getFullYear() - cy) * 12 + (ed.getMonth() - cm); if (ml <= 0) termHtml = `<span class="credit-term-tag ending">Завершается</span>`; else if (ml <= 3) termHtml = `<span class="credit-term-tag soon">Ещё ${ml} мес.</span>`; else termHtml = `<span class="credit-term-tag ok">${ml} мес.</span>`; }
+    else termHtml = `<span class="credit-term-tag infinite">Бессрочный</span>`;
+    const cat = CATS[c.category] || CATS.other;
+    const wrap = document.createElement('div'); wrap.style.background = 'var(--surface)';
+    const item = document.createElement('div'); item.className = 'credit-item' + (c.completed ? ' completed' : c.paid ? ' paid' : '');
     if (!c.paid && !c.completed && partial > 0) {
         if (partial >= c.amount) item.classList.add('partial-complete');
         else {
@@ -1351,33 +1067,23 @@ function buildCreditItem(c, cm, cy) {
             item.style.setProperty('--partial-width', percent + '%');
         }
     }
-    item.innerHTML = `<div class="credit-icon-wrap">${cat}</div><div class="credit-main"><div class="credit-name">${esc(c.name)}</div><div class="credit-meta"><span class="credit-date-tag">${c.day} числа</span>${termHtml}</div></div><div class="credit-right"><span class="credit-amount">${partial > 0 ? fmt(remain) + ' ₽' : fmt(c.amount) + ' ₽'}</span>${c.paid ? '<span class="credit-paid-badge">Оплачен</span>' : (partial > 0 ? `<span style="font-size:0.68rem;color:var(--text-2);font-weight:500">из ${fmt(c.amount)} ₽</span>` : '')}</div><div class="check-wrap ${c.paid || c.completed ? 'checked' : ''}" data-id="${c.id}"><svg viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="2.5"><polyline points="2,7 6,11 12,3"/></svg></div>`;
-    item.addEventListener('click', (e) => {
-        if (!c.completed && !e.target.closest('.check-wrap')) openAction(c.id);
-    });
-    const checkWrap = item.querySelector('.check-wrap');
-    checkWrap.addEventListener('click', (e) => {
-        e.stopPropagation();
-        togglePaid(c.id);
-    });
+    item.innerHTML = `<div class="credit-icon-wrap">${cat.emoji}</div><div class="credit-main"><div class="credit-name">${esc(c.name)}</div><div class="credit-meta"><span class="credit-date-tag">${c.day} числа</span>${termHtml}</div></div><div class="credit-right"><span class="credit-amount">${partial > 0 ? fmt(remain) + ' ₽' : fmt(c.amount) + ' ₽'}</span>${c.paid ? '<span class="credit-paid-badge">Оплачен</span>' : (partial > 0 ? `<span style="font-size:0.68rem;color:var(--text-2);font-weight:500">из ${fmt(c.amount)} ₽</span>` : '')}</div><div class="check-wrap ${c.paid || c.completed ? 'checked' : ''}" onclick="event.stopPropagation();togglePaid(${c.id})"><svg viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="2.5"><polyline points="2,7 6,11 12,3"/></svg></div>`;
+    item.addEventListener('click', () => { if (!c.completed) openAction(c.id); });
     wrap.appendChild(item);
     return wrap;
 }
-
 function updateSummary(active) {
-    const total = active.reduce((s, c) => s + c.amount, 0);
-    const paidTotalSum = active.reduce((s, c) => s + (c.paid ? c.amount : (c.partial || 0)), 0);
+    const total = active.reduce((s,c) => s + c.amount, 0);
+    const paidTotalSum = active.reduce((s,c) => s + (c.paid ? c.amount : (c.partial||0)), 0);
     const remain = total > 0 ? Math.max(0, total - paidTotalSum) : 0;
     const pct = total > 0 ? Math.min(100, Math.round((paidTotalSum / total) * 100)) : 0;
-
     document.getElementById('summaryAmount').textContent = fmt(total) + ' ₽';
     document.getElementById('summaryPaid').textContent = `Внесено ${fmt(paidTotalSum)} ₽`;
     document.getElementById('summaryPercent').textContent = pct + '%';
     document.getElementById('summaryBarFill').style.width = pct + '%';
     document.getElementById('summaryCount').textContent = active.length;
-    document.getElementById('summaryPaidCount').textContent = active.filter(c => c.paid).length;
+    document.getElementById('summaryPaidCount').textContent = active.filter(c=>c.paid).length;
     document.getElementById('summaryRemain').textContent = fmt(remain) + ' ₽';
-
     if (pct === 100 && active.length > 0 && !allPaidShown) {
         allPaidShown = true;
         setTimeout(() => document.getElementById('allPaidOverlay').classList.add('active'), 400);
@@ -1385,187 +1091,32 @@ function updateSummary(active) {
         allPaidShown = false;
     }
 }
-
-async function togglePaid(id) {
-    const c = credits.find(x => x.id === id);
-    if (c && !c.completed) {
-        c.paid = !c.paid;
-        if (!c.paid) c.partial = 0;
-        await updateCreditInFirestore(id, { paid: c.paid, partial: c.partial });
-    }
-}
-
-function openAction(id) {
-    const c = credits.find(x => x.id === id);
-    if (!c) return;
-    selectedCreditId = id;
-    const cat = CATS[c.category] || '💳';
-    document.getElementById('actionNameText').textContent = cat + ' ' + c.name;
-    document.getElementById('actionSub').textContent = fmt(c.amount) + ' ₽ · ' + c.day + ' число';
-    const partial = c.partial || 0;
-    document.getElementById('partialPaidDisplay').textContent = fmt(partial) + ' ₽';
-    document.getElementById('partialRemainDisplay').textContent = fmt(Math.max(0, c.amount - partial)) + ' ₽';
-    document.getElementById('partialInput').value = '';
-    const partialSection = document.getElementById('partialSection');
-    const resetBtn = document.getElementById('resetPartialBtn');
-    if (c.paid || c.completed) {
-        partialSection.style.display = 'none';
-        resetBtn.style.display = 'none';
-    } else {
-        partialSection.style.display = '';
-        resetBtn.style.display = partial > 0 ? '' : 'none';
-    }
-    openModal('actionOverlay');
-}
-
-async function resetPartial() {
-    const c = credits.find(x => x.id === selectedCreditId);
-    if (c && !c.paid && !c.completed) {
-        c.partial = 0;
-        await updateCreditInFirestore(c.id, { partial: 0 });
-        closeAction();
-        showToast('Частичная оплата сброшена');
-    }
-}
-
-async function savePartial() {
-    const c = credits.find(x => x.id === selectedCreditId);
-    if (!c) return;
-    const inp = parseFloat(document.getElementById('partialInput').value);
-    if (!inp || inp <= 0) {
-        showToast('Введите сумму');
-        return;
-    }
-    c.partial = Math.min(c.amount, (c.partial || 0) + inp);
-    if (c.partial >= c.amount) c.paid = true;
-    await updateCreditInFirestore(c.id, { partial: c.partial, paid: c.paid });
-    document.getElementById('partialPaidDisplay').textContent = fmt(c.partial) + ' ₽';
-    document.getElementById('partialRemainDisplay').textContent = fmt(Math.max(0, c.amount - c.partial)) + ' ₽';
-    document.getElementById('partialInput').value = '';
-    showToast(c.paid ? 'Кредит полностью оплачен' : 'Внесено ' + fmt(inp) + ' ₽');
-    if (c.paid) closeAction();
-    else {
-        const resetBtn = document.getElementById('resetPartialBtn');
-        if (resetBtn) resetBtn.style.display = c.partial > 0 ? '' : 'none';
-    }
-}
-
-function openEdit() {
-    const c = credits.find(x => x.id === selectedCreditId);
-    if (!c) return;
-    editMode = true;
-    editId = selectedCreditId;
-    document.getElementById('nameInput').value = c.name;
-    document.getElementById('amountInput').value = c.amount;
-    document.getElementById('dayInput').value = c.day;
-    selectCat(c.category);
-    if (c.endDate) {
-        setDateMode('cal');
-        document.getElementById('endDateCal').value = c.endDate;
-    }
-    document.getElementById('formTitleText').innerText = 'Редактировать';
-    document.getElementById('formSaveBtn').innerText = 'Сохранить';
-    closeAction();
-    openModal('formOverlay');
-    updateFab(true);
-}
-
-function showDeleteConfirm() {
-    closeAction();
-    setTimeout(() => openModal('deleteOverlay'), 100);
-}
-
-async function doDelete() {
-    if (selectedCreditId) {
-        await deleteCreditFromFirestore(selectedCreditId);
-        showToast('Удалено');
-    }
-    closeDelete();
-    selectedCreditId = null;
-}
-
-function toggleForm() {
-    const ov = document.getElementById('formOverlay');
-    if (!ov.classList.contains('active')) {
-        openModal('formOverlay');
-        updateFab(true);
-    } else {
-        closeForm();
-    }
-}
-
-async function handleSave() {
-    const name = document.getElementById('nameInput').value.trim();
-    const amount = parseFloat(document.getElementById('amountInput').value);
-    const day = parseInt(document.getElementById('dayInput').value);
-    if (!name) {
-        showToast('Введите название');
-        return;
-    }
-    if (!amount || amount <= 0) {
-        showToast('Введите сумму');
-        return;
-    }
-    if (!day || day < 1 || day > 31) {
-        showToast('День оплаты: 1–31');
-        return;
-    }
-    const endDate = getEndDate();
-    if (editMode && editId) {
-        const c = credits.find(x => x.id === editId);
-        if (c) {
-            c.name = name;
-            c.amount = amount;
-            c.day = day;
-            c.category = selectedCat;
-            c.endDate = endDate;
-            await updateCreditInFirestore(editId, { name, amount, day, category: selectedCat, endDate });
-        }
-    } else {
-        const newCredit = { id: Date.now().toString(), name, amount, day, category: selectedCat, endDate, paid: false, completed: false, partial: 0 };
-        await saveCreditToFirestore(newCredit);
-    }
-    closeForm();
-    showToast('Сохранено');
-}
-
-function fabClick(e) {
-    e.stopPropagation();
-    const fab = document.getElementById('fab');
-    if (fab.classList.contains('active')) {
-        closeForm();
-        return;
-    }
-    fab.style.transform = 'scale(0.88)';
-    setTimeout(() => {
-        fab.style.transform = '';
-        toggleForm();
-    }, 120);
-}
-
-function gearClick(e) {
-    e.stopPropagation();
-    const btn = document.getElementById('settingsBtn');
-    btn.classList.add('spinning');
-    btn.addEventListener('animationend', function h() {
-        btn.classList.remove('spinning');
-        btn.removeEventListener('animationend', h);
-        openSettings();
-    });
-}
-
-function openSettings() {
-    updateSettingsUI();
-    openModal('settingsOverlay');
-}
-
+function togglePaid(id) { const c = credits.find(x => x.id === id); if (c && !c.completed) { c.paid = !c.paid; if (!c.paid) c.partial = 0; saveData(); } }
+function openAction(id) { const c = credits.find(x => x.id === id); if (!c) return; selectedCreditId = id; const cat = CATS[c.category] || CATS.other; document.getElementById('actionNameText').textContent = cat.emoji + ' ' + c.name; document.getElementById('actionSub').textContent = fmt(c.amount) + ' ₽ · ' + c.day + ' число'; const partial = c.partial || 0; document.getElementById('partialPaidDisplay').textContent = fmt(partial) + ' ₽'; document.getElementById('partialRemainDisplay').textContent = fmt(Math.max(0, c.amount - partial)) + ' ₽'; document.getElementById('partialInput').value = ''; const partialSection = document.getElementById('partialSection'); const resetBtn = document.getElementById('resetPartialBtn'); if (c.paid || c.completed) { partialSection.style.display = 'none'; resetBtn.style.display = 'none'; } else { partialSection.style.display = ''; resetBtn.style.display = partial > 0 ? '' : 'none'; } document.getElementById('actionOverlay').classList.add('active'); }
+function resetPartial() { const c = credits.find(x => x.id === selectedCreditId); if (c && !c.paid && !c.completed) { c.partial = 0; saveData(); closeAction(); showToast('Частичная оплата сброшена'); } }
+function closeAction() { document.getElementById('actionOverlay').classList.remove('active'); selectedCreditId = null; }
+function savePartial() { const c = credits.find(x => x.id === selectedCreditId); if (!c) return; const inp = parseFloat(document.getElementById('partialInput').value); if (!inp || inp <= 0) { showToast('Введите сумму'); return; } c.partial = Math.min(c.amount, (c.partial||0) + inp); if (c.partial >= c.amount) c.paid = true; saveData(); document.getElementById('partialPaidDisplay').textContent = fmt(c.partial) + ' ₽'; document.getElementById('partialRemainDisplay').textContent = fmt(Math.max(0, c.amount - c.partial)) + ' ₽'; document.getElementById('partialInput').value = ''; showToast(c.paid ? 'Кредит полностью оплачен' : 'Внесено ' + fmt(inp) + ' ₽'); if (c.paid) closeAction(); else { const resetBtn = document.getElementById('resetPartialBtn'); if (resetBtn) resetBtn.style.display = c.partial > 0 ? '' : 'none'; } }
+function openEdit() { const c = credits.find(x => x.id === selectedCreditId); if (!c) return; editMode = true; editId = selectedCreditId; document.getElementById('nameInput').value = c.name; document.getElementById('amountInput').value = c.amount; document.getElementById('dayInput').value = c.day; selectCat(c.category); if (c.endDate) { setDateMode('cal'); document.getElementById('endDateCal').value = c.endDate; } document.getElementById('formTitleText').innerText = 'Редактировать'; document.getElementById('formSaveBtn').innerText = 'Сохранить'; closeAction(); document.getElementById('formOverlay').classList.add('active'); updateFab(true); }
+function showDeleteConfirm() { closeAction(); setTimeout(() => document.getElementById('deleteOverlay').classList.add('active'), 100); }
+function closeDelete() { document.getElementById('deleteOverlay').classList.remove('active'); }
+function doDelete() { if (selectedCreditId) { credits = credits.filter(c => c.id !== selectedCreditId); saveData(); showToast('Удалено'); } closeDelete(); selectedCreditId = null; }
+function toggleForm() { const ov = document.getElementById('formOverlay'); if (!ov.classList.contains('active')) { ov.classList.add('active'); updateFab(true); } else closeForm(); }
+function closeForm() { document.getElementById('formOverlay').classList.remove('active'); updateFab(false); resetForm(); }
+function resetForm() { editMode = false; editId = null; document.getElementById('nameInput').value = ''; document.getElementById('amountInput').value = ''; document.getElementById('dayInput').value = ''; document.getElementById('endDateCal').value = ''; document.getElementById('formTitleText').innerText = 'Новый кредит'; document.getElementById('formSaveBtn').innerText = 'Добавить'; selectCat('mortgage'); setDateMode('cal'); }
+function handleSave() { const name = document.getElementById('nameInput').value.trim(); const amount = parseFloat(document.getElementById('amountInput').value); const day = parseInt(document.getElementById('dayInput').value); if (!name) { showToast('Введите название'); return; } if (!amount || amount <= 0) { showToast('Введите сумму'); return; } if (!day || day < 1 || day > 31) { showToast('День оплаты: 1–31'); return; } const endDate = getEndDate(); if (editMode && editId) { const c = credits.find(x => x.id === editId); if (c) { c.name = name; c.amount = amount; c.day = day; c.category = selectedCat; c.endDate = endDate; } } else credits.push({ id: Date.now(), name, amount, day, category: selectedCat, endDate, paid: false, completed: false, partial: 0 }); saveData(); closeForm(); showToast('Сохранено'); }
+function selectCat(cat) { selectedCat = cat; document.querySelectorAll('.cat-item').forEach(el => el.classList.toggle('selected', el.dataset.cat === cat)); }
+function setDateMode(m) { dateMode = m; document.getElementById('dtBtnCal').classList.toggle('active', m === 'cal'); document.getElementById('dtBtnMan').classList.toggle('active', m === 'man'); document.getElementById('calInput').classList.toggle('active', m === 'cal'); document.getElementById('manInput').classList.toggle('active', m === 'man'); }
+function getEndDate() { if (dateMode === 'cal') return document.getElementById('endDateCal').value || null; const mo = document.getElementById('endMonth').value; const yr = document.getElementById('endYear').value; return (mo !== '' && yr) ? `${yr}-${String(parseInt(mo)+1).padStart(2,'0')}-01` : null; }
+function fabClick(e) { e.stopPropagation(); const fab = document.getElementById('fab'); if (fab.classList.contains('active')) { closeForm(); return; } fab.style.transform = 'scale(0.88)'; setTimeout(() => { fab.style.transform = ''; toggleForm(); }, 120); }
+function updateFab(active) { document.getElementById('fab').classList.toggle('active', active); }
+function gearClick(e) { e.stopPropagation(); const btn = document.getElementById('settingsBtn'); btn.classList.add('spinning'); btn.addEventListener('animationend', function h() { btn.classList.remove('spinning'); btn.removeEventListener('animationend', h); openSettings(); }); }
+function openSettings() { updateSettingsUI(); document.getElementById('settingsOverlay').classList.add('active'); }
+function closeSettings() { document.getElementById('settingsOverlay').classList.remove('active'); }
 function updateSettingsUI() {
     const themeTrack = document.getElementById('themeSwitchTrack');
-    if (theme === 'dark') themeTrack.classList.add('dark-on');
-    else themeTrack.classList.remove('dark-on');
+    if (theme === 'dark') themeTrack.classList.add('dark-on'); else themeTrack.classList.remove('dark-on');
     const amtTrack = document.getElementById('amountsSwitchTrack');
-    if (!amountsVisible) amtTrack.classList.add('dark-on');
-    else amtTrack.classList.remove('dark-on');
+    if (!amountsVisible) amtTrack.classList.add('dark-on'); else amtTrack.classList.remove('dark-on');
     document.querySelectorAll('.font-step').forEach(el => {
         const size = el.getAttribute('data-size');
         if (size === fontSize) el.classList.add('active');
@@ -1576,395 +1127,54 @@ function updateSettingsUI() {
     document.getElementById('lockStatusSub').textContent = hasPin ? 'Нажмите для изменения' : 'Нажмите для настройки';
     document.getElementById('removeLockBtn').style.display = hasPin ? '' : 'none';
 }
-
-function setupBackBtn() {
-    document.addEventListener('backbutton', () => {
-        if (document.getElementById('deleteOverlay').classList.contains('active')) { closeDelete(); return; }
-        if (document.getElementById('actionOverlay').classList.contains('active')) { closeAction(); return; }
-        if (document.getElementById('formOverlay').classList.contains('active')) { closeForm(); return; }
-        if (document.getElementById('settingsOverlay').classList.contains('active')) { closeSettings(); return; }
-        if (backPressedOnce) {
-            navigator.app && navigator.app.exitApp();
-            return;
-        }
-        backPressedOnce = true;
-        showToast('Нажмите ещё раз для выхода');
-        setTimeout(() => backPressedOnce = false, 2000);
-    });
-}
-
-// ======================== PIN КОД ========================
-function buildPinDots(containerId, count, prefix) {
-    const el = document.getElementById(containerId);
-    el.innerHTML = '';
-    for (let i = 0; i < count; i++) {
-        const d = document.createElement('div');
-        d.className = 'pin-dot';
-        d.id = prefix + i;
-        el.appendChild(d);
-    }
-}
-
-function fillPinDots(containerId, prefix, filled, count) {
-    for (let i = 0; i < count; i++) {
-        const d = document.getElementById(prefix + i);
-        if (d) d.classList.toggle('filled', i < filled);
-        d.classList.remove('error');
-    }
-}
-
-function shakePinDots(containerId, prefix, count) {
-    for (let i = 0; i < count; i++) {
-        const d = document.getElementById(prefix + i);
-        if (d) d.classList.add('error');
-    }
-    const el = document.getElementById(containerId);
-    el.classList.add('shake');
-    setTimeout(() => el.classList.remove('shake'), 400);
-}
-
-function hashPin(s) {
-    let h = 0x811c9dc5;
-    for (let i = 0; i < s.length; i++) {
-        h ^= s.charCodeAt(i);
-        h = (h * 0x01000193) >>> 0;
-    }
-    return h.toString(16);
-}
-
-function selectPinLen(n) {
-    pinSetLen = n;
-    document.querySelectorAll('.pin-len-btn').forEach(b => b.classList.toggle('active', parseInt(b.textContent) === n));
-    pinSetBuf = '';
-    buildPinDots('pinSetDots', n, 'sd');
-    fillPinDots('pinSetDots', 'sd', 0, n);
-}
-
-function pinSetKey(v) {
-    if (pinSetBuf.length >= pinSetLen) return;
-    pinSetBuf += v;
-    fillPinDots('pinSetDots', 'sd', pinSetBuf.length, pinSetLen);
-    if (pinSetBuf.length === pinSetLen) {
-        setTimeout(() => {
-            if (pinSetStep === 2) {
-                if (hashPin(pinSetBuf) === ls.get(PIN_K)) {
-                    if (pinSetVerifyMode === 'remove') {
-                        document.getElementById('pinSetOverlay').classList.remove('active');
-                        _removeLock();
-                    } else {
-                        pinSetBuf = '';
-                        pinSetStep = 0;
-                        pinSetVerifyMode = null;
-                        document.getElementById('pinSetTitle').textContent = 'Создайте новый ПИН-код';
-                        document.getElementById('pinSetSub').textContent = 'Выберите длину и введите цифры';
-                        document.getElementById('pinLenRow').style.display = '';
-                        pinSetLen = 4;
-                        selectPinLen(4);
-                    }
-                } else {
-                    document.getElementById('pinSetSub').textContent = 'Неверный ПИН-код';
-                    shakePinDots('pinSetDots', 'sd', pinSetLen);
-                    pinSetBuf = '';
-                    setTimeout(() => { fillPinDots('pinSetDots', 'sd', 0, pinSetLen); }, 400);
-                }
-            } else if (pinSetStep === 0) {
-                pinSetFirst = pinSetBuf;
-                pinSetBuf = '';
-                pinSetStep = 1;
-                document.getElementById('pinLenRow').style.display = 'none';
-                document.getElementById('pinSetTitle').textContent = 'Повторите ПИН-код';
-                document.getElementById('pinSetSub').textContent = `Введите ${pinSetLen} цифр ещё раз`;
-                fillPinDots('pinSetDots', 'sd', 0, pinSetLen);
-            } else {
-                if (pinSetBuf === pinSetFirst) {
-                    ls.set(PIN_K, hashPin(pinSetBuf));
-                    ls.set(PIN_LEN_K, String(pinSetLen));
-                    document.getElementById('pinSetOverlay').classList.remove('active');
-                    updateSettingsUI();
-                    showToast('ПИН-код установлен');
-                    lockPanelOpen = false;
-                    document.getElementById('lockButtons').style.display = 'none';
-                    document.getElementById('lockStatusRow').classList.remove('open');
-                    if (pendingAfterPin === 'showApp') {
-                        pendingAfterPin = null;
-                        showMainAppAfterAuth();
-                    }
-                } else {
-                    document.getElementById('pinSetSub').textContent = 'Коды не совпадают';
-                    shakePinDots('pinSetDots', 'sd', pinSetLen);
-                    pinSetBuf = '';
-                    pinSetStep = 0;
-                    pinSetFirst = '';
-                    document.getElementById('pinLenRow').style.display = '';
-                    buildPinDots('pinSetDots', pinSetLen, 'sd');
-                    setTimeout(() => fillPinDots('pinSetDots', 'sd', 0, pinSetLen), 400);
-                }
-            }
-        }, 100);
-    }
-}
-
-function pinSetDel() {
-    pinSetBuf = pinSetBuf.slice(0, -1);
-    fillPinDots('pinSetDots', 'sd', pinSetBuf.length, pinSetLen);
-}
-
-function openNewPin() {
-    pinSetBuf = '';
-    pinSetStep = 0;
-    pinSetFirst = '';
-    pinSetLen = 4;
-    pinSetVerifyMode = null;
-    document.getElementById('pinSetTitle').textContent = 'Создайте ПИН-код';
-    document.getElementById('pinSetSub').textContent = 'Выберите длину и введите цифры';
-    document.getElementById('pinLenRow').style.display = '';
-    buildPinDots('pinSetDots', pinSetLen, 'sd');
-    document.getElementById('pinSetOverlay').classList.add('active');
-}
-
-function openPinVerify(title, sub) {
-    pinSetBuf = '';
-    pinSetStep = 2;
-    const len = parseInt(ls.get(PIN_LEN_K)) || 4;
-    pinSetLen = len;
-    document.getElementById('pinSetTitle').textContent = title;
-    document.getElementById('pinSetSub').textContent = sub;
-    document.getElementById('pinLenRow').style.display = 'none';
-    buildPinDots('pinSetDots', len, 'sd');
-    document.getElementById('pinSetOverlay').classList.add('active');
-}
-
-function cancelPinSet() {
-    document.getElementById('pinSetOverlay').classList.remove('active');
-    pinSetBuf = '';
-    pinSetStep = 0;
-    pinSetVerifyMode = null;
-    if (pendingAfterPin === 'showApp') {
-        pendingAfterPin = null;
-        showMainAppAfterAuth();
-    }
-}
-
-function openPinLock() {
-    pinLockLen = parseInt(ls.get(PIN_LEN_K)) || 4;
-    pinLockBuf = '';
-    document.getElementById('pinLockSub').textContent = 'Для входа в приложение';
-    buildPinDots('pinLockDots', pinLockLen, 'ld');
-    fillPinDots('pinLockDots', 'ld', 0, pinLockLen);
-    document.getElementById('pinLockOverlay').classList.add('active');
-}
-
-function pinLockKey(v) {
-    if (pinLockBuf.length >= pinLockLen) return;
-    pinLockBuf += v;
-    fillPinDots('pinLockDots', 'ld', pinLockBuf.length, pinLockLen);
-    if (pinLockBuf.length === pinLockLen) {
-        setTimeout(() => {
-            if (hashPin(pinLockBuf) === ls.get(PIN_K)) {
-                sessionStorage.setItem('pin_ok', '1');
-                sessionStorage.setItem('session_started', '1');
-                document.getElementById('pinLockOverlay').classList.remove('active');
-                showMainAppAfterAuth();
-            } else {
-                document.getElementById('pinLockSub').textContent = 'Неверный ПИН-код';
-                shakePinDots('pinLockDots', 'ld', pinLockLen);
-                pinLockBuf = '';
-                setTimeout(() => {
-                    document.getElementById('pinLockSub').textContent = 'Для входа в приложение';
-                    fillPinDots('pinLockDots', 'ld', 0, pinLockLen);
-                }, 500);
-            }
-        }, 100);
-    }
-}
-
-function pinLockDel() {
-    pinLockBuf = pinLockBuf.slice(0, -1);
-    fillPinDots('pinLockDots', 'ld', pinLockBuf.length, pinLockLen);
-}
-
-function startSetPin() {
-    const stored = ls.get(PIN_K);
-    if (stored) {
-        pinSetVerifyMode = 'change';
-        openPinVerify('Введите текущий ПИН', 'Для смены защиты');
-    } else {
-        openNewPin();
-    }
-}
-
-function doRemoveLock() {
-    const stored = ls.get(PIN_K);
-    if (stored) {
-        pinSetVerifyMode = 'remove';
-        openPinVerify('Подтвердите удаление', 'Введите текущий ПИН-код');
-    } else {
-        _removeLock();
-    }
-}
-
-function _removeLock() {
-    ls.rm(PIN_K);
-    ls.rm(PIN_LEN_K);
-    lockPanelOpen = false;
-    document.getElementById('lockButtons').style.display = 'none';
-    document.getElementById('lockStatusRow').classList.remove('open');
-    updateSettingsUI();
-    showToast('Защита снята');
-}
-
-function toggleLockPanel() {
-    lockPanelOpen = !lockPanelOpen;
-    document.getElementById('lockButtons').style.display = lockPanelOpen ? '' : 'none';
-    document.getElementById('lockStatusRow').classList.toggle('open', lockPanelOpen);
-}
-
-// ======================== ПОКАЗ ЭКРАНОВ ========================
-function hideAllScreens() {
-    document.getElementById('loginScreen').classList.remove('visible');
-    document.getElementById('registerScreen').classList.remove('visible');
-    document.getElementById('mainApp').classList.remove('visible');
-    document.getElementById('fab').style.display = 'none';
-}
-
-function showAuthScreen() {
-    hideAllScreens();
-    document.getElementById('loginScreen').classList.add('visible');
-    document.getElementById('registerScreen').classList.remove('visible');
-}
-
-function showMainAppAfterAuth() {
-    hideAllScreens();
-    document.getElementById('mainApp').classList.add('visible');
-    document.getElementById('fab').style.display = 'flex';
-    loadUserData();
-    checkMonthReset();
-    checkCompleted();
-}
-
-function checkPinAndShowApp() {
-    const hasPin = ls.get(PIN_K);
-    if (hasPin && sessionStorage.getItem('pin_ok') !== '1') {
-        pendingAfterPin = 'showApp';
-        openPinLock();
-    } else {
-        showMainAppAfterAuth();
-    }
-}
-
-// ======================== АУТЕНТИФИКАЦИЯ ========================
-document.getElementById('doLoginBtn').onclick = async () => {
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
-    try {
-        await auth.signInWithEmailAndPassword(email, password);
-    } catch (error) {
-        document.getElementById('loginError').textContent = error.message;
-    }
-};
-
-document.getElementById('doRegisterBtn').onclick = async () => {
-    const email = document.getElementById('regEmail').value;
-    const password = document.getElementById('regPassword').value;
-    try {
-        await auth.createUserWithEmailAndPassword(email, password);
-    } catch (error) {
-        document.getElementById('registerError').textContent = error.message;
-    }
-};
-
-document.getElementById('goToRegister').onclick = () => {
-    document.getElementById('loginScreen').classList.remove('visible');
-    document.getElementById('registerScreen').classList.add('visible');
-};
-
-document.getElementById('goToLogin').onclick = () => {
-    document.getElementById('registerScreen').classList.remove('visible');
-    document.getElementById('loginScreen').classList.add('visible');
-};
-
-document.getElementById('logoutSettingsBtn').onclick = async () => {
-    await auth.signOut();
-    closeSettings();
-    sessionStorage.removeItem('pin_ok');
-    showToast('Вы вышли из аккаунта');
-};
-
-// ======================== СЛУШАТЕЛЬ АВТОРИЗАЦИИ ========================
-auth.onAuthStateChanged((user) => {
-    currentUser = user;
-    if (user) {
-        checkPinAndShowApp();
-    } else {
-        hideAllScreens();
-        showAuthScreen();
-        credits = [];
-        render();
-    }
-});
-
-// ======================== ИНИЦИАЛИЗАЦИЯ ========================
-window.onload = () => {
-    loadTheme();
-    loadFontSize();
-    loadAmounts();
-    setupBackBtn();
-
-    const splash = document.getElementById('splash');
-    const sessionStarted = sessionStorage.getItem('session_started') === '1';
-
-    if (sessionStarted) {
-        splash.classList.add('hidden');
-    } else {
-        sessionStorage.setItem('session_started', '1');
-        setTimeout(() => {
-            splash.classList.add('hidden');
-        }, 1000);
-    }
-
-    // Инициализация UI
-    selectCat('mortgage');
-    setDateMode('cal');
+function loadTheme() { const t = ls.get(THEME_K); if (t) theme = t; applyTheme(); }
+function applyTheme() { document.documentElement.setAttribute('data-theme', theme); if (!amountsVisible) { stopSpoilers(); startSpoilers(); } }
+function toggleThemeFromSettings() { theme = theme === 'light' ? 'dark' : 'light'; applyTheme(); ls.set(THEME_K, theme); updateSettingsUI(); }
+function loadAmounts() { const v = ls.get(AMT_K); if (v !== null) amountsVisible = v === 'true'; applyAmounts(); }
+function applyAmounts() { document.body.classList.toggle('amounts-hidden', !amountsVisible); if (!amountsVisible) startSpoilers(); else stopSpoilers(); }
+function toggleAmountsFromSettings() { amountsVisible = !amountsVisible; ls.set(AMT_K, amountsVisible); applyAmounts(); updateSettingsUI(); }
+const fontScales = { s: 0.87, m: 1, l: 1.14 };
+function loadFontSize() { const f = ls.get(FONT_K); if (f && fontScales[f]) fontSize = f; applyFont(); }
+function applyFont() { document.documentElement.style.fontSize = (16 * fontScales[fontSize]) + 'px'; }
+function setFontSize(s) { fontSize = s; applyFont(); ls.set(FONT_K, s); if (!amountsVisible) { stopSpoilers(); startSpoilers(); } updateSettingsUI(); }
+let spoilerRAF = null; const spoilerMap = new Map();
+function makeDotColor() { const dark = theme === 'dark'; const v = dark ? (160 + Math.random() * 90) | 0 : (50 + Math.random() * 80) | 0; return `rgba(${v},${v},${v},${(0.08 + Math.random() * 0.22).toFixed(2)})`; }
+function initSpoilerCanvas(el) { if (el.querySelector('.spoiler-canvas')) return; const cv = document.createElement('canvas'); cv.className = 'spoiler-canvas'; el.appendChild(cv); const r = el.getBoundingClientRect(); cv.width = r.width + 8; cv.height = r.height + 4; const count = Math.ceil((cv.width * cv.height) / 6); const pts = []; for (let i = 0; i < count; i++) pts.push({ x: Math.random()*cv.width, y: Math.random()*cv.height, r: 0.5+Math.random()*1.1, vx: (Math.random()-0.5)*0.35, vy: (Math.random()-0.5)*0.35, color: makeDotColor() }); spoilerMap.set(cv, pts); }
+function animateSpoilers() { document.querySelectorAll('.spoiler-canvas').forEach(cv => { const pts = spoilerMap.get(cv); if (!pts) return; const ctx = cv.getContext('2d'); ctx.clearRect(0,0,cv.width,cv.height); pts.forEach(p => { p.x += p.vx; p.y += p.vy; if (p.x < 0) p.x = cv.width; else if (p.x > cv.width) p.x = 0; if (p.y < 0) p.y = cv.height; else if (p.y > cv.height) p.y = 0; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fillStyle = p.color; ctx.fill(); }); }); spoilerRAF = requestAnimationFrame(animateSpoilers); }
+function startSpoilers() { document.querySelectorAll('.credit-amount, .total-val, .s-amount, .s-paid-val, .s-remain-val').forEach(initSpoilerCanvas); if (!spoilerRAF) spoilerRAF = requestAnimationFrame(animateSpoilers); }
+function stopSpoilers() { if (spoilerRAF) { cancelAnimationFrame(spoilerRAF); spoilerRAF = null; } document.querySelectorAll('.spoiler-canvas').forEach(cv => { spoilerMap.delete(cv); cv.remove(); }); }
+function toggleCompleted() { const list = document.getElementById('completedList'); const arrow = document.getElementById('completedArrow'); const open = !list.classList.contains('open'); list.classList.toggle('open', open); arrow.classList.toggle('open', open); if (open) { const cm = new Date().getMonth(), cy = new Date().getFullYear(); list.innerHTML = ''; credits.filter(c=>c.completed).forEach(c => list.appendChild(buildCreditItem(c, cm, cy))); } }
+function showToast(msg) { document.querySelectorAll('.toast').forEach(t => t.remove()); const d = document.createElement('div'); d.className = 'toast'; d.textContent = msg; document.body.appendChild(d); setTimeout(() => d.remove(), 2200); }
+function closeAllPaid() { document.getElementById('allPaidOverlay').classList.remove('active'); }
+function fmt(n) { return Math.round(n).toLocaleString('ru-RU'); }
+function esc(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+function setupBackBtn() { document.addEventListener('backbutton', () => { if (document.getElementById('deleteOverlay').classList.contains('active')) { closeDelete(); return; } if (document.getElementById('actionOverlay').classList.contains('active')) { closeAction(); return; } if (document.getElementById('formOverlay').classList.contains('active')) { closeForm(); return; } if (document.getElementById('settingsOverlay').classList.contains('active')) { closeSettings(); return; } if (backPressedOnce) { navigator.app && navigator.app.exitApp(); return; } backPressedOnce = true; showToast('Нажмите ещё раз для выхода'); setTimeout(() => backPressedOnce = false, 2000); }); }
+function toggleLockPanel() { lockPanelOpen = !lockPanelOpen; document.getElementById('lockButtons').style.display = lockPanelOpen ? '' : 'none'; document.getElementById('lockStatusRow').classList.toggle('open', lockPanelOpen); }
+function doRemoveLock() { const stored = ls.get(PIN_K); if (stored) { pinSetVerifyMode = 'remove'; openPinVerify('Подтвердите удаление', 'Введите текущий ПИН-код'); } else { _removeLock(); } }
+function _removeLock() { ls.rm(PIN_K); ls.rm(PIN_LEN_K); lockPanelOpen = false; document.getElementById('lockButtons').style.display = 'none'; document.getElementById('lockStatusRow').classList.remove('open'); updateSettingsUI(); showToast('Защита снята'); }
+function startSetPin() { const stored = ls.get(PIN_K); if (stored) { pinSetVerifyMode = 'change'; openPinVerify('Введите текущий ПИН', 'Для смены защиты'); } else openNewPin(); }
+function openNewPin() { pinSetBuf = ''; pinSetStep = 0; pinSetFirst = ''; pinSetLen = 4; pinSetVerifyMode = null; document.getElementById('pinSetTitle').textContent = 'Создайте ПИН-код'; document.getElementById('pinSetSub').textContent = 'Выберите длину и введите цифры'; document.getElementById('pinLenRow').style.display = ''; buildPinDots('pinSetDots', pinSetLen, 'sd'); document.getElementById('pinSetOverlay').classList.add('active'); }
+function openPinVerify(title, sub) { pinSetBuf = ''; pinSetStep = 2; const len = parseInt(ls.get(PIN_LEN_K)) || 4; pinSetLen = len; document.getElementById('pinSetTitle').textContent = title; document.getElementById('pinSetSub').textContent = sub; document.getElementById('pinLenRow').style.display = 'none'; buildPinDots('pinSetDots', len, 'sd'); document.getElementById('pinSetOverlay').classList.add('active'); }
+function cancelPinSet() { document.getElementById('pinSetOverlay').classList.remove('active'); pinSetBuf = ''; pinSetStep = 0; pinSetVerifyMode = null; }
+function selectPinLen(n) { pinSetLen = n; document.querySelectorAll('.pin-len-btn').forEach(b => b.classList.toggle('active', parseInt(b.textContent) === n)); pinSetBuf = ''; buildPinDots('pinSetDots', n, 'sd'); fillPinDots('pinSetDots', 'sd', 0, n); }
+function buildPinDots(containerId, count, prefix) { const el = document.getElementById(containerId); el.innerHTML = ''; for (let i=0;i<count;i++) { const d = document.createElement('div'); d.className = 'pin-dot'; d.id = prefix + i; el.appendChild(d); } }
+function fillPinDots(containerId, prefix, filled, count) { for (let i=0;i<count;i++) { const d = document.getElementById(prefix + i); if(d) d.classList.toggle('filled', i < filled); d.classList.remove('error'); } }
+function shakePinDots(containerId, prefix, count) { for (let i=0;i<count;i++) { const d=document.getElementById(prefix+i); if(d)d.classList.add('error'); } const el = document.getElementById(containerId); el.classList.add('shake'); setTimeout(() => el.classList.remove('shake'), 400); }
+function pinSetKey(v) { if (pinSetBuf.length >= pinSetLen) return; pinSetBuf += v; fillPinDots('pinSetDots', 'sd', pinSetBuf.length, pinSetLen); if (pinSetBuf.length === pinSetLen) { setTimeout(() => { if (pinSetStep === 2) { if (hashPin(pinSetBuf) === ls.get(PIN_K)) { if (pinSetVerifyMode === 'remove') { document.getElementById('pinSetOverlay').classList.remove('active'); _removeLock(); } else { pinSetBuf = ''; pinSetStep = 0; pinSetVerifyMode = null; document.getElementById('pinSetTitle').textContent = 'Создайте новый ПИН-код'; document.getElementById('pinSetSub').textContent = 'Выберите длину и введите цифры'; document.getElementById('pinLenRow').style.display = ''; pinSetLen = 4; selectPinLen(4); } } else { document.getElementById('pinSetSub').textContent = 'Неверный ПИН-код'; shakePinDots('pinSetDots','sd',pinSetLen); pinSetBuf = ''; setTimeout(() => { fillPinDots('pinSetDots','sd',0,pinSetLen); }, 400); } } else if (pinSetStep === 0) { pinSetFirst = pinSetBuf; pinSetBuf = ''; pinSetStep = 1; document.getElementById('pinLenRow').style.display = 'none'; document.getElementById('pinSetTitle').textContent = 'Повторите ПИН-код'; document.getElementById('pinSetSub').textContent = `Введите ${pinSetLen} цифр ещё раз`; fillPinDots('pinSetDots','sd',0,pinSetLen); } else { if (pinSetBuf === pinSetFirst) { ls.set(PIN_K, hashPin(pinSetBuf)); ls.set(PIN_LEN_K, String(pinSetLen)); document.getElementById('pinSetOverlay').classList.remove('active'); updateSettingsUI(); showToast('ПИН-код установлен'); lockPanelOpen = false; document.getElementById('lockButtons').style.display = 'none'; document.getElementById('lockStatusRow').classList.remove('open'); } else { document.getElementById('pinSetSub').textContent = 'Коды не совпадают'; shakePinDots('pinSetDots','sd',pinSetLen); pinSetBuf = ''; pinSetStep = 0; pinSetFirst = ''; document.getElementById('pinLenRow').style.display = ''; buildPinDots('pinSetDots', pinSetLen, 'sd'); setTimeout(() => fillPinDots('pinSetDots','sd',0,pinSetLen), 400); } } }, 100); } }
+function pinSetDel() { pinSetBuf = pinSetBuf.slice(0,-1); fillPinDots('pinSetDots','sd',pinSetBuf.length,pinSetLen); }
+function openPinLock() { pinLockLen = parseInt(ls.get(PIN_LEN_K)) || 4; pinLockBuf = ''; document.getElementById('pinLockSub').textContent = 'Для входа в приложение'; buildPinDots('pinLockDots', pinLockLen, 'ld'); fillPinDots('pinLockDots','ld',0,pinLockLen); document.getElementById('pinLockOverlay').classList.add('active'); }
+function pinLockKey(v) { if (pinLockBuf.length >= pinLockLen) return; pinLockBuf += v; fillPinDots('pinLockDots','ld',pinLockBuf.length,pinLockLen); if (pinLockBuf.length === pinLockLen) { setTimeout(() => { if (hashPin(pinLockBuf) === ls.get(PIN_K)) { sessionStorage.setItem('pin_ok','1'); sessionStorage.setItem('session_started','1'); document.getElementById('pinLockOverlay').classList.remove('active'); document.getElementById('app').classList.add('visible'); } else { document.getElementById('pinLockSub').textContent = 'Неверный ПИН-код'; shakePinDots('pinLockDots','ld',pinLockLen); pinLockBuf = ''; setTimeout(() => { document.getElementById('pinLockSub').textContent = 'Для входа в приложение'; fillPinDots('pinLockDots','ld',0,pinLockLen); }, 500); } }, 100); } }
+function pinLockDel() { pinLockBuf = pinLockBuf.slice(0,-1); fillPinDots('pinLockDots','ld',pinLockBuf.length,pinLockLen); }
+function hashPin(s) { let h = 0x811c9dc5; for (let i=0;i<s.length;i++) { h ^= s.charCodeAt(i); h=(h*0x01000193)>>>0; } return h.toString(16); }
+document.addEventListener('DOMContentLoaded', () => {
+    function bindPad(padId, keyFn, delId, delFn) { const pad = document.getElementById(padId); if (!pad) return; function handle(btn, e) { e.preventDefault(); btn.classList.add('pressed'); setTimeout(() => btn.classList.remove('pressed'), 100); const v = btn.getAttribute('data-v'); if (v !== null) keyFn(v); else if (btn.id === delId) delFn(); } pad.addEventListener('touchstart', e => { const btn = e.target.closest('.pin-key'); if (!btn || btn.classList.contains('empty')) return; handle(btn, e); }, { passive: false }); pad.addEventListener('mousedown', e => { const btn = e.target.closest('.pin-key'); if (!btn || btn.classList.contains('empty')) return; handle(btn, e); }); }
+    bindPad('pinSetPad', pinSetKey, 'pinSetDel', pinSetDel);
+    bindPad('pinLockPad', pinLockKey, 'pinLockDel', pinLockDel);
     document.getElementById('endMonth').value = new Date().getMonth();
     document.getElementById('endYear').value = new Date().getFullYear() + 1;
     buildPinDots('pinSetDots', 4, 'sd');
-
-    // Обработчики
-    document.getElementById('fab').onclick = fabClick;
-    document.getElementById('formSaveBtn').onclick = handleSave;
-    document.getElementById('savePartialBtn').onclick = savePartial;
-    document.getElementById('resetPartialBtn').onclick = resetPartial;
-    document.getElementById('editCreditBtn').onclick = openEdit;
-    document.getElementById('deleteCreditBtn').onclick = showDeleteConfirm;
-    document.getElementById('confirmDeleteBtn').onclick = doDelete;
-    document.getElementById('settingsBtn').onclick = gearClick;
-    document.getElementById('themeSwitchTrack').onclick = toggleThemeFromSettings;
-    document.getElementById('amountsSwitchTrack').onclick = toggleAmountsFromSettings;
-    document.getElementById('setPinBtn').onclick = startSetPin;
-    document.getElementById('removeLockBtn').onclick = doRemoveLock;
     document.getElementById('lockStatusRow').onclick = (e) => { toggleLockPanel(); e.stopPropagation(); };
-    document.getElementById('pinSetClose').onclick = cancelPinSet;
-    document.getElementById('pinSetDel').onclick = pinSetDel;
-    document.getElementById('pinLockDel').onclick = pinLockDel;
-
-    document.querySelectorAll('.pin-len-btn').forEach(btn => {
-        btn.onclick = () => selectPinLen(parseInt(btn.getAttribute('data-len')));
-    });
-    document.querySelectorAll('.pin-key[data-v]').forEach(btn => {
-        btn.onclick = () => {
-            if (btn.closest('#pinSetPad')) pinSetKey(btn.getAttribute('data-v'));
-            else if (btn.closest('#pinLockPad')) pinLockKey(btn.getAttribute('data-v'));
-        };
-    });
-    document.querySelectorAll('.font-step').forEach(el => {
-        el.onclick = () => setFontSize(el.getAttribute('data-size'));
-    });
-    document.querySelectorAll('.cat-item').forEach(el => {
-        el.onclick = () => selectCat(el.dataset.cat);
-    });
-    document.getElementById('dtBtnCal').onclick = () => setDateMode('cal');
-    document.getElementById('dtBtnMan').onclick = () => setDateMode('man');
-};
+});
 </script>
 </body>
 </html>
