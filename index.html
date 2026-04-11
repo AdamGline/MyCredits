@@ -609,6 +609,7 @@ function _initFirebase() {
     firebase.initializeApp(firebaseConfig);
     auth = firebase.auth();
     db   = firebase.firestore();
+    db.enablePersistence({synchronizeTabs:false}).catch(()=>{});
     auth.onAuthStateChanged(user => { authResolved = true; authUser = user; evaluateLaunch(); });
 }
 
@@ -1074,6 +1075,12 @@ async function doLogout() {
     sessionStorage.removeItem('session_started');
     monthResetDone=false;
     credits=[]; render();
+    document.getElementById('authEmail').value='';
+    document.getElementById('authPassword').value='';
+    isLoginMode=true;
+    document.getElementById('authTitle').textContent='Войти в аккаунт';
+    document.getElementById('authBtn').textContent='Войти';
+    document.querySelector('.auth-switch-link').innerHTML='Нет аккаунта? <span>Зарегистрироваться</span>';
     document.getElementById('app').classList.remove('visible');
     document.getElementById('authScreen').style.display='flex';
     showToast('Вы вышли из аккаунта');
@@ -1204,6 +1211,10 @@ function evaluateLaunch(){
 
 (function setupResume(){
     let _hidden=false;
+
+    // Блокируем любую навигацию которая может вызвать 500 от webintoapp
+    window.addEventListener('beforeunload',e=>{e.preventDefault();e.returnValue='';return '';},true);
+
     function _resume(){
         if(!window._fbAppInited||!auth||!db)return;
         db.enableNetwork().then(()=>{
@@ -1212,16 +1223,25 @@ function evaluateLaunch(){
                 authUser=u;
                 if(creditsUnsubscribe){creditsUnsubscribe();creditsUnsubscribe=null;}
                 loadCredits();
+            } else {
+                // Ждём onAuthStateChanged — он сам вызовет evaluateLaunch
             }
         }).catch(()=>{});
     }
+
     document.addEventListener('visibilitychange',()=>{
-        if(document.hidden){_hidden=true;return;}
+        if(document.hidden){
+            // При сворачивании отключаем сеть Firestore — это предотвращает таймауты
+            if(window._fbAppInited&&db) db.disableNetwork().catch(()=>{});
+            _hidden=true;
+            return;
+        }
         if(!_hidden)return;
         _hidden=false;
-        setTimeout(_resume,500);
+        setTimeout(_resume,800);
     });
-    document.addEventListener('resume',()=>setTimeout(_resume,500),false);
+
+    document.addEventListener('resume',()=>setTimeout(_resume,800),false);
 })();
 
 window.onload=()=>{
