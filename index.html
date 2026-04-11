@@ -5,9 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Кредиты — Финансовый трекер</title>
     
-    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+    <script>
+    window._fbLoaded = 0;
+    function _onFbLoad() {
+        window._fbLoaded++;
+        if (window._fbLoaded >= 3 && typeof _initFirebase === 'function') _initFirebase();
+    }
+    function _onFbError(s) { console.error('Firebase SDK load error:', s.src); }
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js" onload="_onFbLoad()" onerror="_onFbError(this)"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js" onload="_onFbLoad()" onerror="_onFbError(this)"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js" onload="_onFbLoad()" onerror="_onFbError(this)"></script>
 
     <script>if(sessionStorage.getItem('session_started')==='1'){document.documentElement.classList.add('no-splash');}</script>
     <style>
@@ -910,18 +918,33 @@
 
 <script>
 // ======================== FIREBASE КОНФИГ ========================
-const firebaseConfig = {
-    apiKey: "AIzaSyD_AVvoPQ1CLVbc_xxlPXLE-DyTcVZrL8Y",
-    authDomain: "my-credits-804ab.firebaseapp.com",
-    projectId: "my-credits-804ab",
-    storageBucket: "my-credits-804ab.firebasestorage.app",
-    messagingSenderId: "602702013620",
-    appId: "1:602702013620:web:1babc849f5ed8bcdaee3e1"
-};
+// auth и db объявлены глобально, чтобы быть доступными везде
+let auth, db;
 
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
+function _initFirebase() {
+    if (window._fbAppInited) return;
+    window._fbAppInited = true;
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyD_AVvoPQ1CLVbc_xxlPXLE-DyTcVZrL8Y",
+        authDomain: "my-credits-804ab.firebaseapp.com",
+        projectId: "my-credits-804ab",
+        storageBucket: "my-credits-804ab.firebasestorage.app",
+        messagingSenderId: "602702013620",
+        appId: "1:602702013620:web:1babc849f5ed8bcdaee3e1"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    auth = firebase.auth();
+    db = firebase.firestore();
+
+    // Запускаем onAuthStateChanged только после инициализации Firebase
+    auth.onAuthStateChanged(user => {
+        authResolved = true;
+        authUser = user;
+        evaluateLaunch();
+    });
+}
 
 // ======================== ПЕРЕМЕННЫЕ ========================
 const MONTH_K = 'crt_month_v4';
@@ -1812,11 +1835,7 @@ window.onload = () => {
     }, 6000);
 };
 
-auth.onAuthStateChanged(user => {
-    authResolved = true;
-    authUser = user;
-    evaluateLaunch();
-});
+// onAuthStateChanged теперь внутри _initFirebase() выше
 
 document.getElementById('lockStatusRow').onclick = (e) => { toggleLockPanel(); e.stopPropagation(); };
 
@@ -1846,6 +1865,29 @@ document.addEventListener('DOMContentLoaded', () => {
     bindPad('pinSetPad', pinSetKey, 'pinSetDel', pinSetDel);
     bindPad('pinLockPad', pinLockKey, 'pinLockDel', pinLockDel);
 });
+
+// ======================== ЗАПУСК FIREBASE ========================
+// Если Firebase SDK уже загружен синхронно — запускаем сразу
+if (typeof firebase !== 'undefined') {
+    _initFirebase();
+}
+
+// Таймаут: если через 8 секунд Firebase не загрузился — показываем ошибку сети
+setTimeout(() => {
+    if (!window._fbAppInited) {
+        const splash = document.getElementById('splash');
+        if (splash) {
+            splash.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;padding:32px;text-align:center">
+                <div style="font-size:3rem">📶</div>
+                <div style="color:#fff;font-size:1.1rem;font-weight:700">Нет подключения к сети</div>
+                <div style="color:rgba(255,255,255,0.6);font-size:0.85rem">Для работы приложения необходим интернет. Проверьте соединение и обновите страницу.</div>
+                <button onclick="location.reload()" style="margin-top:8px;padding:13px 28px;background:#FFDD2D;color:#1A1A1A;border:none;border-radius:12px;font-size:0.95rem;font-weight:700;cursor:pointer">Обновить</button>
+            </div>`;
+            splash.style.opacity = '1';
+            splash.style.visibility = 'visible';
+        }
+    }
+}, 8000);
 </script>
 </body>
 </html>
