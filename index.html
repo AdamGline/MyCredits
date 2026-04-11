@@ -127,6 +127,7 @@
         .credit-item > * { position: relative; z-index: 1; }
         .credit-item:active { background: var(--surface-2); }
         .credit-item.paid { opacity: 0.55; }
+        .credit-item.paid .credit-amount { text-decoration: line-through; } /* Зачеркивание суммы при оплате */
         .credit-item.completed { opacity: 0.4; }
         .credit-icon-wrap { width: 40px; height: 40px; border-radius: 12px; background: var(--surface-2); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; border: 1px solid var(--border); }
         .credit-main { flex: 1; min-width: 0; }
@@ -298,7 +299,7 @@
 
 <div class="splash" id="splash">
     <div class="splash-content">
-        <img class="splash-logo" src="logo.png" alt="Logo">
+        <img class="splash-logo" src="logo.png" alt="Logo" onerror="this.style.display='none'">
         <div class="splash-tagline">Думай о более важном!</div>
     </div>
     <div class="splash-version">Версия 1.0</div>
@@ -356,7 +357,6 @@
 
 <button class="fab" id="fab" onclick="fabClick(event)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
 
-<!-- ФОРМА -->
 <div class="overlay" id="formOverlay" onclick="if(event.target===this)closeForm()">
     <div class="sheet">
         <div class="sheet-handle"></div>
@@ -383,7 +383,6 @@
     </div>
 </div>
 
-<!-- ДЕЙСТВИЯ -->
 <div class="overlay" id="actionOverlay" onclick="if(event.target===this)closeAction()">
     <div class="sheet action-sheet">
         <div class="sheet-handle"></div>
@@ -406,7 +405,6 @@
     </div>
 </div>
 
-<!-- УДАЛЕНИЕ -->
 <div class="overlay" id="deleteOverlay" onclick="if(event.target===this)closeDelete()">
     <div class="sheet" style="padding-bottom:max(16px,env(safe-area-inset-bottom))">
         <div class="sheet-handle"></div>
@@ -415,7 +413,6 @@
     </div>
 </div>
 
-<!-- НАСТРОЙКИ -->
 <div class="overlay" id="settingsOverlay" onclick="if(event.target===this)closeSettings()">
     <div class="sheet settings-sheet">
         <div class="sheet-handle"></div>
@@ -468,7 +465,6 @@
     </div>
 </div>
 
-<!-- СМЕНА ПАРОЛЯ -->
 <div class="overlay" id="changePassOverlay" onclick="if(event.target===this)closeChangePass()">
     <div class="sheet">
         <div class="sheet-handle"></div>
@@ -585,6 +581,15 @@ const ls = {
     rm:  k     => { try { localStorage.removeItem(k); }        catch(e) {} }
 };
 
+// ======================== ФОРМАТ ДАТЫ ========================
+function formatPaymentDate(dayNumber) {
+    const months = [
+        'января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 
+        'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'
+    ];
+    return `${dayNumber} ${months[new Date().getMonth()]}`;
+}
+
 // ======================== FIRESTORE ========================
 function loadCredits() {
     if (!authUser) return;
@@ -605,7 +610,7 @@ function loadCredits() {
 }
 
 async function saveCredit(creditData) {
-    if (!authUser) return;
+    if (!authUser) throw new Error('No user');
     creditData.userId = authUser.uid;
     if (editMode && editId) {
         const id = editId;
@@ -625,7 +630,7 @@ async function checkMonthReset() {
     const n = new Date();
     const key = `${n.getMonth()}-${n.getFullYear()}`;
     if (ls.get(MONTH_K) === key) return;
-    ls.set(MONTH_K, key); // сохраняем сразу, чтобы не запустилось повторно
+    ls.set(MONTH_K, key);
     const toReset = credits.filter(c => !c.completed);
     for (const c of toReset) await updateCreditField(c.id, { paid: false, partial: 0 });
     if (toReset.length > 0) {
@@ -645,10 +650,14 @@ function render() {
 
     const list = document.getElementById('creditList');
     list.innerHTML = '';
+    
+    // ОПТИМИЗАЦИЯ: Использование DocumentFragment
     if (!active.length) {
         list.innerHTML = `<div class="empty-state"><div class="empty-icon">💳</div><div class="empty-title">Нет активных кредитов</div><div class="empty-sub">Нажмите + чтобы добавить первый</div></div>`;
     } else {
-        active.forEach(c => list.appendChild(buildCreditItem(c, cm, cy)));
+        const activeFragment = document.createDocumentFragment();
+        active.forEach(c => activeFragment.appendChild(buildCreditItem(c, cm, cy)));
+        list.appendChild(activeFragment);
     }
 
     const compSec = document.getElementById('completedSection');
@@ -658,7 +667,9 @@ function render() {
         const compList = document.getElementById('completedList');
         if (compList.classList.contains('open')) {
             compList.innerHTML = '';
-            completed.forEach(c => compList.appendChild(buildCreditItem(c, cm, cy)));
+            const compFragment = document.createDocumentFragment();
+            completed.forEach(c => compFragment.appendChild(buildCreditItem(c, cm, cy)));
+            compList.appendChild(compFragment);
         }
     } else compSec.style.display = 'none';
 
@@ -690,7 +701,12 @@ function buildCreditItem(c, cm, cy) {
         if (partial >= c.amount) item.classList.add('partial-complete');
         else { item.classList.add('partial-bg'); item.style.setProperty('--partial-width', percent + '%'); }
     }
-    item.innerHTML = `<div class="credit-icon-wrap">${cat.emoji}</div><div class="credit-main"><div class="credit-name">${esc(c.name)}</div><div class="credit-meta"><span class="credit-date-tag">${c.day} числа</span>${termHtml}</div></div><div class="credit-right"><span class="credit-amount">${partial > 0 ? fmt(remain)+' ₽' : fmt(c.amount)+' ₽'}</span>${c.paid ? '<span class="credit-paid-badge">Оплачен</span>' : (partial > 0 ? `<span style="font-size:0.68rem;color:var(--text-2);font-weight:500">из ${fmt(c.amount)} ₽</span>` : '')}</div><div class="check-wrap ${c.paid||c.completed?'checked':''}" data-id="${c.id}"><svg viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="2.5"><polyline points="2,7 6,11 12,3"/></svg></div>`;
+    
+    // ИСПРАВЛЕНИЕ: Вывод изначальной суммы даже если кредит оплачен
+    const displayAmount = c.paid ? fmt(c.amount) : (partial > 0 ? fmt(remain) : fmt(c.amount));
+    
+    // ИСПРАВЛЕНИЕ: Применяем функцию formatPaymentDate()
+    item.innerHTML = `<div class="credit-icon-wrap">${cat.emoji}</div><div class="credit-main"><div class="credit-name">${esc(c.name)}</div><div class="credit-meta"><span class="credit-date-tag">${formatPaymentDate(c.day)}</span>${termHtml}</div></div><div class="credit-right"><span class="credit-amount">${displayAmount} ₽</span>${c.paid ? '<span class="credit-paid-badge">Оплачен</span>' : (partial > 0 ? `<span style="font-size:0.68rem;color:var(--text-2);font-weight:500">из ${fmt(c.amount)} ₽</span>` : '')}</div><div class="check-wrap ${c.paid||c.completed?'checked':''}" data-id="${c.id}"><svg viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="2.5"><polyline points="2,7 6,11 12,3"/></svg></div>`;
     item.addEventListener('click', e => { if (!c.completed && !e.target.closest('.check-wrap')) openAction(c.id); });
     item.querySelector('.check-wrap').addEventListener('click', async e => {
         e.stopPropagation();
@@ -704,7 +720,10 @@ function updateSummary(active) {
     const total        = active.reduce((s,c) => s + c.amount, 0);
     const paidTotalSum = active.reduce((s,c) => s + (c.paid ? c.amount : (c.partial||0)), 0);
     const remain = total > 0 ? Math.max(0, total - paidTotalSum) : 0;
-    const pct    = total > 0 ? Math.min(100, Math.round((paidTotalSum/total)*100)) : 0;
+    
+    // ИСПРАВЛЕНИЕ: Округляем вниз, чтобы не было ложных 100%
+    const pct = total > 0 ? Math.floor((paidTotalSum/total)*100) : 0;
+    
     document.getElementById('summaryAmount').textContent    = fmt(total)+' ₽';
     document.getElementById('summaryPaid').textContent      = `Внесено ${fmt(paidTotalSum)} ₽`;
     document.getElementById('summaryPercent').textContent   = pct+'%';
@@ -712,7 +731,12 @@ function updateSummary(active) {
     document.getElementById('summaryCount').textContent     = active.length;
     document.getElementById('summaryPaidCount').textContent = active.filter(c=>c.paid).length;
     document.getElementById('summaryRemain').textContent    = fmt(remain)+' ₽';
-    if (pct === 100 && active.length > 0 && !allPaidShown) { allPaidShown = true; setTimeout(() => document.getElementById('allPaidOverlay').classList.add('active'), 400); }
+    
+    // ИСПРАВЛЕНИЕ: Строгое условие, что все суммы собраны
+    if (paidTotalSum >= total && total > 0 && active.length > 0 && !allPaidShown) { 
+        allPaidShown = true; 
+        setTimeout(() => document.getElementById('allPaidOverlay').classList.add('active'), 400); 
+    }
     else if (pct < 100) allPaidShown = false;
 }
 
@@ -722,7 +746,8 @@ function openAction(id) {
     selectedCreditId = id;
     const cat = CATS[c.category] || CATS.other;
     document.getElementById('actionNameText').textContent   = cat.emoji+' '+c.name;
-    document.getElementById('actionSub').textContent        = fmt(c.amount)+' ₽ · '+c.day+' число';
+    // ИСПРАВЛЕНИЕ: Используем formatPaymentDate()
+    document.getElementById('actionSub').textContent        = fmt(c.amount)+' ₽ · '+formatPaymentDate(c.day);
     const partial = c.partial || 0;
     document.getElementById('partialPaidDisplay').textContent   = fmt(partial)+' ₽';
     document.getElementById('partialRemainDisplay').textContent = fmt(Math.max(0,c.amount-partial))+' ₽';
@@ -739,7 +764,8 @@ async function resetPartial() {
     if (c&&!c.paid&&!c.completed) { await updateCreditField(c.id,{partial:0}); closeAction(); showToast('Частичная оплата сброшена'); }
 }
 
-function closeAction() { document.getElementById('actionOverlay').classList.remove('active'); selectedCreditId=null; }
+// ИСПРАВЛЕНИЕ: Убрали selectedCreditId=null, чтобы кнопка "Удалить" знала, что удалять
+function closeAction() { document.getElementById('actionOverlay').classList.remove('active'); }
 
 async function savePartial() {
     const c = credits.find(x=>x.id===selectedCreditId); if (!c) return;
@@ -807,18 +833,38 @@ async function handleSave() {
     if (!day || day < 1 || day > 31) { showToast('День оплаты: 1–31'); return; }
 
     _isSaving = true;
-    // Закрываем форму сразу — не ждём Firebase
+    const saveBtn = document.getElementById('formSaveBtn');
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Сохранение...';
+    
     closeForm();
-    showToast('Сохранено');
+    showToast('Сохранение...');
 
     try {
         const endDate = getEndDate();
-        await saveCredit({ name, amount, day, category: selectedCat, endDate, paid: false, completed: false, partial: 0 });
+        await saveCredit({ 
+            name, 
+            amount, 
+            day, 
+            category: selectedCat, 
+            endDate, 
+            paid: false, 
+            completed: false, 
+            partial: 0,
+            createdAt: new Date().toISOString()
+        });
+        showToast('Кредит добавлен');
     } catch(e) {
         console.error('Ошибка сохранения:', e);
-        showToast('Ошибка сохранения');
+        let errMsg = 'Ошибка сохранения';
+        if (e.code === 'permission-denied') errMsg = 'Нет доступа. Проверьте правила безопасности Firebase.';
+        else if (e.message) errMsg = e.message;
+        showToast(errMsg);
+    } finally {
+        _isSaving = false;
+        saveBtn.disabled = false;
+        saveBtn.textContent = editMode ? 'Сохранить' : 'Добавить';
     }
-    _isSaving = false;
 }
 
 function selectCat(cat) {
@@ -1026,7 +1072,22 @@ function animateSpoilers(){document.querySelectorAll('.spoiler-canvas').forEach(
 function startSpoilers(){document.querySelectorAll('.credit-amount,.total-val,.s-amount,.s-paid-val,.s-remain-val').forEach(initSpoilerCanvas);if(!spoilerRAF)spoilerRAF=requestAnimationFrame(animateSpoilers);}
 function stopSpoilers(){if(spoilerRAF){cancelAnimationFrame(spoilerRAF);spoilerRAF=null;}document.querySelectorAll('.spoiler-canvas').forEach(cv=>{spoilerMap.delete(cv);cv.remove();});}
 
-function toggleCompleted(){const list=document.getElementById('completedList');const arrow=document.getElementById('completedArrow');const open=!list.classList.contains('open');list.classList.toggle('open',open);arrow.classList.toggle('open',open);if(open){const cm=new Date().getMonth(),cy=new Date().getFullYear();list.innerHTML='';credits.filter(c=>c.completed).forEach(c=>list.appendChild(buildCreditItem(c,cm,cy)));}}
+function toggleCompleted(){
+    const list=document.getElementById('completedList');
+    const arrow=document.getElementById('completedArrow');
+    const open=!list.classList.contains('open');
+    list.classList.toggle('open',open);
+    arrow.classList.toggle('open',open);
+    if(open){
+        const cm=new Date().getMonth(),cy=new Date().getFullYear();
+        list.innerHTML='';
+        // ИСПРАВЛЕНИЕ: Оптимизация через DocumentFragment
+        const frag = document.createDocumentFragment();
+        credits.filter(c=>c.completed).forEach(c=>frag.appendChild(buildCreditItem(c,cm,cy)));
+        list.appendChild(frag);
+    }
+}
+
 function showToast(msg){document.querySelectorAll('.toast').forEach(t=>t.remove());const d=document.createElement('div');d.className='toast';d.textContent=msg;document.body.appendChild(d);setTimeout(()=>d.remove(),2200);}
 function closeAllPaid(){document.getElementById('allPaidOverlay').classList.remove('active');}
 function fmt(n){return Math.round(n).toLocaleString('ru-RU');}
@@ -1095,6 +1156,9 @@ setTimeout(()=>{
         if(splash){splash.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;padding:32px;text-align:center"><div style="font-size:3rem">📶</div><div style="color:#fff;font-size:1.1rem;font-weight:700">Нет подключения к сети</div><div style="color:rgba(255,255,255,0.6);font-size:0.85rem">Для работы приложения необходим интернет. Проверьте соединение и обновите страницу.</div><button onclick="location.reload()" style="margin-top:8px;padding:13px 28px;background:#FFDD2D;color:#1A1A1A;border:none;border-radius:12px;font-size:0.95rem;font-weight:700;cursor:pointer">Обновить</button></div>`;splash.style.opacity='1';splash.style.visibility='visible';}
     }
 },8000);
+
+// Инструкция по настройке правил безопасности Firebase
+console.log('%c⚠️ ВАЖНО: Настройте правила безопасности Firebase в консоли Firebase (Firestore Rules):\n\nrules_version = \'2\';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /credits/{document} {\n      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;\n      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;\n    }\n  }\n}\n', 'color: #FFDD2D; font-size: 14px; font-weight: bold;');
 </script>
 </body>
 </html>
