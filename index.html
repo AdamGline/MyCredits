@@ -946,12 +946,22 @@ window.onload = () => {
 
     if (isNoSplash) {
         splashTimerDone = true;
+        evaluateLaunch(); // Исправлена гонка: нужно было вызывать сразу, если нет сплэша
     } else {
         setTimeout(() => {
             splashTimerDone = true;
             evaluateLaunch();
         }, 1000);
     }
+    
+    // Подстраховка: если Firebase не ответил в течение 6 секунд из-за блокировщика
+    setTimeout(() => {
+        if(!authResolved) {
+            authResolved = true;
+            authUser = null;
+            evaluateLaunch();
+        }
+    }, 6000);
 };
 
 // Отслеживание состояния авторизации
@@ -994,6 +1004,12 @@ function toggleAuthMode() {
     document.querySelector('.auth-switch').textContent = isLoginMode ? 'Нет аккаунта? Зарегистрироваться' : 'Уже есть аккаунт? Войти';
 }
 
+function clearPinOnAuth() {
+    ls.rm(PIN_K);
+    ls.rm(PIN_LEN_K);
+    sessionStorage.removeItem('pin_ok');
+}
+
 function doAuth() {
     const email = document.getElementById('authEmail').value.trim();
     const pass = document.getElementById('authPassword').value;
@@ -1001,18 +1017,20 @@ function doAuth() {
 
     if(isLoginMode) {
         firebase.auth().signInWithEmailAndPassword(email, pass)
+            .then(() => clearPinOnAuth()) // Сброс ПИН при входе на новом устройстве или после логаута
             .catch(err => showToast('Ошибка входа: ' + err.message));
     } else {
         firebase.auth().createUserWithEmailAndPassword(email, pass)
+            .then(() => clearPinOnAuth()) // Сброс ПИН при регистрации
             .catch(err => showToast('Ошибка регистрации: ' + err.message));
     }
 }
 
 function doLogout() {
     firebase.auth().signOut().then(() => {
+        clearPinOnAuth(); // Безопасности ради сбрасываем ПИН и при выходе
         closeSettings();
         sessionStorage.removeItem('session_started');
-        sessionStorage.removeItem('pin_ok');
         window.location.reload();
     });
 }
