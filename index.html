@@ -373,7 +373,7 @@
             </div>
             <div class="auth-field">
                 <div class="auth-field-label">Пароль</div>
-                <input type="password" id="authPassword" placeholder="••••••••" autocomplete="current-password">
+                <input type="password" id="authPassword" placeholder="Введите пароль" autocomplete="current-password">
             </div>
         </div>
         <button class="auth-submit-btn" id="authBtn" onclick="doAuth()">Войти</button>
@@ -1209,37 +1209,31 @@ function evaluateLaunch(){
 
 // ======================== ВОССТАНОВЛЕНИЕ ПОСЛЕ СВОРАЧИВАНИЯ ========================
 (function setupVisibilityRestore(){
-    let _wasHidden=false;
-    document.addEventListener('visibilitychange',()=>{
-        if(document.hidden){_wasHidden=true;return;}
-        if(!_wasHidden)return;
-        _wasHidden=false;
-        // Если Firebase не инициализирован (WebView убил контекст) — перезагрузить страницу
-        if(typeof firebase==='undefined'||!window._fbAppInited){
-            location.reload();return;
-        }
-        // Firebase живёт, но Firestore-соединение могло упасть — перезапускаем слушатель
-        if(authUser){
-            if(creditsUnsubscribe){creditsUnsubscribe();creditsUnsubscribe=null;}
+    let _wasHidden = false;
+
+    function _restoreConnection() {
+        if (!window._fbAppInited || !auth || !db) return;
+        // Проверяем текущего пользователя через Firebase напрямую
+        const currentUser = auth.currentUser;
+        if (currentUser) {
+            authUser = currentUser;
+            if (creditsUnsubscribe) { creditsUnsubscribe(); creditsUnsubscribe = null; }
             loadCredits();
-        } else {
-            // Пользователь не авторизован — проверяем состояние сессии
-            auth.currentUser ? (()=>{
-                authUser=auth.currentUser;
-                document.getElementById('authScreen').style.display='none';
-                document.getElementById('app').classList.add('visible');
-                loadCredits();
-            })() : null;
         }
+    }
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) { _wasHidden = true; return; }
+        if (!_wasHidden) return;
+        _wasHidden = false;
+        // Небольшая задержка чтобы сеть успела восстановиться
+        setTimeout(_restoreConnection, 600);
     });
-    // Дополнительно: Capacitor/Cordova resume event для Android-трея
-    document.addEventListener('resume',()=>{
-        if(typeof firebase==='undefined'||!window._fbAppInited){location.reload();return;}
-        if(authUser){
-            if(creditsUnsubscribe){creditsUnsubscribe();creditsUnsubscribe=null;}
-            loadCredits();
-        }
-    },false);
+
+    // Capacitor/Cordova resume — для Android трея
+    document.addEventListener('resume', () => {
+        setTimeout(_restoreConnection, 600);
+    }, false);
 })();
 
 window.onload=()=>{
@@ -1274,9 +1268,8 @@ if(typeof firebase!=='undefined') _initFirebase();
 
 setTimeout(()=>{
     if(!window._fbAppInited){
-        if(sessionStorage.getItem('session_started')==='1'){location.reload();return;}
         const splash=document.getElementById('splash');
-        if(splash){splash.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;padding:32px;text-align:center"><div style="font-size:3rem">📶</div><div style="color:#fff;font-size:1.1rem;font-weight:700">Нет подключения к сети</div><div style="color:rgba(255,255,255,0.6);font-size:0.85rem">Для работы приложения необходим интернет. Проверьте соединение и обновите страницу.</div><button onclick="location.reload()" style="margin-top:8px;padding:13px 28px;background:#FFDD2D;color:#1A1A1A;border:none;border-radius:12px;font-size:0.95rem;font-weight:700;cursor:pointer">Обновить</button></div>`;splash.style.opacity='1';splash.style.visibility='visible';}
+        if(splash){splash.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;padding:32px;text-align:center"><div style="font-size:3rem">📶</div><div style="color:#fff;font-size:1.1rem;font-weight:700">Нет подключения к сети</div><div style="color:rgba(255,255,255,0.6);font-size:0.85rem">Для работы приложения необходим интернет. Проверьте соединение и попробуйте снова.</div></div>`;splash.style.opacity='1';splash.style.visibility='visible';}
     }
 },8000);
 
