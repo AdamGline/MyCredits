@@ -17,6 +17,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js" onload="_onFbLoad()" onerror="_onFbError(this)"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js" onload="_onFbLoad()" onerror="_onFbError(this)"></script>
 
+    <script>if(sessionStorage.getItem('session_started')==='1'){document.documentElement.classList.add('no-splash');}</script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -33,7 +34,6 @@
             --danger: #E63946;
             --success: #2CB67D;
             --warning: #FF9F1C;
-            --info: #3B82F6;
             --shadow: 0 2px 12px rgba(0,0,0,0.08);
             --shadow-md: 0 4px 24px rgba(0,0,0,0.12);
             --radius: 16px;
@@ -47,138 +47,351 @@
             --text-2: #8A8A8A;
             --text-3: #4A4A4A;
             --border: #2A2A2A;
+            --shadow: 0 2px 12px rgba(0,0,0,0.4);
+            --shadow-md: 0 4px 24px rgba(0,0,0,0.5);
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg); color: var(--text);
+            background: var(--bg); color: var(--text); min-height: 100vh;
+            -webkit-tap-highlight-color: transparent;
             padding-top: env(safe-area-inset-top);
             padding-bottom: max(80px, env(safe-area-inset-bottom));
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+            transition: background 0.3s, color 0.3s;
+        }
+        input, textarea, select { -webkit-user-select: text; user-select: text; }
+
+        /* Splash */
+        .splash { position: fixed; inset: 0; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000; transition: opacity 0.4s ease, visibility 0.4s ease; }
+        .splash.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        .no-splash .splash { display: none !important; }
+        .splash-content { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; width: 100%; }
+        .splash-logo { width: 100vw; max-width: none; height: auto; object-fit: contain; display: block; margin-bottom: 20px; }
+        .splash-tagline { color: rgba(255,255,255,0.7); font-size: 1rem; font-weight: 500; letter-spacing: 0.5px; text-align: center; white-space: nowrap; }
+        .splash-version { position: absolute; bottom: 30px; left: 0; right: 0; text-align: center; color: rgba(255,255,255,0.4); font-size: 0.75rem; font-weight: 500; }
+
+        /* Auth — светлая тема */
+        .auth-screen {
+            position: fixed; inset: 0; background: var(--bg);
+            display: none; flex-direction: column; align-items: center; justify-content: flex-end;
+            z-index: 1000; padding: 0;
+            padding-bottom: max(0px, env(safe-area-inset-bottom));
             transition: background 0.3s;
         }
-
-        .splash { position: fixed; inset: 0; background: #000; display: flex; align-items: center; justify-content: center; z-index: 10000; transition: opacity 0.4s; }
-        .splash.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-        .splash-content { text-align: center; }
-        .splash-logo { font-size: 4rem; margin-bottom: 16px; }
-        .splash-tagline { color: rgba(255,255,255,0.7); font-size: 1rem; }
-
-        .auth-screen { position: fixed; inset: 0; background: var(--bg); display: none; flex-direction: column; align-items: center; justify-content: flex-end; z-index: 1000; }
-        .auth-sheet { width: 100%; background: var(--surface); border-radius: 24px 24px 0 0; padding: 28px 24px; max-height: 85vh; overflow-y: auto; }
-        .auth-sheet-title { font-size: 1.3rem; font-weight: 700; text-align: center; margin-bottom: 20px; color: var(--text); }
-        .auth-field { margin-bottom: 16px; }
-        .auth-field-label { font-size: 0.75rem; font-weight: 600; color: var(--text-2); margin-bottom: 6px; }
-        .auth-field input { width: 100%; padding: 14px; background: var(--surface-2); border: 1.5px solid var(--border); border-radius: 12px; color: var(--text); font-size: 0.95rem; }
-        .auth-submit-btn { width: 100%; padding: 15px; background: var(--text); color: var(--bg); border: none; border-radius: 14px; font-weight: 700; font-size: 1rem; cursor: pointer; margin-top: 8px; }
-        [data-theme="dark"] .auth-submit-btn { background: #FFDD2D; color: #1A1A1A; }
-        .auth-switch-link { text-align: center; margin-top: 16px; color: var(--text-2); cursor: pointer; }
+        .auth-bg-glow {
+            position: absolute; top: -80px; left: 50%; transform: translateX(-50%);
+            width: 340px; height: 340px;
+            background: radial-gradient(circle, rgba(255,221,45,0.12) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .auth-logo-area {
+            position: absolute; top: 0; left: 0; right: 0;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding-top: max(60px, env(safe-area-inset-top));
+            bottom: 420px;
+        }
+        .auth-logo-icon { font-size: 3rem; margin-bottom: 10px; }
+        .auth-logo-title { font-size: 1.6rem; font-weight: 800; color: var(--text); letter-spacing: -0.5px; }
+        .auth-logo-sub { font-size: 0.85rem; color: var(--text-2); margin-top: 4px; font-weight: 500; }
+        .auth-sheet {
+            position: relative; width: 100%; background: var(--surface);
+            border-radius: 24px 24px 0 0;
+            padding: 28px 24px 20px;
+            display: flex; flex-direction: column; gap: 14px;
+            border-top: 1px solid var(--border);
+            box-shadow: 0 -4px 24px rgba(0,0,0,0.06);
+        }
+        .auth-sheet-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 6px; }
+        .auth-sheet-title { font-size: 1.1rem; font-weight: 700; color: var(--text); text-align: center; margin-bottom: 2px; }
+        .auth-input-group { display: flex; flex-direction: column; gap: 10px; }
+        .auth-field { display: flex; flex-direction: column; gap: 5px; }
+        .auth-field-label { font-size: 0.72rem; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.06em; }
+        .auth-field input {
+            background: var(--surface-2); border: 1.5px solid var(--border); border-radius: 12px;
+            color: var(--text); padding: 13px 16px; font-size: 0.95rem; font-family: inherit;
+            font-weight: 500; outline: none; transition: border-color 0.15s; width: 100%;
+            -webkit-appearance: none;
+        }
+        .auth-field input:focus { border-color: var(--accent-dark); }
+        .auth-field input::placeholder { color: var(--text-3); }
+        .auth-submit-btn {
+            width: 100%; padding: 15px; background: var(--text); border: none; border-radius: 14px;
+            font-family: inherit; font-size: 1rem; font-weight: 700; color: var(--bg);
+            cursor: pointer; transition: all 0.15s; margin-top: 2px; letter-spacing: -0.2px;
+        }
+        .auth-submit-btn:active { transform: scale(0.97); opacity: 0.85; }
+        .auth-submit-btn:disabled { opacity: 0.5; }
+        .auth-switch-link {
+            font-size: 0.85rem; color: var(--text-2); text-align: center;
+            cursor: pointer; font-weight: 500; padding: 4px 0;
+        }
         .auth-switch-link span { color: var(--accent-dark); font-weight: 600; }
 
-        .app { opacity: 0; visibility: hidden; transition: opacity 0.4s; }
+        /* Auth — тёмная тема (оригинальный стиль) */
+        [data-theme="dark"] .auth-screen { background: #0A0A0A; }
+        [data-theme="dark"] .auth-bg-glow { background: radial-gradient(circle, rgba(255,221,45,0.18) 0%, transparent 70%); }
+        [data-theme="dark"] .auth-logo-title { color: #fff; }
+        [data-theme="dark"] .auth-logo-sub { color: rgba(255,255,255,0.45); }
+        [data-theme="dark"] .auth-sheet { background: #161616; border-top: 1px solid rgba(255,255,255,0.08); box-shadow: none; }
+        [data-theme="dark"] .auth-sheet-handle { background: rgba(255,255,255,0.15); }
+        [data-theme="dark"] .auth-sheet-title { color: #fff; }
+        [data-theme="dark"] .auth-field-label { color: rgba(255,255,255,0.4); }
+        [data-theme="dark"] .auth-field input { background: #222; border-color: rgba(255,255,255,0.1); color: #fff; }
+        [data-theme="dark"] .auth-field input:focus { border-color: #FFDD2D; }
+        [data-theme="dark"] .auth-field input::placeholder { color: rgba(255,255,255,0.2); }
+        [data-theme="dark"] .auth-submit-btn { background: #FFDD2D; color: #1A1A1A; }
+        [data-theme="dark"] .auth-submit-btn:active { background: #F0C800; opacity: 1; }
+        [data-theme="dark"] .auth-switch-link { color: rgba(255,255,255,0.4); }
+        [data-theme="dark"] .auth-switch-link span { color: #FFDD2D; }
+
+        .app { opacity: 0; visibility: hidden; transition: opacity 0.4s ease; }
         .app.visible { opacity: 1; visibility: visible; }
 
-        .summary-card { margin: 16px; background: var(--text); border-radius: var(--radius); padding: 20px; color: var(--bg); }
+        /* Summary */
+        .summary-card { margin: 16px 16px 0; background: var(--text); border-radius: var(--radius); padding: 20px; color: var(--bg); position: relative; overflow: hidden; }
         [data-theme="dark"] .summary-card { background: #FFDD2D; color: #1A1A1A; }
-        .summary-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .summary-label { font-size: 0.8rem; opacity: 0.7; }
-        .summary-settings-btn { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.2); border: none; color: var(--bg); cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .summary-amount { font-size: 2rem; font-weight: 700; margin-bottom: 16px; }
-        .summary-progress-label { display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 8px; }
-        .summary-bar { height: 6px; background: rgba(255,255,255,0.2); border-radius: 3px; overflow: hidden; margin-bottom: 16px; }
-        .summary-bar-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.3s; }
+        .summary-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+        .summary-header-left { flex: 1; }
+        .summary-label { font-size: 0.78rem; font-weight: 500; opacity: 0.6; margin-bottom: 6px; }
+        .summary-settings-btn { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.2); border: none; color: var(--bg); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s ease; flex-shrink: 0; }
+        [data-theme="dark"] .summary-settings-btn { background: rgba(0,0,0,0.2); color: #1A1A1A; }
+        .summary-settings-btn:active { transform: scale(0.92); }
+        .summary-settings-btn svg { width: 18px; height: 18px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .summary-settings-btn.spinning svg { animation: spin 0.5s ease; }
+        .summary-amount { font-size: 2rem; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 20px; line-height: 1; }
+        .summary-progress-label { display: flex; justify-content: space-between; font-size: 0.75rem; opacity: 0.7; margin-bottom: 8px; font-weight: 500; }
+        .summary-bar { height: 5px; background: rgba(255,255,255,0.2); border-radius: 3px; overflow: hidden; margin-bottom: 14px; }
+        [data-theme="dark"] .summary-bar { background: rgba(0,0,0,0.15); }
+        .summary-bar-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.5s cubic-bezier(0.4,0,0.2,1); }
+        [data-theme="dark"] .summary-bar-fill { background: rgba(0,0,0,0.35); }
         .summary-stats { display: flex; gap: 20px; }
-        .summary-stat-label { font-size: 0.7rem; opacity: 0.6; }
+        .summary-stat { display: flex; flex-direction: column; gap: 2px; }
+        .summary-stat-label { font-size: 0.7rem; opacity: 0.55; font-weight: 500; }
         .summary-stat-val { font-size: 0.9rem; font-weight: 600; }
 
-        .filter-bar { display: flex; gap: 8px; margin: 0 16px 16px; background: var(--surface); padding: 6px; border-radius: 14px; border: 1px solid var(--border); }
-        .filter-btn { flex: 1; padding: 10px; border: none; background: transparent; border-radius: 12px; font-weight: 600; color: var(--text-2); cursor: pointer; transition: all 0.2s; }
-        .filter-btn.active { background: var(--text); color: var(--bg); }
-        [data-theme="dark"] .filter-btn.active { background: #FFDD2D; color: #1A1A1A; }
+        /* Spoiler */
+        .credit-amount, .total-val, .s-amount, .s-paid-val, .s-remain-val { position: relative; }
+        .amounts-hidden .credit-amount, .amounts-hidden .total-val, .amounts-hidden .s-amount, .amounts-hidden .s-paid-val, .amounts-hidden .s-remain-val { color: transparent !important; text-shadow: none !important; user-select: none; }
+        .spoiler-canvas { position: absolute; inset: -2px -4px; width: calc(100% + 8px); height: calc(100% + 4px); border-radius: 4px; pointer-events: none; z-index: 3; opacity: 0; transition: opacity 0.25s ease; }
+        .amounts-hidden .spoiler-canvas { opacity: 1; }
 
-        .section { margin: 0 16px; }
-        .section-header { display: flex; justify-content: space-between; margin-bottom: 12px; }
-        .section-title { font-size: 0.8rem; font-weight: 600; color: var(--text-2); text-transform: uppercase; }
-        .credit-list { display: flex; flex-direction: column; gap: 1px; background: var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 16px; }
-        .credit-item { background: var(--surface); padding: 14px 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: background 0.12s; position: relative; }
-        .credit-item.shared { border-left: 3px solid var(--info); }
+        #resetMsg { margin: 12px 16px 0; background: rgba(255,159,28,0.1); border: 1px solid rgba(255,159,28,0.25); color: var(--warning); padding: 10px 14px; border-radius: var(--radius-sm); font-size: 0.82rem; font-weight: 500; display: none; }
+
+        /* Sections */
+        .section { margin: 16px 16px 0; }
+        .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; padding: 0 2px; }
+        .section-title { font-size: 0.78rem; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.06em; }
+        .section-count { font-size: 0.75rem; color: var(--text-3); font-weight: 500; }
+
+        /* Credits */
+        .credit-list { display: flex; flex-direction: column; gap: 1px; background: var(--border); border-radius: var(--radius); overflow: hidden; }
+        .credit-item { background: var(--surface); padding: 14px 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: background 0.12s; position: relative; overflow: hidden; }
+        .credit-item::before { content: ''; position: absolute; top: 0; left: 0; bottom: 0; width: 0%; background-color: rgba(255,221,45,0.2); transition: width 0.3s; z-index: 0; pointer-events: none; }
+        .credit-item.partial-bg::before { width: var(--partial-width, 0%); }
+        .credit-item.partial-complete::before { background-color: rgba(44,182,125,0.2); width: 100%; }
+        .credit-item > * { position: relative; z-index: 1; }
+        .credit-item:active { background: var(--surface-2); }
         .credit-item.paid { opacity: 0.55; }
-        .credit-icon-wrap { width: 44px; height: 44px; border-radius: 12px; background: var(--surface-2); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
+        .credit-item.paid .credit-amount { text-decoration: line-through; } /* Зачеркивание суммы при оплате */
+        .credit-item.completed { opacity: 0.4; }
+        .credit-icon-wrap { width: 40px; height: 40px; border-radius: 12px; background: var(--surface-2); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; border: 1px solid var(--border); }
         .credit-main { flex: 1; min-width: 0; }
-        .credit-name { font-size: 0.95rem; font-weight: 600; color: var(--text); margin-bottom: 4px; }
-        .credit-author { font-size: 0.65rem; color: var(--info); font-weight: 500; margin-top: 2px; }
-        .credit-meta { display: flex; gap: 8px; flex-wrap: wrap; }
-        .credit-date-tag { font-size: 0.7rem; color: var(--text-2); }
-        .credit-term-tag { font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; background: var(--surface-2); color: var(--text-2); }
+        .credit-name { font-size: 0.95rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
+        .credit-meta { display: flex; align-items: center; gap: 6px; }
+        .credit-date-tag { font-size: 0.72rem; color: var(--text-2); font-weight: 500; }
+        .credit-term-tag { font-size: 0.7rem; padding: 1px 6px; border-radius: 4px; font-weight: 500; }
         .credit-term-tag.ending { background: rgba(230,57,70,0.1); color: var(--danger); }
         .credit-term-tag.soon { background: rgba(255,159,28,0.1); color: var(--warning); }
-        .credit-right { text-align: right; flex-shrink: 0; }
-        .credit-amount { font-size: 0.95rem; font-weight: 700; color: var(--text); }
-        .credit-paid-badge { font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; background: rgba(44,182,125,0.12); color: var(--success); margin-top: 4px; display: inline-block; }
-        .check-wrap { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; background: var(--surface); }
+        .credit-term-tag.ok { background: var(--surface-2); color: var(--text-2); }
+        .credit-term-tag.infinite { background: var(--surface-2); color: var(--text-3); }
+        .credit-right { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex-shrink: 0; }
+        .credit-amount { font-size: 0.92rem; font-weight: 600; color: var(--text); }
+        .credit-paid-badge { font-size: 0.68rem; font-weight: 600; padding: 2px 7px; border-radius: 4px; background: rgba(44,182,125,0.12); color: var(--success); }
+        .check-wrap { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s; flex-shrink: 0; background: var(--surface); }
         .check-wrap.checked { background: var(--success); border-color: var(--success); }
         .check-wrap svg { width: 14px; height: 14px; opacity: 0; transition: opacity 0.15s; }
         .check-wrap.checked svg { opacity: 1; }
+        .check-wrap:active { transform: scale(0.88); }
 
-        .empty-state { padding: 48px 20px; text-align: center; background: var(--surface); border-radius: var(--radius); }
-        .empty-icon { font-size: 2.5rem; margin-bottom: 12px; }
-        .empty-title { font-weight: 600; color: var(--text-2); margin-bottom: 4px; }
+        .empty-state { padding: 48px 20px; display: flex; flex-direction: column; align-items: center; gap: 10px; background: var(--surface); border-radius: var(--radius); }
+        .empty-icon { font-size: 2.5rem; }
+        .empty-title { font-size: 0.95rem; font-weight: 600; color: var(--text-2); }
+        .empty-sub { font-size: 0.82rem; color: var(--text-3); text-align: center; }
 
-        .fab { position: fixed; bottom: 28px; right: 20px; width: 56px; height: 56px; border-radius: 50%; background: var(--text); color: var(--bg); border: none; cursor: pointer; z-index: 200; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md); transition: transform 0.2s; }
+        /* FAB */
+        .fab { position: fixed; bottom: calc(28px + env(safe-area-inset-bottom)); right: 20px; width: 56px; height: 56px; border-radius: 50%; background: var(--text); color: var(--bg); border: none; cursor: pointer; z-index: 200; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md); transition: transform 0.3s cubic-bezier(0.175,0.885,0.32,1.275), background 0.2s; }
         [data-theme="dark"] .fab { background: var(--accent); color: #1A1A1A; }
         .fab:active { transform: scale(0.92); }
-        .fab svg { width: 24px; height: 24px; }
+        .fab svg { width: 22px; height: 22px; transition: transform 0.3s ease; }
+        .fab.active svg { transform: rotate(45deg); }
+        .fab.active { background: var(--danger); color: #fff; }
 
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(6px); display: none; align-items: flex-end; z-index: 500; }
-        .overlay.active { display: flex; }
-        .sheet { background: var(--surface); border-radius: 20px 20px 0 0; width: 100%; max-width: 500px; margin: 0 auto; transform: translateY(20px); transition: transform 0.3s; max-height: 85vh; overflow-y: auto; }
+        /* Overlays */
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); backdrop-filter: blur(6px); display: none; align-items: flex-end; justify-content: center; z-index: 500; opacity: 0; transition: opacity 0.25s ease; }
+        .overlay.active { display: flex; opacity: 1; }
+        .sheet { background: var(--surface); border-radius: 20px 20px 0 0; width: 100%; max-width: 500px; padding: 0 0 max(20px, env(safe-area-inset-bottom)); transform: translateY(20px); transition: transform 0.3s ease; max-height: 85vh; overflow-y: auto; }
         .overlay.active .sheet { transform: translateY(0); }
-        .sheet-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 12px auto 0; }
-        .sheet-title { font-size: 1.1rem; font-weight: 700; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; }
-        .sheet-close { background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--text-2); }
+        .sheet-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--border); margin: 12px auto 0; }
+        .sheet-title { font-size: 1rem; font-weight: 700; color: var(--text); padding: 16px 20px 0; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+        .sheet-close { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-2); padding: 4px 8px; }
 
-        .form-body { padding: 0 20px; display: flex; flex-direction: column; gap: 14px; }
+        /* Form */
+        .form-body { padding: 0 16px 4px; display: flex; flex-direction: column; gap: 10px; }
         .form-group { display: flex; flex-direction: column; gap: 6px; }
-        .form-label { font-size: 0.75rem; font-weight: 600; color: var(--text-2); text-transform: uppercase; }
+        .form-label { font-size: 0.75rem; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.04em; }
         .form-row { display: flex; gap: 10px; }
-        input, select { padding: 14px; background: var(--surface-2); border: 1.5px solid var(--border); border-radius: 12px; color: var(--text); font-size: 0.95rem; }
-        .cat-grid { display: flex; gap: 8px; flex-wrap: wrap; }
-        .cat-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px; border-radius: 12px; border: 1.5px solid var(--border); background: var(--surface-2); cursor: pointer; min-width: 60px; }
+        input[type="text"], input[type="number"], input[type="date"], input[type="email"], input[type="password"], select {
+            width: 100%; padding: 13px 14px; background: var(--surface-2); border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm); color: var(--text); font-family: inherit; font-size: 0.95rem; font-weight: 500;
+            outline: none; transition: border-color 0.15s; -webkit-appearance: none;
+        }
+        input:focus, select:focus { border-color: var(--accent-dark); }
+        .cat-grid { display: flex; gap: 6px; flex-wrap: wrap; }
+        .cat-item { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 10px; border-radius: var(--radius-sm); border: 1.5px solid var(--border); background: var(--surface-2); cursor: pointer; transition: all 0.12s; min-width: 54px; flex: 1; }
         .cat-item.selected { border-color: var(--text); background: var(--text); }
+        [data-theme="dark"] .cat-item.selected { border-color: #FFDD2D; background: #FFDD2D; }
+        .cat-item span:first-child { font-size: 1.2rem; }
+        .cat-item .cat-label { font-size: 0.65rem; font-weight: 600; color: var(--text-2); }
         .cat-item.selected .cat-label { color: var(--bg); }
-        .cat-label { font-size: 0.65rem; font-weight: 600; color: var(--text-2); }
-        .form-actions { padding: 20px; display: flex; gap: 12px; }
-        .btn { flex: 1; padding: 14px; border-radius: 12px; font-weight: 600; border: none; cursor: pointer; }
+        .date-toggle { display: flex; gap: 4px; background: var(--surface-2); border-radius: var(--radius-sm); padding: 4px; border: 1px solid var(--border); }
+        .date-toggle-btn { flex: 1; padding: 8px; font-size: 0.8rem; font-weight: 600; border: none; background: transparent; color: var(--text-2); border-radius: 7px; cursor: pointer; transition: all 0.15s; font-family: inherit; }
+        .date-toggle-btn.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+        .date-inputs { display: none; }
+        .date-inputs.active { display: flex; flex-direction: column; gap: 10px; }
+        .form-hint { font-size: 0.72rem; color: var(--text-3); }
+        .form-actions { display: flex; gap: 10px; padding: 4px 16px 0; }
+        .btn { flex: 1; padding: 14px; border-radius: var(--radius-sm); font-family: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; }
+        .btn:active { transform: scale(0.97); }
         .btn-primary { background: var(--text); color: var(--bg); }
         [data-theme="dark"] .btn-primary { background: #FFDD2D; color: #1A1A1A; }
-        .action-btn { width: 100%; padding: 16px; background: var(--surface-2); border: none; border-radius: 12px; font-weight: 600; margin-bottom: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+        .action-sheet { padding: 0 12px max(16px, env(safe-area-inset-bottom)); }
+        .action-credit-name { text-align: center; padding: 16px 20px 12px; font-size: 1rem; font-weight: 700; color: var(--text); }
+        .action-credit-sub { font-size: 0.8rem; color: var(--text-2); font-weight: 400; margin-top: 2px; }
+        .action-btn { width: 100%; padding: 16px; background: var(--surface-2); border: none; border-radius: var(--radius-sm); margin-bottom: 8px; font-family: inherit; font-size: 0.95rem; font-weight: 600; color: var(--text); cursor: pointer; transition: all 0.12s; display: flex; align-items: center; gap: 10px; }
+        .action-btn:active { transform: scale(0.98); background: var(--border); }
         .action-btn.danger { color: var(--danger); }
+        .partial-section { padding: 0 16px 12px; }
+        .partial-label { font-size: 0.75rem; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px; }
+        .partial-info { display: flex; align-items: center; justify-content: space-between; background: var(--surface-2); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 10px; border: 1px solid var(--border); }
+        .partial-input-wrap { display: flex; gap: 8px; }
+        .partial-input-wrap input { flex: 1; }
+        .confirm-body { padding: 20px 16px; }
+        .confirm-text { font-size: 0.9rem; color: var(--text-2); text-align: center; line-height: 1.5; margin-bottom: 20px; }
 
+        /* Settings */
+        .settings-sheet { padding-bottom: max(20px, env(safe-area-inset-bottom)); }
         .settings-section { padding: 16px 20px; border-bottom: 1px solid var(--border); }
-        .settings-section-label { font-size: 0.7rem; font-weight: 600; color: var(--text-3); text-transform: uppercase; margin-bottom: 12px; }
-        .profile-value { font-size: 0.95rem; padding: 8px 0; color: var(--text); }
-        .share-code-box { background: var(--surface-2); border-radius: 12px; padding: 16px; text-align: center; margin: 12px 0; }
-        .share-code { font-size: 1.5rem; font-weight: 800; letter-spacing: 4px; color: var(--accent-dark); }
-        .member-item { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
-        .member-name { flex: 1; font-weight: 500; }
+        .settings-section:last-child { border-bottom: none; }
+        .settings-section-label { font-size: 0.72rem; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 14px; }
 
-        .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 10px 20px; border-radius: 10px; font-size: 0.85rem; z-index: 999; white-space: nowrap; }
+        /* Account */
+        .account-email-box { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 16px; font-size: 0.9rem; font-weight: 500; color: var(--text-2); text-align: center; word-break: break-all; margin-bottom: 12px; }
+        .account-btns-row { display: flex; gap: 10px; }
+        .account-btn { flex: 1; padding: 14px 10px; border-radius: var(--radius-sm); border: 1.5px solid var(--border); background: var(--surface-2); font-family: inherit; font-size: 0.88rem; font-weight: 600; color: var(--text); cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 7px; }
+        .account-btn:active { transform: scale(0.97); background: var(--border); }
+        .account-btn.btn-logout { color: var(--danger); border-color: rgba(230,57,70,0.25); background: rgba(230,57,70,0.05); }
+
+        /* Toggles */
+        .settings-two-controls { display: flex; align-items: center; gap: 12px; justify-content: space-between; }
+        .settings-control-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .settings-control-label { font-size: 0.78rem; font-weight: 600; color: var(--text-2); }
+        .theme-toggle-row { display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .theme-icon-label { font-size: 1.1rem; }
+        .theme-switch-track { width: 52px; height: 28px; background: #4a5568; border-radius: 14px; position: relative; cursor: pointer; transition: background 0.35s ease; box-shadow: inset 0 2px 6px rgba(0,0,0,0.25); }
+        .theme-switch-track.dark-on { background: linear-gradient(135deg, #203a43 0%, #2c5364 100%); }
+        .theme-switch-thumb { position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; background: #fff; border-radius: 50%; box-shadow: 0 2px 8px rgba(0,0,0,0.3); transition: transform 0.35s cubic-bezier(0.4,0,0.2,1); }
+        .theme-switch-track.dark-on .theme-switch-thumb { transform: translateX(24px); }
+        .font-size-steps-full { display: flex; width: 100%; background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; padding: 6px; gap: 4px; }
+        .font-step { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px; border-radius: 8px; cursor: pointer; color: var(--text-2); font-weight: 600; transition: all 0.2s; }
+        .font-step.active { background: var(--accent); color: #1A1A1A; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .font-step span:first-child { font-size: 1.1rem; }
+        .font-step-label { font-size: 0.65rem; font-weight: 500; display: block; }
+
+        /* Lock */
+        .lock-status-row { display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 4px 0; }
+        .lock-status-icon { font-size: 1.6rem; }
+        .lock-status-text { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+        .lock-status-title { font-size: 0.9rem; font-weight: 600; color: var(--text); }
+        .lock-status-sub { font-size: 0.75rem; color: var(--text-2); }
+        .lock-chevron { font-size: 1.2rem; color: var(--text-2); transition: transform 0.2s; }
+        .lock-status-row.open .lock-chevron { transform: rotate(90deg); }
+        .lock-buttons { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+        .lock-btn { padding: 12px; border: 1px solid var(--border); border-radius: 14px; font-size: 0.9rem; font-weight: 600; cursor: pointer; background: var(--surface-2); color: var(--text); transition: all 0.2s; }
+        .lock-btn-set { border-color: rgba(102,126,234,0.3); color: #667eea; background: rgba(102,126,234,0.08); }
+        .lock-btn-remove { border-color: rgba(231,76,60,0.2); color: #e74c3c; background: rgba(231,76,60,0.06); }
+        .lock-btn:active { transform: scale(0.97); }
+
+        /* PIN */
+        .pin-overlay { position: fixed; inset: 0; z-index: 9998; background: var(--bg); display: none; flex-direction: column; align-items: center; justify-content: flex-end; padding: max(env(safe-area-inset-top), 60px) 0 max(env(safe-area-inset-bottom), 24px); gap: 48px; }
+        .pin-overlay.active { display: flex; }
+        .pin-top { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 0 20px; width: 100%; }
+        .pin-close { position: absolute; top: 0; right: 16px; background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--text-2); padding: 4px; }
+        .pin-lock-icon { font-size: 2.4rem; margin-bottom: 8px; }
+        .pin-title { font-size: 1.4rem; font-weight: 700; color: var(--text); }
+        .pin-sub { font-size: 0.9rem; color: var(--text-2); min-height: 1.3em; text-align: center; }
+        .pin-dots { display: flex; gap: 16px; margin-top: 10px; }
+        .pin-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--text-3); background: transparent; transition: all 0.12s; }
+        .pin-dot.filled { background: var(--text); border-color: var(--text); transform: scale(1.15); }
+        .pin-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; padding: 0 16px; }
+        .pin-key { height: 72px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border); color: var(--text); font-family: inherit; font-size: 1.7rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .pin-key:active { transform: scale(0.9); background: var(--border); }
+        .pin-key.empty { background: transparent !important; border-color: transparent !important; pointer-events: none; }
+        .pin-key.del { background: transparent !important; border-color: transparent !important; font-size: 1.4rem; color: var(--text-2); }
+        .pin-length-row { display: flex; gap: 6px; margin-top: 4px; }
+        .pin-len-btn { padding: 7px 16px; border-radius: 8px; border: 1.5px solid var(--border); background: var(--surface-2); font-family: inherit; font-size: 0.82rem; font-weight: 600; color: var(--text-2); cursor: pointer; }
+        .pin-len-btn.active { border-color: var(--text); color: var(--text); background: var(--surface); }
+
+        .toast { position: fixed; bottom: calc(90px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 10px 18px; border-radius: 10px; font-size: 0.85rem; font-weight: 600; z-index: 999; pointer-events: none; white-space: nowrap; }
+
+        .all-paid-overlay { position: fixed; inset: 0; z-index: 800; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; }
+        .all-paid-overlay.active { display: flex; }
+        .all-paid-card { background: var(--surface); border-radius: 20px; padding: 32px 24px; max-width: 320px; text-align: center; }
+        .all-paid-icon { font-size: 3rem; margin-bottom: 12px; display: block; }
+        .all-paid-title { font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+        .all-paid-sub { font-size: 0.85rem; color: var(--text-2); line-height: 1.5; margin-bottom: 24px; }
+        .all-paid-btn { width: 100%; padding: 14px; background: var(--text); color: var(--bg); border: none; border-radius: var(--radius-sm); font-family: inherit; font-size: 0.95rem; font-weight: 600; cursor: pointer; }
+        [data-theme="dark"] .all-paid-btn { background: #FFDD2D; color: #1A1A1A; }
+
+        .completed-section { margin: 16px 16px 0; }
+        .completed-header-btn { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--surface); border-radius: var(--radius-sm); border: 1px solid var(--border); cursor: pointer; }
+        .completed-arrow { transition: transform 0.2s; }
+        .completed-arrow.open { transform: rotate(180deg); }
+        .completed-list { margin-top: 4px; display: none; }
+        .completed-list.open { display: block; }
     </style>
 </head>
 <body>
 
 <div class="splash" id="splash">
     <div class="splash-content">
-        <div class="splash-logo">💰</div>
+        <img class="splash-logo" src="logo.png" alt="Logo" onerror="this.style.display='none'">
         <div class="splash-tagline">Думай о более важном!</div>
     </div>
+    <div class="splash-version">Версия 1.0</div>
 </div>
 
 <div class="auth-screen" id="authScreen">
+    <div class="auth-bg-glow"></div>
+    <div class="auth-logo-area">
+        <div class="auth-logo-icon">💳</div>
+        <div class="auth-logo-title">My Credits</div>
+        <div class="auth-logo-sub">Думай о более важном!</div>
+    </div>
     <div class="auth-sheet">
-        <div class="auth-sheet-title" id="authTitle">Войти</div>
-        <div id="authFields">
-            <div class="auth-field"><div class="auth-field-label">Email</div><input type="email" id="authEmail" placeholder="mail@example.com"></div>
-            <div class="auth-field"><div class="auth-field-label">Пароль</div><input type="password" id="authPassword" placeholder="••••••••"></div>
+        <div class="auth-sheet-handle"></div>
+        <div class="auth-sheet-title" id="authTitle">Войти в аккаунт</div>
+        <div class="auth-input-group">
+            <div class="auth-field">
+                <div class="auth-field-label">Email</div>
+                <input type="email" id="authEmail" placeholder="mail@example.com" autocomplete="email">
+            </div>
+            <div class="auth-field">
+                <div class="auth-field-label">Пароль</div>
+                <input type="password" id="authPassword" placeholder="Введите пароль" autocomplete="current-password">
+            </div>
         </div>
         <button class="auth-submit-btn" id="authBtn" onclick="doAuth()">Войти</button>
         <div class="auth-switch-link" onclick="toggleAuthMode()">Нет аккаунта? <span>Зарегистрироваться</span></div>
@@ -188,115 +401,143 @@
 <div class="app" id="app">
     <div class="summary-card">
         <div class="summary-header">
-            <div class="summary-label">К оплате в этом месяце</div>
-            <button class="summary-settings-btn" onclick="openSettings()">⚙️</button>
+            <div class="summary-header-left">
+                <div class="summary-label">К оплате в этом месяце</div>
+            </div>
+            <button class="summary-settings-btn" id="settingsBtn" onclick="gearClick(event)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+            </button>
         </div>
-        <div class="summary-amount" id="summaryAmount">0 ₽</div>
-        <div class="summary-progress-label"><span id="summaryPaid">Внесено 0 ₽</span><span id="summaryPercent">0%</span></div>
+        <div class="summary-amount s-amount" id="summaryAmount">0 ₽</div>
+        <div class="summary-progress-label"><span class="s-paid-val" id="summaryPaid">Внесено 0 ₽</span><span id="summaryPercent">0%</span></div>
         <div class="summary-bar"><div class="summary-bar-fill" id="summaryBarFill" style="width:0%"></div></div>
         <div class="summary-stats">
-            <div class="summary-stat"><div class="summary-stat-label">Всего</div><div class="summary-stat-val" id="summaryCount">0</div></div>
+            <div class="summary-stat"><div class="summary-stat-label">Всего кредитов</div><div class="summary-stat-val" id="summaryCount">0</div></div>
             <div class="summary-stat"><div class="summary-stat-label">Оплачено</div><div class="summary-stat-val" id="summaryPaidCount">0</div></div>
-            <div class="summary-stat"><div class="summary-stat-label">Остаток</div><div class="summary-stat-val" id="summaryRemain">0 ₽</div></div>
+            <div class="summary-stat"><div class="summary-stat-label">Остаток</div><div class="summary-stat-val s-remain-val" id="summaryRemain">0 ₽</div></div>
         </div>
     </div>
-
-    <div class="filter-bar">
-        <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">Все</button>
-        <button class="filter-btn" data-filter="my" onclick="setFilter('my')">Мои</button>
-        <button class="filter-btn" data-filter="shared" onclick="setFilter('shared')">Общие</button>
-    </div>
-
+    <div id="resetMsg">Новый месяц — статусы платежей сброшены</div>
     <div class="section">
+        <div class="section-header"><span class="section-title">Активные</span><span class="section-count" id="activeCount"></span></div>
         <div class="credit-list" id="creditList"></div>
     </div>
-
-    <button class="fab" id="fab" onclick="openAddCredit()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+    <div class="completed-section" id="completedSection" style="display:none">
+        <div class="completed-header-btn" onclick="toggleCompleted()"><span id="completedLabel">Завершённые</span><span class="completed-arrow" id="completedArrow">▼</span></div>
+        <div class="credit-list completed-list" id="completedList"></div>
+    </div>
+    <div style="height:20px"></div>
 </div>
 
-<!-- Форма кредита -->
+<button class="fab" id="fab" onclick="fabClick(event)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+
 <div class="overlay" id="formOverlay" onclick="if(event.target===this)closeForm()">
     <div class="sheet">
         <div class="sheet-handle"></div>
         <div class="sheet-title"><span id="formTitleText">Новый кредит</span><button class="sheet-close" onclick="closeForm()">✕</button></div>
         <div class="form-body">
-            <div class="form-group"><label class="form-label">Название</label><input type="text" id="nameInput" placeholder="Например: Ипотека"></div>
-            <div class="form-group"><label class="form-label">Тип</label><div class="cat-grid" id="catGrid"></div></div>
-            <div class="form-group"><label class="form-label">Кому принадлежит</label>
-                <select id="creditTypeSelect">
-                    <option value="personal">📱 Только мне</option>
-                    <option value="shared">👥 Общий (семейный)</option>
-                </select>
+            <div class="form-group"><label class="form-label">Название</label><input type="text" id="nameInput" placeholder="Например: Ипотека Сбербанк" autocomplete="off"></div>
+            <div class="form-group"><label class="form-label">Тип</label><div class="cat-grid">
+                <div class="cat-item" data-cat="mortgage" onclick="selectCat('mortgage')"><span>🏠</span><span class="cat-label">Ипотека</span></div>
+                <div class="cat-item" data-cat="auto" onclick="selectCat('auto')"><span>🚗</span><span class="cat-label">Авто</span></div>
+                <div class="cat-item" data-cat="consumer" onclick="selectCat('consumer')"><span>💳</span><span class="cat-label">Потреб.</span></div>
+                <div class="cat-item" data-cat="card" onclick="selectCat('card')"><span>💰</span><span class="cat-label">Карта</span></div>
+                <div class="cat-item" data-cat="other" onclick="selectCat('other')"><span>📄</span><span class="cat-label">Прочее</span></div>
+            </div></div>
+            <div class="form-group"><label class="form-label">Ежемесячный платёж и день оплаты</label><div class="form-row"><input type="number" id="amountInput" placeholder="Сумма, ₽" inputmode="decimal" style="flex:2"><input type="number" id="dayInput" placeholder="День" min="1" max="31" inputmode="numeric" style="flex:1"></div></div>
+            <div class="form-group"><label class="form-label">Дата окончания</label>
+                <div class="date-toggle"><button class="date-toggle-btn active" id="dtBtnCal" onclick="setDateMode('cal')">Календарь</button><button class="date-toggle-btn" id="dtBtnMan" onclick="setDateMode('man')">Вручную</button></div>
+                <div class="date-inputs active" id="calInput"><input type="date" id="endDateCal"></div>
+                <div class="date-inputs" id="manInput"><div class="form-row"><select id="endMonth"><option value="0">Январь</option><option value="1">Февраль</option><option value="2">Март</option><option value="3">Апрель</option><option value="4">Май</option><option value="5">Июнь</option><option value="6">Июль</option><option value="7">Август</option><option value="8">Сентябрь</option><option value="9">Октябрь</option><option value="10">Ноябрь</option><option value="11">Декабрь</option></select><input type="number" id="endYear" placeholder="Год" min="2024" max="2050"></div></div>
+                <span class="form-hint">Оставьте пустым для бессрочного кредита</span>
             </div>
-            <div class="form-group"><label class="form-label">Сумма и день платежа</label><div class="form-row"><input type="number" id="amountInput" placeholder="Сумма, ₽"><input type="number" id="dayInput" placeholder="День (1-31)"></div></div>
-            <div class="form-group"><label class="form-label">Дата окончания (необязательно)</label><input type="date" id="endDateCal"></div>
         </div>
-        <div class="form-actions"><button class="btn btn-primary" onclick="handleSave()">Сохранить</button></div>
+        <div class="form-actions"><button class="btn btn-primary" id="formSaveBtn" onclick="handleSave()">Добавить</button></div>
+        <div style="height:8px"></div>
     </div>
 </div>
 
-<!-- Действия с кредитом -->
 <div class="overlay" id="actionOverlay" onclick="if(event.target===this)closeAction()">
-    <div class="sheet">
+    <div class="sheet action-sheet">
         <div class="sheet-handle"></div>
-        <div class="action-credit-name" style="text-align:center;padding:20px"><div id="actionNameText" style="font-weight:700"></div><div id="actionSub" style="color:var(--text-2);font-size:0.85rem;margin-top:4px"></div><div id="actionAuthor" style="color:var(--info);font-size:0.8rem;margin-top:4px"></div></div>
-        <div style="padding:0 20px">
-            <button class="action-btn" onclick="openEdit()">✎ Редактировать</button>
-            <button class="action-btn danger" onclick="showDeleteConfirm()">🗑 Удалить</button>
+        <div class="sheet-title"><span>Действия с кредитом</span><button class="sheet-close" onclick="closeAction()">✕</button></div>
+        <div class="action-credit-name"><div id="actionNameText"></div><div class="action-credit-sub" id="actionSub"></div></div>
+        <div class="partial-section" id="partialSection">
+            <div class="partial-label">Частичная оплата</div>
+            <div class="partial-info">
+                <div><div class="partial-info-label">Внесено</div><div class="partial-info-val credit-amount" id="partialPaidDisplay">0 ₽</div></div>
+                <div style="text-align:right"><div class="partial-info-label">Остаток</div><div class="partial-info-val credit-amount" id="partialRemainDisplay">0 ₽</div></div>
+            </div>
+            <div class="partial-input-wrap"><input type="number" id="partialInput" placeholder="Сумма взноса, ₽" inputmode="decimal"><button class="btn btn-primary" onclick="savePartial()" style="flex:0 0 auto;min-width:90px;padding:13px 16px">Внести</button></div>
         </div>
-        <div style="height:20px"></div>
+        <div style="padding:0 12px">
+            <button class="action-btn" onclick="openEdit()"><div class="action-btn-icon">✎</div>Редактировать</button>
+            <button class="action-btn" id="resetPartialBtn" style="display:none" onclick="resetPartial()"><div class="action-btn-icon">↺</div>Сбросить частичную оплату</button>
+            <button class="action-btn danger" onclick="showDeleteConfirm()"><div class="action-btn-icon">🗑</div>Удалить кредит</button>
+        </div>
+        <div style="height:4px"></div>
     </div>
 </div>
 
 <div class="overlay" id="deleteOverlay" onclick="if(event.target===this)closeDelete()">
-    <div class="sheet"><div class="sheet-handle"></div><div class="sheet-title">Удаление<button class="sheet-close" onclick="closeDelete()">✕</button></div><div class="confirm-body" style="padding:20px;text-align:center"><div style="margin-bottom:20px">Удалить кредит?</div><button class="btn" style="background:var(--danger);color:#fff" onclick="doDelete()">Удалить</button></div></div>
+    <div class="sheet" style="padding-bottom:max(16px,env(safe-area-inset-bottom))">
+        <div class="sheet-handle"></div>
+        <div class="sheet-title"><span>Удаление кредита</span><button class="sheet-close" onclick="closeDelete()">✕</button></div>
+        <div class="confirm-body"><div class="confirm-text">Вы уверены, что хотите удалить этот кредит? Это действие нельзя отменить.</div><button class="btn" style="background:var(--danger);color:#fff;margin-bottom:10px;width:100%" onclick="doDelete()">Удалить</button></div>
+    </div>
 </div>
 
-<!-- Настройки -->
 <div class="overlay" id="settingsOverlay" onclick="if(event.target===this)closeSettings()">
-    <div class="sheet">
+    <div class="sheet settings-sheet">
         <div class="sheet-handle"></div>
-        <div class="sheet-title">Настройки<button class="sheet-close" onclick="closeSettings()">✕</button></div>
-        
-        <div class="settings-section">
-            <div class="settings-section-label">Профиль</div>
-            <div><div class="profile-value" id="profileNameDisplay"></div></div>
-            <div><div class="profile-value" id="profilePhoneDisplay"></div></div>
-            <div><div class="profile-value" id="profileEmailDisplay"></div></div>
-            <div style="display:flex;gap:8px;margin-top:12px"><button class="btn" style="flex:1" onclick="editProfile()">✏️ Редактировать</button><button class="btn" style="flex:1" onclick="changePassword()">🔑 Сменить пароль</button><button class="btn" style="flex:1;color:var(--danger)" onclick="doLogout()">🚪 Выйти</button></div>
-        </div>
+        <div class="sheet-title">Настройки <button class="sheet-close" onclick="closeSettings()">✕</button></div>
 
         <div class="settings-section">
-            <div class="settings-section-label">Общий доступ</div>
-            <div id="groupInfo">
-                <div class="share-code-box" id="noGroupBox">
-                    <div>У вас нет общей группы</div>
-                    <button class="btn btn-primary" style="margin-top:12px" onclick="createGroup()">➕ Создать группу</button>
-                    <div style="display:flex;gap:8px;margin-top:12px"><input type="text" id="joinCodeInput" placeholder="Код 6 цифр" maxlength="6" style="flex:1;text-align:center"><button class="btn" onclick="joinGroup()">Вступить</button></div>
-                </div>
-                <div id="hasGroupBox" style="display:none">
-                    <div class="share-code-box"><div>Код приглашения</div><div class="share-code" id="groupCodeDisplay">------</div><button class="btn" style="margin-top:8px" onclick="copyGroupCode()">📋 Копировать</button></div>
-                    <div id="membersList"></div>
-                    <button class="btn" style="margin-top:12px;color:var(--danger)" onclick="leaveGroup()">🚪 Покинуть группу</button>
-                </div>
+            <div class="settings-section-label">Аккаунт</div>
+            <div class="account-email-box" id="userEmailDisplay">Загрузка...</div>
+            <div class="account-btns-row">
+                <button class="account-btn" onclick="changePassword()">🔑 Сменить пароль</button>
+                <button class="account-btn btn-logout" onclick="doLogout()">🚪 Выйти</button>
             </div>
         </div>
 
         <div class="settings-section">
             <div class="settings-section-label">Внешний вид</div>
-            <div style="display:flex;gap:16px"><button class="btn" onclick="toggleTheme()">🌓 Сменить тему</button><button class="btn" onclick="toggleAmounts()">🙈 Скрыть суммы</button></div>
+            <div class="settings-two-controls">
+                <div class="settings-control-item">
+                    <span class="settings-control-label">Тема</span>
+                    <div class="theme-toggle-row"><span class="theme-icon-label">☀️</span><div class="theme-switch-track" id="themeSwitchTrack" onclick="toggleThemeFromSettings();event.stopPropagation()"><div class="theme-switch-thumb"></div></div><span class="theme-icon-label">🌙</span></div>
+                </div>
+                <div class="settings-control-item">
+                    <span class="settings-control-label">Суммы</span>
+                    <div class="theme-toggle-row"><span class="theme-icon-label">🐵</span><div class="theme-switch-track" id="amountsSwitchTrack" onclick="toggleAmountsFromSettings();event.stopPropagation()"><div class="theme-switch-thumb"></div></div><span class="theme-icon-label">🙈</span></div>
+                </div>
+            </div>
         </div>
-    </div>
-</div>
 
-<div class="overlay" id="editProfileOverlay" onclick="if(event.target===this)closeEditProfile()">
-    <div class="sheet">
-        <div class="sheet-handle"></div>
-        <div class="sheet-title">Редактировать профиль<button class="sheet-close" onclick="closeEditProfile()">✕</button></div>
-        <div class="form-body">
-            <div class="form-group"><label class="form-label">Имя</label><input type="text" id="editName" placeholder="Ваше имя"></div>
-            <div class="form-group"><label class="form-label">Телефон</label><input type="tel" id="editPhone" placeholder="+7 XXX XXX XX XX"></div>
-            <div class="form-actions"><button class="btn btn-primary" onclick="saveProfile()">Сохранить</button></div>
+        <div class="settings-section">
+            <div class="settings-section-label">Размер текста</div>
+            <div class="font-size-steps-full">
+                <div class="font-step" data-size="s" onclick="setFontSize('s')"><span>А</span><span class="font-step-label">Мелкий</span></div>
+                <div class="font-step" data-size="m" onclick="setFontSize('m')"><span>А</span><span class="font-step-label">Обычный</span></div>
+                <div class="font-step" data-size="l" onclick="setFontSize('l')"><span>А</span><span class="font-step-label">Крупный</span></div>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <div class="settings-section-label">Защита</div>
+            <div class="lock-status-row" id="lockStatusRow">
+                <div class="lock-status-icon" id="lockStatusIcon">🔓</div>
+                <div class="lock-status-text"><span class="lock-status-title" id="lockStatusTitle">Защита не установлена</span><span class="lock-status-sub" id="lockStatusSub">Нажмите чтобы настроить</span></div>
+                <div class="lock-chevron">›</div>
+            </div>
+            <div class="lock-buttons" id="lockButtons" style="display:none">
+                <button class="lock-btn lock-btn-set" onclick="startSetPin()">🔢 ПИН-код</button>
+                <button class="lock-btn lock-btn-remove" id="removeLockBtn" onclick="doRemoveLock()" style="display:none">🗑 Убрать защиту</button>
+            </div>
         </div>
     </div>
 </div>
@@ -304,384 +545,741 @@
 <div class="overlay" id="changePassOverlay" onclick="if(event.target===this)closeChangePass()">
     <div class="sheet">
         <div class="sheet-handle"></div>
-        <div class="sheet-title">Смена пароля<button class="sheet-close" onclick="closeChangePass()">✕</button></div>
-        <div class="form-body">
-            <div class="form-group"><label class="form-label">Текущий пароль</label><input type="password" id="cpOldPass"></div>
-            <div class="form-group"><label class="form-label">Новый пароль</label><input type="password" id="cpNewPass"></div>
-            <div class="form-group"><label class="form-label">Подтвердите</label><input type="password" id="cpConfirmPass"></div>
-            <div class="form-actions"><button class="btn btn-primary" onclick="doChangePassword()">Сменить</button></div>
+        <div class="sheet-title"><span>Смена пароля</span><button class="sheet-close" onclick="closeChangePass()">✕</button></div>
+        <div class="form-body" style="padding-bottom:16px">
+            <div class="account-email-box" id="changePassEmail">—</div>
+            <div class="form-group"><label class="form-label">Текущий пароль</label><input type="password" id="cpOldPass" placeholder="••••••••" autocomplete="current-password"></div>
+            <div class="form-group"><label class="form-label">Новый пароль</label><input type="password" id="cpNewPass" placeholder="Минимум 6 символов" autocomplete="new-password"></div>
+            <div class="form-group"><label class="form-label">Подтвердите новый пароль</label><input type="password" id="cpConfirmPass" placeholder="Повторите пароль" autocomplete="new-password"></div>
+            <button class="btn btn-primary" onclick="doChangePassword()" style="margin-top:4px">Сохранить пароль</button>
         </div>
+    </div>
+</div>
+
+<div class="all-paid-overlay" id="allPaidOverlay" onclick="if(event.target===this)closeAllPaid()">
+    <div class="all-paid-card"><span class="all-paid-icon">🎉</span><div class="all-paid-title">В этом месяце все платежи выполнены!</div><div class="all-paid-sub">Отличная работа — все кредиты за этот месяц отмечены как оплаченные.</div><button class="all-paid-btn" onclick="closeAllPaid()">Отлично!</button></div>
+</div>
+
+<div class="pin-overlay" id="pinSetOverlay">
+    <div class="pin-top">
+        <button class="pin-close" onclick="cancelPinSet()">✕</button>
+        <div class="pin-lock-icon">🔒</div>
+        <div class="pin-title" id="pinSetTitle">Создайте ПИН-код</div>
+        <div class="pin-sub" id="pinSetSub">Выберите длину</div>
+        <div class="pin-length-row" id="pinLenRow"><button class="pin-len-btn active" onclick="selectPinLen(4)">4 цифры</button><button class="pin-len-btn" onclick="selectPinLen(6)">6 цифр</button></div>
+        <div class="pin-dots" id="pinSetDots"></div>
+    </div>
+    <div class="pin-pad" id="pinSetPad">
+        <button class="pin-key" data-v="1">1</button><button class="pin-key" data-v="2">2</button><button class="pin-key" data-v="3">3</button>
+        <button class="pin-key" data-v="4">4</button><button class="pin-key" data-v="5">5</button><button class="pin-key" data-v="6">6</button>
+        <button class="pin-key" data-v="7">7</button><button class="pin-key" data-v="8">8</button><button class="pin-key" data-v="9">9</button>
+        <button class="pin-key empty"></button><button class="pin-key" data-v="0">0</button><button class="pin-key del" id="pinSetDel">⌫</button>
+    </div>
+</div>
+
+<div class="pin-overlay" id="pinLockOverlay">
+    <div class="pin-top">
+        <div class="pin-lock-icon">🔐</div>
+        <div class="pin-title">Введите ПИН-код</div>
+        <div class="pin-sub" id="pinLockSub">Для входа в приложение</div>
+        <div class="pin-dots" id="pinLockDots"></div>
+    </div>
+    <div class="pin-pad" id="pinLockPad">
+        <button class="pin-key" data-v="1">1</button><button class="pin-key" data-v="2">2</button><button class="pin-key" data-v="3">3</button>
+        <button class="pin-key" data-v="4">4</button><button class="pin-key" data-v="5">5</button><button class="pin-key" data-v="6">6</button>
+        <button class="pin-key" data-v="7">7</button><button class="pin-key" data-v="8">8</button><button class="pin-key" data-v="9">9</button>
+        <button class="pin-key empty"></button><button class="pin-key" data-v="0">0</button><button class="pin-key del" id="pinLockDel">⌫</button>
     </div>
 </div>
 
 <script>
 let auth, db;
-let currentUser = null;
-let currentGroup = null;
-let groupMembers = [];
-let credits = [];
-let editMode = false, editId = null;
-let selectedCreditId = null;
-let selectedCat = 'mortgage';
-let theme = 'light';
-let amountsVisible = true;
-let currentFilter = 'all';
-let authResolved = false, splashTimerDone = false;
-let creditsUnsubscribe = null;
-let groupUnsubscribe = null;
-
-const CATS = { mortgage: '🏠 Ипотека', auto: '🚗 Авто', consumer: '💳 Потребительский', card: '💰 Карта', other: '📄 Прочее' };
-
-function showToast(msg) { let d = document.createElement('div'); d.className = 'toast'; d.textContent = msg; document.body.appendChild(d); setTimeout(() => d.remove(), 2000); }
-function fmt(n) { return Math.round(n).toLocaleString('ru-RU'); }
-function esc(t) { return String(t).replace(/[&<>]/g, function(m) { return { '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m]; }); }
 
 function _initFirebase() {
     if (window._fbAppInited) return;
     window._fbAppInited = true;
-    firebase.initializeApp({
+    const firebaseConfig = {
         apiKey: "AIzaSyD_AVvoPQ1CLVbc_xxlPXLE-DyTcVZrL8Y",
         authDomain: "my-credits-804ab.firebaseapp.com",
         projectId: "my-credits-804ab",
         storageBucket: "my-credits-804ab.firebasestorage.app",
         messagingSenderId: "602702013620",
         appId: "1:602702013620:web:1babc849f5ed8bcdaee3e1"
-    });
+    };
+    firebase.initializeApp(firebaseConfig);
     auth = firebase.auth();
-    db = firebase.firestore();
-    auth.onAuthStateChanged(user => { authResolved = true; currentUser = user; evaluateLaunch(); });
+    db   = firebase.firestore();
+    db.enablePersistence({synchronizeTabs:false}).catch(()=>{});
+    auth.onAuthStateChanged(user => { authResolved = true; authUser = user; evaluateLaunch(); });
 }
 
-async function loadUserProfile() {
-    if (!currentUser) return { name: '', phone: '', email: '' };
-    let doc = await db.collection('users').doc(currentUser.uid).get();
-    if (!doc.exists) return { name: currentUser.email.split('@')[0], phone: '', email: currentUser.email };
-    return doc.data();
+const MONTH_K   = 'crt_month_v4';
+const THEME_K   = 'crt_theme_v4';
+const AMT_K     = 'crt_amounts_v4';
+const FONT_K    = 'crt_font_v4';
+const PIN_K     = 'crt_pin_v4';
+const PIN_LEN_K = 'crt_pin_len_v4';
+
+const CATS = {
+    mortgage: {emoji:'🏠',label:'Ипотека'},
+    auto:     {emoji:'🚗',label:'Автокредит'},
+    consumer: {emoji:'💳',label:'Потребительский'},
+    card:     {emoji:'💰',label:'Карта'},
+    other:    {emoji:'📄',label:'Прочее'}
+};
+
+let credits = [];
+let editMode = false, editId = null;
+let selectedCreditId = null;
+let selectedCat = 'mortgage';
+let dateMode = 'cal';
+let theme = 'light';
+let amountsVisible = true;
+let fontSize = 'm';
+let allPaidShown = false;
+let lockPanelOpen = false;
+let backPressedOnce = false;
+let _isSaving = false;
+
+let pinSetBuf = '', pinSetStep = 0, pinSetFirst = '', pinSetLen = 4, pinSetVerifyMode = null;
+let pinLockBuf = '', pinLockLen = 4;
+
+let isLoginMode = true;
+let authResolved = false;
+let authUser = null;
+let splashTimerDone = false;
+let creditsUnsubscribe = null;
+let monthResetDone = false;
+
+const ls = {
+    get: k     => { try { return localStorage.getItem(k); }    catch(e) { return null; } },
+    set: (k,v) => { try { localStorage.setItem(k,v); return true; } catch(e) { return false; } },
+    rm:  k     => { try { localStorage.removeItem(k); }        catch(e) {} }
+};
+
+function formatPaymentDate(dayNumber) {
+    const months = [
+        'января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 
+        'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'
+    ];
+    return `${dayNumber} ${months[new Date().getMonth()]}`;
 }
 
-async function loadGroup() {
-    if (!currentUser) return;
-    let userDoc = await db.collection('users').doc(currentUser.uid).get();
-    let groupId = userDoc.data()?.groupId;
-    if (!groupId) { currentGroup = null; updateGroupUI(); return; }
-    let groupDoc = await db.collection('groups').doc(groupId).get();
-    if (!groupDoc.exists) { currentGroup = null; updateGroupUI(); return; }
-    currentGroup = { id: groupDoc.id, ...groupDoc.data() };
-    let members = [];
-    for (let uid of currentGroup.members || []) {
-        let u = await db.collection('users').doc(uid).get();
-        if (u.exists) members.push({ uid, name: u.data().name, email: u.data().email });
-    }
-    groupMembers = members;
-    updateGroupUI();
-}
+function loadCredits() {
+    if (!authUser) return;
+    if (creditsUnsubscribe) { creditsUnsubscribe(); creditsUnsubscribe = null; }
 
-function updateGroupUI() {
-    let noBox = document.getElementById('noGroupBox');
-    let hasBox = document.getElementById('hasGroupBox');
-    if (!currentGroup) { if(noBox) noBox.style.display = 'block'; if(hasBox) hasBox.style.display = 'none'; return; }
-    if(noBox) noBox.style.display = 'none';
-    if(hasBox) hasBox.style.display = 'block';
-    let codeEl = document.getElementById('groupCodeDisplay');
-    if(codeEl) codeEl.textContent = currentGroup.inviteCode || '------';
-    let membersHtml = '<div class="settings-section-label" style="margin-top:8px">Участники</div>';
-    for (let m of groupMembers) membersHtml += `<div class="member-item"><div class="member-name">${esc(m.name)}</div><div>${m.uid === currentUser?.uid ? 'Вы' : ''}</div></div>`;
-    let membersList = document.getElementById('membersList');
-    if(membersList) membersList.innerHTML = membersHtml;
-}
-
-async function createGroup() {
-    let code = Math.floor(100000 + Math.random() * 900000).toString();
-    await db.collection('groups').add({ inviteCode: code, members: [currentUser.uid], createdAt: new Date() });
-    let groupQuery = await db.collection('groups').where('inviteCode', '==', code).get();
-    let groupId = groupQuery.docs[0].id;
-    await db.collection('users').doc(currentUser.uid).set({ groupId }, { merge: true });
-    showToast('Группа создана! Код: ' + code);
-    await loadGroup();
-    await loadCredits();
-}
-
-async function joinGroup() {
-    let code = document.getElementById('joinCodeInput').value.trim();
-    if (!code || code.length !== 6) { showToast('Введите 6-значный код'); return; }
-    let groups = await db.collection('groups').where('inviteCode', '==', code).get();
-    if (groups.empty) { showToast('Неверный код'); return; }
-    let group = groups.docs[0];
-    let members = group.data().members || [];
-    if (!members.includes(currentUser.uid)) members.push(currentUser.uid);
-    await group.ref.update({ members });
-    await db.collection('users').doc(currentUser.uid).set({ groupId: group.id }, { merge: true });
-    showToast('Вы вступили в группу!');
-    await loadGroup();
-    await loadCredits();
-}
-
-async function leaveGroup() {
-    if (!currentGroup) return;
-    let members = (currentGroup.members || []).filter(uid => uid !== currentUser.uid);
-    if (members.length === 0) await db.collection('groups').doc(currentGroup.id).delete();
-    else await db.collection('groups').doc(currentGroup.id).update({ members });
-    await db.collection('users').doc(currentUser.uid).update({ groupId: firebase.firestore.FieldValue.delete() });
-    currentGroup = null;
-    showToast('Вы покинули группу');
-    await loadCredits();
-}
-
-function copyGroupCode() { if(currentGroup) navigator.clipboard.writeText(currentGroup.inviteCode); showToast('Код скопирован'); }
-
-async function loadCredits() {
-    if (!currentUser) return;
-    if (creditsUnsubscribe) creditsUnsubscribe();
-    
-    let userDoc = await db.collection('users').doc(currentUser.uid).get();
-    let groupId = userDoc.data()?.groupId;
-    
-    credits = [];
-    
-    // Мои кредиты
-    let myQuery = db.collection('credits').where('ownerId', '==', currentUser.uid).where('type', '==', 'personal');
-    myQuery.onSnapshot(snapshot => {
-        snapshot.forEach(doc => {
-            let existing = credits.find(c => c.id === doc.id);
-            if (!existing) credits.push({ id: doc.id, ...doc.data(), isShared: false });
-            else Object.assign(existing, doc.data());
-        });
-        render();
-    });
-    
-    // Общие кредиты если есть группа
-    if (groupId) {
-        let sharedQuery = db.collection('credits').where('groupId', '==', groupId).where('type', '==', 'shared');
-        sharedQuery.onSnapshot(snapshot => {
-            snapshot.forEach(doc => {
-                let existing = credits.find(c => c.id === doc.id);
-                if (!existing) credits.push({ id: doc.id, ...doc.data(), isShared: true });
-                else Object.assign(existing, doc.data());
-            });
+    creditsUnsubscribe = db.collection('credits')
+        .where('userId', '==', authUser.uid)
+        .onSnapshot(snapshot => {
+            credits = [];
+            snapshot.forEach(doc => credits.push({ id: doc.id, ...doc.data() }));
             render();
+            if (!monthResetDone) { monthResetDone = true; checkMonthReset(); }
+        }, e => {
+            console.error('Ошибка синхронизации:', e);
+            showToast('Ошибка синхронизации данных');
         });
+}
+
+async function saveCredit(creditData) {
+    if (!authUser) throw new Error('No user');
+    creditData.userId = authUser.uid;
+    if (editMode && editId) {
+        const id = editId;
+        editMode = false; editId = null;
+        await db.collection('credits').doc(id).update(creditData);
+    } else {
+        await db.collection('credits').add(creditData);
+    }
+}
+
+async function deleteCredit(id) { await db.collection('credits').doc(id).delete(); }
+
+async function updateCreditField(id, data) { await db.collection('credits').doc(id).update(data); }
+
+async function checkMonthReset() {
+    if (!authUser) return;
+    const n = new Date();
+    const key = `${n.getMonth()}-${n.getFullYear()}`;
+    if (ls.get(MONTH_K) === key) return;
+    ls.set(MONTH_K, key);
+    const toReset = credits.filter(c => !c.completed);
+    for (const c of toReset) await updateCreditField(c.id, { paid: false, partial: 0 });
+    if (toReset.length > 0) {
+        const m = document.getElementById('resetMsg');
+        m.style.display = 'block';
+        setTimeout(() => m.style.display = 'none', 5000);
     }
 }
 
 function render() {
-    let filtered = [];
-    if (currentFilter === 'my') filtered = credits.filter(c => !c.isShared);
-    else if (currentFilter === 'shared') filtered = credits.filter(c => c.isShared);
-    else filtered = credits;
-    
-    let active = filtered.filter(c => !c.completed);
-    let completed = filtered.filter(c => c.completed);
-    
-    active.sort((a,b) => (a.paid === b.paid) ? a.day - b.day : a.paid ? 1 : -1);
-    
-    let list = document.getElementById('creditList');
+    const now = new Date();
+    const cm = now.getMonth(), cy = now.getFullYear();
+    const active    = credits.filter(c => !c.completed);
+    const completed = credits.filter(c =>  c.completed);
+    active.sort((a,b) => a.paid === b.paid ? a.day - b.day : a.paid ? 1 : -1);
+
+    const list = document.getElementById('creditList');
     list.innerHTML = '';
     
-    if (active.length === 0 && completed.length === 0) {
-        list.innerHTML = '<div class="empty-state"><div class="empty-icon">💳</div><div class="empty-title">Нет кредитов</div><div class="empty-sub">Нажмите + чтобы добавить</div></div>';
+    if (!active.length) {
+        list.innerHTML = `<div class="empty-state"><div class="empty-icon">💳</div><div class="empty-title">Нет активных кредитов</div><div class="empty-sub">Нажмите + чтобы добавить первый</div></div>`;
     } else {
-        active.forEach(c => list.appendChild(createCreditElement(c)));
-        if (completed.length) {
-            let header = document.createElement('div');
-            header.style.marginTop = '8px';
-            header.innerHTML = `<div class="completed-header" style="padding:12px;background:var(--surface);border-radius:12px;cursor:pointer;display:flex;justify-content:space-between"><span>✅ Завершённые (${completed.length})</span><span>▼</span></div><div class="completed-list" style="display:none"></div>`;
-            let completedList = header.querySelector('.completed-list');
-            completed.forEach(c => completedList.appendChild(createCreditElement(c)));
-            header.querySelector('.completed-header').onclick = () => {
-                let isOpen = completedList.style.display !== 'none';
-                completedList.style.display = isOpen ? 'none' : 'block';
-                header.querySelector('.completed-header span:last-child').textContent = isOpen ? '▼' : '▲';
-            };
-            list.appendChild(header);
-        }
+        const activeFragment = document.createDocumentFragment();
+        active.forEach(c => activeFragment.appendChild(buildCreditItem(c, cm, cy)));
+        list.appendChild(activeFragment);
     }
-    
-    let allActive = credits.filter(c => !c.completed);
-    let total = allActive.reduce((s,c) => s + c.amount, 0);
-    let paidSum = allActive.reduce((s,c) => s + (c.paid ? c.amount : (c.partial||0)), 0);
-    document.getElementById('summaryAmount').textContent = fmt(total)+' ₽';
-    document.getElementById('summaryPaid').textContent = `Внесено ${fmt(paidSum)} ₽`;
-    document.getElementById('summaryPercent').textContent = total ? Math.floor((paidSum/total)*100)+'%' : '0%';
-    document.getElementById('summaryBarFill').style.width = total ? (paidSum/total)*100+'%' : '0%';
-    document.getElementById('summaryCount').textContent = allActive.length;
-    document.getElementById('summaryPaidCount').textContent = allActive.filter(c=>c.paid).length;
-    document.getElementById('summaryRemain').textContent = fmt(total-paidSum)+' ₽';
+
+    const compSec = document.getElementById('completedSection');
+    if (completed.length) {
+        compSec.style.display = '';
+        document.getElementById('completedLabel').textContent = `Завершённые (${completed.length})`;
+        const compList = document.getElementById('completedList');
+        if (compList.classList.contains('open')) {
+            compList.innerHTML = '';
+            const compFragment = document.createDocumentFragment();
+            completed.forEach(c => compFragment.appendChild(buildCreditItem(c, cm, cy)));
+            compList.appendChild(compFragment);
+        }
+    } else compSec.style.display = 'none';
+
+    document.getElementById('activeCount').textContent = active.length ? `${active.length}` : '';
+    updateSummary(active);
+    if (!amountsVisible) setTimeout(startSpoilers, 30);
 }
 
-function createCreditElement(c) {
-    let catEmoji = Object.keys(CATS).find(k => CATS[k].includes(c.category)) || 'other';
-    let emoji = { mortgage:'🏠', auto:'🚗', consumer:'💳', card:'💰', other:'📄' }[c.category] || '📄';
-    let remain = Math.max(0, c.amount - (c.partial||0));
-    
-    let item = document.createElement('div');
-    item.className = `credit-item ${c.paid ? 'paid' : ''} ${c.isShared ? 'shared' : ''}`;
-    
-    let authorHtml = c.isShared && c.authorName ? `<div class="credit-author">👥 Общий · ${esc(c.authorName)}</div>` : '';
-    
+function buildCreditItem(c, cm, cy) {
+    const partial = c.partial || 0;
+    const remain  = Math.max(0, c.amount - partial);
+    const percent = c.amount > 0 ? (partial / c.amount) * 100 : 0;
+
     let termHtml = '';
     if (c.endDate) {
-        let now = new Date();
-        let end = new Date(c.endDate);
-        let monthsLeft = (end.getFullYear() - now.getFullYear()) * 12 + (end.getMonth() - now.getMonth());
-        if (monthsLeft <= 0) termHtml = '<span class="credit-term-tag ending">Завершается</span>';
-        else if (monthsLeft <= 3) termHtml = `<span class="credit-term-tag soon">Осталось ${monthsLeft} мес</span>`;
-        else termHtml = `<span class="credit-term-tag">${monthsLeft} мес</span>`;
+        const ed = new Date(c.endDate);
+        const ml = (ed.getFullYear() - cy) * 12 + (ed.getMonth() - cm);
+        if (ml <= 0)      termHtml = `<span class="credit-term-tag ending">Завершается</span>`;
+        else if (ml <= 3) termHtml = `<span class="credit-term-tag soon">Ещё ${ml} мес.</span>`;
+        else              termHtml = `<span class="credit-term-tag ok">${ml} мес.</span>`;
+    } else termHtml = `<span class="credit-term-tag infinite">Бессрочный</span>`;
+
+    const cat  = CATS[c.category] || CATS.other;
+    const wrap = document.createElement('div');
+    wrap.style.background = 'var(--surface)';
+    const item = document.createElement('div');
+    item.className = 'credit-item' + (c.completed ? ' completed' : c.paid ? ' paid' : '');
+    if (!c.paid && !c.completed && partial > 0) {
+        if (partial >= c.amount) item.classList.add('partial-complete');
+        else { item.classList.add('partial-bg'); item.style.setProperty('--partial-width', percent + '%'); }
     }
     
-    item.innerHTML = `
-        <div class="credit-icon-wrap">${emoji}</div>
-        <div class="credit-main">
-            <div class="credit-name">${esc(c.name)}</div>
-            ${authorHtml}
-            <div class="credit-meta">
-                <span class="credit-date-tag">${c.day} числа</span>
-                ${termHtml}
-            </div>
-        </div>
-        <div class="credit-right">
-            <div class="credit-amount">${c.paid ? fmt(c.amount) : (c.partial ? fmt(remain) : fmt(c.amount))} ₽</div>
-            ${c.paid ? '<div class="credit-paid-badge">Оплачен</div>' : (c.partial ? '<div class="credit-paid-badge">Частично</div>' : '')}
-        </div>
-        <div class="check-wrap ${c.paid ? 'checked' : ''}">
-            <svg viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="2.5"><polyline points="2,7 6,11 12,3"/></svg>
-        </div>
-    `;
+    const displayAmount = c.paid ? fmt(c.amount) : (partial > 0 ? fmt(remain) : fmt(c.amount));
     
-    item.addEventListener('click', e => { if (!e.target.closest('.check-wrap')) openAction(c.id); });
+    item.innerHTML = `<div class="credit-icon-wrap">${cat.emoji}</div><div class="credit-main"><div class="credit-name">${esc(c.name)}</div><div class="credit-meta"><span class="credit-date-tag">${formatPaymentDate(c.day)}</span>${termHtml}</div></div><div class="credit-right"><span class="credit-amount">${displayAmount} ₽</span>${c.paid ? '<span class="credit-paid-badge">Оплачен</span>' : (partial > 0 ? `<span style="font-size:0.68rem;color:var(--text-2);font-weight:500">из ${fmt(c.amount)} ₽</span>` : '')}</div><div class="check-wrap ${c.paid||c.completed?'checked':''}" data-id="${c.id}"><svg viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="2.5"><polyline points="2,7 6,11 12,3"/></svg></div>`;
+    item.addEventListener('click', e => { if (!c.completed && !e.target.closest('.check-wrap')) openAction(c.id); });
     item.querySelector('.check-wrap').addEventListener('click', async e => {
         e.stopPropagation();
-        let newPaid = !c.paid;
-        await db.collection('credits').doc(c.id).update({ paid: newPaid, partial: newPaid ? c.amount : 0 });
+        if (!c.completed) { const newPaid = !c.paid; await updateCreditField(c.id, { paid: newPaid, partial: newPaid ? c.amount : 0 }); }
     });
-    return item;
+    wrap.appendChild(item);
+    return wrap;
+}
+
+function updateSummary(active) {
+    const total        = active.reduce((s,c) => s + c.amount, 0);
+    const paidTotalSum = active.reduce((s,c) => s + (c.paid ? c.amount : (c.partial||0)), 0);
+    const remain = total > 0 ? Math.max(0, total - paidTotalSum) : 0;
+    
+    const pct = total > 0 ? Math.floor((paidTotalSum/total)*100) : 0;
+    
+    document.getElementById('summaryAmount').textContent    = fmt(total)+' ₽';
+    document.getElementById('summaryPaid').textContent      = `Внесено ${fmt(paidTotalSum)} ₽`;
+    document.getElementById('summaryPercent').textContent   = pct+'%';
+    document.getElementById('summaryBarFill').style.width   = pct+'%';
+    document.getElementById('summaryCount').textContent     = active.length;
+    document.getElementById('summaryPaidCount').textContent = active.filter(c=>c.paid).length;
+    document.getElementById('summaryRemain').textContent    = fmt(remain)+' ₽';
+    
+    if (paidTotalSum >= total && total > 0 && active.length > 0 && !allPaidShown) { 
+        allPaidShown = true; 
+        setTimeout(() => document.getElementById('allPaidOverlay').classList.add('active'), 400); 
+    }
+    else if (pct < 100) allPaidShown = false;
 }
 
 function openAction(id) {
-    let c = credits.find(x => x.id === id);
-    if (!c) return;
+    const c = credits.find(x => x.id === id); if (!c) return;
     selectedCreditId = id;
-    document.getElementById('actionNameText').textContent = c.name;
-    document.getElementById('actionSub').textContent = `${fmt(c.amount)} ₽ · ${c.day} числа`;
-    document.getElementById('actionAuthor').textContent = c.isShared ? `👥 Общий кредит · Добавил: ${c.authorName || 'неизвестно'}` : '📱 Личный кредит';
+    const cat = CATS[c.category] || CATS.other;
+    document.getElementById('actionNameText').textContent   = cat.emoji+' '+c.name;
+    document.getElementById('actionSub').textContent        = fmt(c.amount)+' ₽ · '+formatPaymentDate(c.day);
+    const partial = c.partial || 0;
+    document.getElementById('partialPaidDisplay').textContent   = fmt(partial)+' ₽';
+    document.getElementById('partialRemainDisplay').textContent = fmt(Math.max(0,c.amount-partial))+' ₽';
+    document.getElementById('partialInput').value = '';
+    const ps = document.getElementById('partialSection');
+    const rb = document.getElementById('resetPartialBtn');
+    if (c.paid||c.completed) { ps.style.display='none'; rb.style.display='none'; }
+    else { ps.style.display=''; rb.style.display=partial>0?'':'none'; }
     document.getElementById('actionOverlay').classList.add('active');
 }
 
-function openAddCredit() { editMode = false; editId = null; document.getElementById('formTitleText').innerText = 'Новый кредит'; resetForm(); document.getElementById('formOverlay').classList.add('active'); }
-function closeForm() { document.getElementById('formOverlay').classList.remove('active'); resetForm(); }
+async function resetPartial() {
+    const c = credits.find(x=>x.id===selectedCreditId);
+    if (c&&!c.paid&&!c.completed) { await updateCreditField(c.id,{partial:0}); closeAction(); showToast('Частичная оплата сброшена'); }
+}
+
 function closeAction() { document.getElementById('actionOverlay').classList.remove('active'); }
-function closeDelete() { document.getElementById('deleteOverlay').classList.remove('active'); }
-function showDeleteConfirm() { closeAction(); setTimeout(() => document.getElementById('deleteOverlay').classList.add('active'), 100); }
-async function doDelete() { if (selectedCreditId) { await db.collection('credits').doc(selectedCreditId).delete(); showToast('Удалено'); } closeDelete(); selectedCreditId = null; }
+
+async function savePartial() {
+    const c = credits.find(x=>x.id===selectedCreditId); if (!c) return;
+    const inp = parseFloat(document.getElementById('partialInput').value);
+    if (!inp||inp<=0) { showToast('Введите сумму'); return; }
+    const newPartial = Math.min(c.amount,(c.partial||0)+inp);
+    const newPaid = newPartial >= c.amount;
+    await updateCreditField(c.id,{partial:newPartial,paid:newPaid});
+    closeAction();
+    showToast(newPaid?'Кредит полностью оплачен':'Внесено '+fmt(inp)+' ₽');
+}
 
 function openEdit() {
-    let c = credits.find(x => x.id === selectedCreditId);
-    if (!c) return;
-    editMode = true; editId = selectedCreditId;
-    document.getElementById('nameInput').value = c.name;
+    const c = credits.find(x=>x.id===selectedCreditId); if (!c) return;
+    editMode=true; editId=selectedCreditId;
+    document.getElementById('nameInput').value   = c.name;
     document.getElementById('amountInput').value = c.amount;
-    document.getElementById('dayInput').value = c.day;
-    document.getElementById('endDateCal').value = c.endDate || '';
+    document.getElementById('dayInput').value    = c.day;
     selectCat(c.category);
-    document.getElementById('creditTypeSelect').value = c.isShared ? 'shared' : 'personal';
-    document.getElementById('formTitleText').innerText = 'Редактировать кредит';
+    if (c.endDate) { setDateMode('cal'); document.getElementById('endDateCal').value=c.endDate; }
+    document.getElementById('formTitleText').innerText = 'Редактировать';
+    document.getElementById('formSaveBtn').innerText   = 'Сохранить';
     closeAction();
     document.getElementById('formOverlay').classList.add('active');
+    updateFab(true);
+}
+
+function showDeleteConfirm() { closeAction(); setTimeout(()=>document.getElementById('deleteOverlay').classList.add('active'),100); }
+function closeDelete() { document.getElementById('deleteOverlay').classList.remove('active'); }
+async function doDelete() {
+    if (selectedCreditId) { await deleteCredit(selectedCreditId); showToast('Удалено'); }
+    closeDelete(); selectedCreditId=null;
+}
+
+function toggleForm() {
+    const ov = document.getElementById('formOverlay');
+    if (!ov.classList.contains('active')) { ov.classList.add('active'); updateFab(true); } else closeForm();
+}
+
+function closeForm() {
+    document.getElementById('formOverlay').classList.remove('active');
+    updateFab(false); resetForm(); _isSaving=false;
+}
+
+function resetForm() {
+    editMode=false; editId=null;
+    document.getElementById('nameInput').value   = '';
+    document.getElementById('amountInput').value = '';
+    document.getElementById('dayInput').value    = '';
+    document.getElementById('endDateCal').value  = '';
+    document.getElementById('formTitleText').innerText = 'Новый кредит';
+    document.getElementById('formSaveBtn').innerText   = 'Добавить';
+    document.getElementById('formSaveBtn').disabled    = false;
+    selectCat('mortgage'); setDateMode('cal');
 }
 
 async function handleSave() {
-    let name = document.getElementById('nameInput').value.trim();
-    let amount = parseFloat(document.getElementById('amountInput').value);
-    let day = parseInt(document.getElementById('dayInput').value);
-    if (!name || !amount || !day || day < 1 || day > 31) { showToast('Заполните все поля'); return; }
-    
-    let creditType = document.getElementById('creditTypeSelect').value;
-    let endDate = document.getElementById('endDateCal').value || null;
-    let profile = await loadUserProfile();
-    
-    let data = { name, amount, day, category: selectedCat, endDate, paid: false, partial: 0, type: creditType, ownerId: currentUser.uid, authorName: profile.name };
-    
-    if (creditType === 'shared') {
-        let userDoc = await db.collection('users').doc(currentUser.uid).get();
-        let groupId = userDoc.data()?.groupId;
-        if (!groupId) { showToast('Сначала создайте или вступите в группу в настройках'); return; }
-        data.groupId = groupId;
-    }
-    
-    if (editMode && editId) {
-        await db.collection('credits').doc(editId).update(data);
-        showToast('Обновлено');
-    } else {
-        await db.collection('credits').add(data);
-        showToast('Добавлено');
-    }
+    if (_isSaving) return;
+    const name   = document.getElementById('nameInput').value.trim();
+    const amount = parseFloat(document.getElementById('amountInput').value);
+    const day    = parseInt(document.getElementById('dayInput').value);
+    if (!name)                       { showToast('Введите название'); return; }
+    if (!amount || amount <= 0)      { showToast('Введите сумму'); return; }
+    if (!day || day < 1 || day > 31) { showToast('День оплаты: 1–31'); return; }
+
+    // Capture BEFORE closeForm() resets them
+    const isEdit    = editMode;
+    const saveId    = editId;
+    const saveCat   = selectedCat;
+    const endDate   = getEndDate();
+
+    _isSaving = true;
+    const saveBtn = document.getElementById('formSaveBtn');
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Сохранение...';
+
     closeForm();
+    showToast('Сохранение...');
+
+    try {
+        const creditData = { name, amount, day, category: saveCat, endDate };
+        if (isEdit && saveId) {
+            creditData.userId = authUser.uid;
+            await db.collection('credits').doc(saveId).update(creditData);
+            showToast('Кредит обновлён');
+        } else {
+            creditData.paid = false;
+            creditData.completed = false;
+            creditData.partial = 0;
+            creditData.createdAt = new Date().toISOString();
+            creditData.userId = authUser.uid;
+            await db.collection('credits').add(creditData);
+            showToast('Кредит добавлен');
+        }
+    } catch(e) {
+        console.error('Ошибка сохранения:', e);
+        let errMsg = 'Ошибка сохранения';
+        if (e.code === 'permission-denied') errMsg = 'Нет доступа. Проверьте правила безопасности Firebase.';
+        else if (e.message) errMsg = e.message;
+        showToast(errMsg);
+    } finally {
+        _isSaving = false;
+    }
 }
 
-function selectCat(cat) { selectedCat = cat; document.querySelectorAll('.cat-item').forEach(el => el.classList.toggle('selected', el.dataset.cat === cat)); }
-function resetForm() { document.getElementById('nameInput').value = ''; document.getElementById('amountInput').value = ''; document.getElementById('dayInput').value = ''; document.getElementById('endDateCal').value = ''; selectCat('mortgage'); document.getElementById('creditTypeSelect').value = 'personal'; }
-function setFilter(filter) { currentFilter = filter; document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.filter === filter)); render(); }
+function selectCat(cat) {
+    selectedCat = cat;
+    document.querySelectorAll('.cat-item').forEach(el => el.classList.toggle('selected', el.dataset.cat===cat));
+}
+function setDateMode(m) {
+    dateMode = m;
+    document.getElementById('dtBtnCal').classList.toggle('active', m==='cal');
+    document.getElementById('dtBtnMan').classList.toggle('active', m==='man');
+    document.getElementById('calInput').classList.toggle('active', m==='cal');
+    document.getElementById('manInput').classList.toggle('active', m==='man');
+}
+function getEndDate() {
+    if (dateMode==='cal') return document.getElementById('endDateCal').value||null;
+    const mo = document.getElementById('endMonth').value;
+    const yr = document.getElementById('endYear').value;
+    return (mo!==''&&yr) ? `${yr}-${String(parseInt(mo)+1).padStart(2,'0')}-01` : null;
+}
 
-function openSettings() { loadUserProfile().then(p => { document.getElementById('profileNameDisplay').innerHTML = `<strong>Имя:</strong> ${esc(p.name || '—')}`; document.getElementById('profilePhoneDisplay').innerHTML = `<strong>Телефон:</strong> ${esc(p.phone || '—')}`; document.getElementById('profileEmailDisplay').innerHTML = `<strong>Email:</strong> ${esc(currentUser?.email || '—')}`; }); loadGroup(); document.getElementById('settingsOverlay').classList.add('active'); }
+function fabClick(e) {
+    e.stopPropagation();
+    const fab = document.getElementById('fab');
+    if (fab.classList.contains('active')) { closeForm(); return; }
+    fab.style.transform='scale(0.88)';
+    setTimeout(()=>{ fab.style.transform=''; toggleForm(); }, 120);
+}
+function updateFab(active) { document.getElementById('fab').classList.toggle('active',active); }
+
+function gearClick(e) {
+    e.stopPropagation();
+    const btn = document.getElementById('settingsBtn');
+    btn.classList.add('spinning');
+    btn.addEventListener('animationend', function h() { btn.classList.remove('spinning'); btn.removeEventListener('animationend',h); openSettings(); });
+}
+function openSettings() {
+    if (authUser) document.getElementById('userEmailDisplay').textContent = authUser.email||'—';
+    updateSettingsUI();
+    document.getElementById('settingsOverlay').classList.add('active');
+}
 function closeSettings() { document.getElementById('settingsOverlay').classList.remove('active'); }
 
-function editProfile() { loadUserProfile().then(p => { document.getElementById('editName').value = p.name || ''; document.getElementById('editPhone').value = p.phone || ''; closeSettings(); setTimeout(() => document.getElementById('editProfileOverlay').classList.add('active'), 200); }); }
-function closeEditProfile() { document.getElementById('editProfileOverlay').classList.remove('active'); }
-async function saveProfile() { let name = document.getElementById('editName').value.trim(); let phone = document.getElementById('editPhone').value.trim(); if (name) await db.collection('users').doc(currentUser.uid).set({ name, phone, email: currentUser.email }, { merge: true }); showToast('Профиль обновлён'); closeEditProfile(); }
+function loadTheme()  { const t=ls.get(THEME_K); if(t) theme=t; applyTheme(); }
+function applyTheme() { document.documentElement.setAttribute('data-theme',theme); if(!amountsVisible){stopSpoilers();startSpoilers();} }
+function toggleThemeFromSettings() { theme=theme==='light'?'dark':'light'; applyTheme(); ls.set(THEME_K,theme); updateSettingsUI(); }
 
-function changePassword() { closeSettings(); setTimeout(() => document.getElementById('changePassOverlay').classList.add('active'), 200); }
+function loadAmounts()  { const v=ls.get(AMT_K); if(v!==null) amountsVisible=v==='true'; applyAmounts(); }
+function applyAmounts() { document.body.classList.toggle('amounts-hidden',!amountsVisible); if(!amountsVisible) startSpoilers(); else stopSpoilers(); }
+function toggleAmountsFromSettings() { amountsVisible=!amountsVisible; ls.set(AMT_K,amountsVisible); applyAmounts(); updateSettingsUI(); }
+
+const fontScales = {s:0.87,m:1,l:1.14};
+function loadFontSize() { const f=ls.get(FONT_K); if(f&&fontScales[f]) fontSize=f; applyFont(); }
+function applyFont()    { document.documentElement.style.fontSize=(16*fontScales[fontSize])+'px'; }
+function setFontSize(s) { fontSize=s; applyFont(); ls.set(FONT_K,s); if(!amountsVisible){stopSpoilers();startSpoilers();} updateSettingsUI(); }
+
+function updateSettingsUI() {
+    const tt = document.getElementById('themeSwitchTrack');
+    if(theme==='dark') tt.classList.add('dark-on'); else tt.classList.remove('dark-on');
+    const at = document.getElementById('amountsSwitchTrack');
+    if(!amountsVisible) at.classList.add('dark-on'); else at.classList.remove('dark-on');
+    document.querySelectorAll('.font-step').forEach(el => el.classList.toggle('active', el.getAttribute('data-size')===fontSize));
+    const hasPin = !!ls.get(PIN_K);
+    document.getElementById('lockStatusTitle').textContent = hasPin?'ПИН-код установлен':'Защита не установлена';
+    document.getElementById('lockStatusSub').textContent   = hasPin?'Нажмите для изменения':'Нажмите для настройки';
+    document.getElementById('removeLockBtn').style.display = hasPin?'':'none';
+}
+
+function changePassword() {
+    closeSettings();
+    setTimeout(()=>{
+        if(authUser) document.getElementById('changePassEmail').textContent=authUser.email||'—';
+        document.getElementById('cpOldPass').value='';
+        document.getElementById('cpNewPass').value='';
+        document.getElementById('cpConfirmPass').value='';
+        document.getElementById('changePassOverlay').classList.add('active');
+    }, 200);
+}
 function closeChangePass() { document.getElementById('changePassOverlay').classList.remove('active'); }
-async function doChangePassword() { let old = document.getElementById('cpOldPass').value; let newp = document.getElementById('cpNewPass').value; let conf = document.getElementById('cpConfirmPass').value; if (!old || !newp || newp.length < 6) { showToast('Пароль минимум 6 символов'); return; } if (newp !== conf) { showToast('Пароли не совпадают'); return; } try { let cred = firebase.auth.EmailAuthProvider.credential(currentUser.email, old); await currentUser.reauthenticateWithCredential(cred); await currentUser.updatePassword(newp); closeChangePass(); showToast('Пароль изменён'); } catch(e) { showToast('Неверный текущий пароль'); } }
-
-async function doLogout() { await auth.signOut(); sessionStorage.clear(); credits = []; document.getElementById('app').classList.remove('visible'); document.getElementById('authScreen').style.display = 'flex'; showToast('Вы вышли'); }
+async function doChangePassword() {
+    const oldPass=document.getElementById('cpOldPass').value;
+    const newPass=document.getElementById('cpNewPass').value;
+    const confPass=document.getElementById('cpConfirmPass').value;
+    if(!oldPass)               { showToast('Введите текущий пароль'); return; }
+    if(!newPass||newPass.length<6) { showToast('Новый пароль — минимум 6 символов'); return; }
+    if(newPass!==confPass)     { showToast('Пароли не совпадают'); return; }
+    if(oldPass===newPass)      { showToast('Новый пароль совпадает со старым'); return; }
+    try {
+        const cred = firebase.auth.EmailAuthProvider.credential(authUser.email, oldPass);
+        await authUser.reauthenticateWithCredential(cred);
+        await authUser.updatePassword(newPass);
+        closeChangePass();
+        showToast('Пароль успешно изменён');
+    } catch(e) {
+        if(e.code==='auth/wrong-password'||e.code==='auth/invalid-credential') showToast('Неверный текущий пароль');
+        else if(e.code==='auth/weak-password') showToast('Пароль слишком простой');
+        else showToast('Ошибка: '+e.message);
+    }
+}
 
 function toggleAuthMode() {
-    let isLogin = document.getElementById('authTitle').innerText === 'Войти';
-    let fields = document.getElementById('authFields');
-    if (!isLogin) {
-        fields.innerHTML = `<div class="auth-field"><div class="auth-field-label">Имя</div><input type="text" id="authName" placeholder="Как вас зовут?"></div><div class="auth-field"><div class="auth-field-label">Телефон</div><input type="tel" id="authPhone" placeholder="+7 XXX XXX XX XX"></div><div class="auth-field"><div class="auth-field-label">Email</div><input type="email" id="authEmail" placeholder="mail@example.com"></div><div class="auth-field"><div class="auth-field-label">Пароль</div><input type="password" id="authPassword" placeholder="Минимум 6 символов"></div>`;
-        document.getElementById('authTitle').innerText = 'Регистрация';
-        document.getElementById('authBtn').innerText = 'Зарегистрироваться';
-        document.querySelector('.auth-switch-link').innerHTML = 'Уже есть аккаунт? <span>Войти</span>';
-    } else {
-        fields.innerHTML = `<div class="auth-field"><div class="auth-field-label">Email</div><input type="email" id="authEmail" placeholder="mail@example.com"></div><div class="auth-field"><div class="auth-field-label">Пароль</div><input type="password" id="authPassword" placeholder="••••••••"></div>`;
-        document.getElementById('authTitle').innerText = 'Войти';
-        document.getElementById('authBtn').innerText = 'Войти';
-        document.querySelector('.auth-switch-link').innerHTML = 'Нет аккаунта? <span>Зарегистрироваться</span>';
-    }
+    isLoginMode=!isLoginMode;
+    document.getElementById('authTitle').textContent=isLoginMode?'Войти в аккаунт':'Создать аккаунт';
+    document.getElementById('authBtn').textContent=isLoginMode?'Войти':'Зарегистрироваться';
+    const sw=document.querySelector('.auth-switch-link');
+    sw.innerHTML=isLoginMode?'Нет аккаунта? <span>Зарегистрироваться</span>':'Уже есть аккаунт? <span>Войти</span>';
 }
-
 async function doAuth() {
-    let btn = document.getElementById('authBtn');
-    btn.disabled = true;
-    let isLogin = document.getElementById('authTitle').innerText === 'Войти';
-    if (isLogin) {
-        let email = document.getElementById('authEmail').value.trim();
-        let pass = document.getElementById('authPassword').value;
-        try { await auth.signInWithEmailAndPassword(email, pass); } catch(e) { showToast('Неверный email или пароль'); }
-    } else {
-        let name = document.getElementById('authName').value.trim();
-        let phone = document.getElementById('authPhone').value.trim();
-        let email = document.getElementById('authEmail').value.trim();
-        let pass = document.getElementById('authPassword').value;
-        if (!name || !email || !pass || pass.length < 6) { showToast('Заполните все поля (пароль ≥6 символов)'); btn.disabled = false; return; }
-        try {
-            let cred = await auth.createUserWithEmailAndPassword(email, pass);
-            await db.collection('users').doc(cred.user.uid).set({ name, phone, email, createdAt: new Date() });
-        } catch(e) { showToast(e.message); }
+    const email=document.getElementById('authEmail').value.trim();
+    const pass=document.getElementById('authPassword').value;
+    if(!email||!pass) { showToast('Заполните все поля'); return; }
+    const btn=document.getElementById('authBtn');
+    btn.disabled=true; btn.textContent='Подождите...';
+    try {
+        // При входе на новом устройстве (нет активной сессии) — сбрасываем ПИН
+        const isNewDevice=!sessionStorage.getItem('session_started');
+        if(isLoginMode) {
+            await auth.signInWithEmailAndPassword(email,pass);
+            if(isNewDevice){ ls.rm(PIN_K); ls.rm(PIN_LEN_K); }
+        } else {
+            await auth.createUserWithEmailAndPassword(email,pass);
+            ls.rm(PIN_K); ls.rm(PIN_LEN_K);
+        }
+    } catch(e) {
+        let msg='Ошибка входа';
+        if(e.code==='auth/user-not-found'||e.code==='auth/wrong-password'||e.code==='auth/invalid-credential') msg='Неверный email или пароль';
+        else if(e.code==='auth/email-already-in-use') msg='Этот email уже зарегистрирован';
+        else if(e.code==='auth/invalid-email') msg='Некорректный email';
+        else if(e.code==='auth/weak-password') msg='Пароль слишком простой (минимум 6 символов)';
+        else msg=e.message;
+        showToast(msg);
+    } finally {
+        btn.disabled=false; btn.textContent=isLoginMode?'Войти':'Создать аккаунт';
     }
-    btn.disabled = false;
+}
+async function doLogout() {
+    if(creditsUnsubscribe) { creditsUnsubscribe(); creditsUnsubscribe=null; }
+    await auth.signOut();
+    closeSettings();
+    sessionStorage.removeItem('pin_ok');
+    sessionStorage.removeItem('session_started');
+    monthResetDone=false;
+    credits=[]; render();
+    document.getElementById('authEmail').value='';
+    document.getElementById('authPassword').value='';
+    isLoginMode=true;
+    document.getElementById('authTitle').textContent='Войти в аккаунт';
+    document.getElementById('authBtn').textContent='Войти';
+    document.querySelector('.auth-switch-link').innerHTML='Нет аккаунта? <span>Зарегистрироваться</span>';
+    document.getElementById('app').classList.remove('visible');
+    document.getElementById('authScreen').style.display='flex';
+    showToast('Вы вышли из аккаунта');
 }
 
-function toggleTheme() { theme = theme === 'light' ? 'dark' : 'light'; document.documentElement.setAttribute('data-theme', theme); localStorage.setItem('theme', theme); }
-function toggleAmounts() { amountsVisible = !amountsVisible; document.body.classList.toggle('amounts-hidden', !amountsVisible); localStorage.setItem('amountsHidden', !amountsVisible); }
-function loadTheme() { theme = localStorage.getItem('theme') || 'light'; document.documentElement.setAttribute('data-theme', theme); amountsVisible = localStorage.getItem('amountsHidden') !== 'true'; document.body.classList.toggle('amounts-hidden', !amountsVisible); }
+function buildPinDots(cId,count,pfx) {
+    const el=document.getElementById(cId); el.innerHTML='';
+    for(let i=0;i<count;i++){const d=document.createElement('div');d.className='pin-dot';d.id=pfx+i;el.appendChild(d);}
+}
+function fillPinDots(cId,pfx,filled,count) {
+    for(let i=0;i<count;i++){const d=document.getElementById(pfx+i);if(d){d.classList.toggle('filled',i<filled);d.classList.remove('error');}}
+}
+function shakePinDots(cId,pfx,count) {
+    for(let i=0;i<count;i++){const d=document.getElementById(pfx+i);if(d)d.classList.add('error');}
+    const el=document.getElementById(cId);el.classList.add('shake');setTimeout(()=>el.classList.remove('shake'),400);
+}
+function hashPin(s){let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=(h*0x01000193)>>>0;}return h.toString(16);}
 
-function buildCatGrid() { let html = ''; for (let [k, v] of Object.entries(CATS)) html += `<div class="cat-item" data-cat="${k}" onclick="selectCat('${k}')"><span>${v.split(' ')[0]}</span><span class="cat-label">${v.split(' ')[1]}</span></div>`; document.getElementById('catGrid').innerHTML = html; selectCat('mortgage'); }
+function selectPinLen(n) {
+    pinSetLen=n;
+    document.querySelectorAll('.pin-len-btn').forEach(b=>b.classList.toggle('active',parseInt(b.textContent)===n));
+    pinSetBuf=''; buildPinDots('pinSetDots',n,'sd'); fillPinDots('pinSetDots','sd',0,n);
+}
+function pinSetKey(v) {
+    if(pinSetBuf.length>=pinSetLen) return;
+    pinSetBuf+=v; fillPinDots('pinSetDots','sd',pinSetBuf.length,pinSetLen);
+    if(pinSetBuf.length===pinSetLen) {
+        setTimeout(()=>{
+            if(pinSetStep===2) {
+                if(hashPin(pinSetBuf)===ls.get(PIN_K)) {
+                    if(pinSetVerifyMode==='remove'){document.getElementById('pinSetOverlay').classList.remove('active');_removeLock();}
+                    else{pinSetBuf='';pinSetStep=0;pinSetVerifyMode=null;document.getElementById('pinSetTitle').textContent='Создайте новый ПИН-код';document.getElementById('pinSetSub').textContent='Выберите длину и введите цифры';document.getElementById('pinLenRow').style.display='';pinSetLen=4;selectPinLen(4);}
+                } else {
+                    document.getElementById('pinSetSub').textContent='Неверный ПИН-код';shakePinDots('pinSetDots','sd',pinSetLen);pinSetBuf='';setTimeout(()=>fillPinDots('pinSetDots','sd',0,pinSetLen),400);
+                }
+            } else if(pinSetStep===0) {
+                pinSetFirst=pinSetBuf;pinSetBuf='';pinSetStep=1;
+                document.getElementById('pinLenRow').style.display='none';document.getElementById('pinSetTitle').textContent='Повторите ПИН-код';document.getElementById('pinSetSub').textContent=`Введите ${pinSetLen} цифр ещё раз`;fillPinDots('pinSetDots','sd',0,pinSetLen);
+            } else {
+                if(pinSetBuf===pinSetFirst){ls.set(PIN_K,hashPin(pinSetBuf));ls.set(PIN_LEN_K,String(pinSetLen));document.getElementById('pinSetOverlay').classList.remove('active');updateSettingsUI();showToast('ПИН-код установлен');lockPanelOpen=false;document.getElementById('lockButtons').style.display='none';document.getElementById('lockStatusRow').classList.remove('open');}
+                else{document.getElementById('pinSetSub').textContent='Коды не совпадают';shakePinDots('pinSetDots','sd',pinSetLen);pinSetBuf='';pinSetStep=0;pinSetFirst='';document.getElementById('pinLenRow').style.display='';buildPinDots('pinSetDots',pinSetLen,'sd');setTimeout(()=>fillPinDots('pinSetDots','sd',0,pinSetLen),400);}
+            }
+        },100);
+    }
+}
+function pinSetDel(){pinSetBuf=pinSetBuf.slice(0,-1);fillPinDots('pinSetDots','sd',pinSetBuf.length,pinSetLen);}
+function openNewPin(){pinSetBuf='';pinSetStep=0;pinSetFirst='';pinSetLen=4;pinSetVerifyMode=null;document.getElementById('pinSetTitle').textContent='Создайте ПИН-код';document.getElementById('pinSetSub').textContent='Выберите длину и введите цифры';document.getElementById('pinLenRow').style.display='';buildPinDots('pinSetDots',pinSetLen,'sd');document.getElementById('pinSetOverlay').classList.add('active');}
+function openPinVerify(title,sub){pinSetBuf='';pinSetStep=2;const len=parseInt(ls.get(PIN_LEN_K))||4;pinSetLen=len;document.getElementById('pinSetTitle').textContent=title;document.getElementById('pinSetSub').textContent=sub;document.getElementById('pinLenRow').style.display='none';buildPinDots('pinSetDots',len,'sd');document.getElementById('pinSetOverlay').classList.add('active');}
+function cancelPinSet(){document.getElementById('pinSetOverlay').classList.remove('active');pinSetBuf='';pinSetStep=0;pinSetVerifyMode=null;}
+function openPinLock(){pinLockLen=parseInt(ls.get(PIN_LEN_K))||4;pinLockBuf='';document.getElementById('pinLockSub').textContent='Для входа в приложение';buildPinDots('pinLockDots',pinLockLen,'ld');fillPinDots('pinLockDots','ld',0,pinLockLen);document.getElementById('pinLockOverlay').classList.add('active');}
+function pinLockKey(v){
+    if(pinLockBuf.length>=pinLockLen)return;
+    pinLockBuf+=v;fillPinDots('pinLockDots','ld',pinLockBuf.length,pinLockLen);
+    if(pinLockBuf.length===pinLockLen){
+        setTimeout(()=>{
+            if(hashPin(pinLockBuf)===ls.get(PIN_K)){
+                sessionStorage.setItem('pin_ok','1');sessionStorage.setItem('session_started','1');
+                document.getElementById('pinLockOverlay').classList.remove('active');
+                document.getElementById('app').classList.add('visible');
+                loadCredits();
+            } else {
+                document.getElementById('pinLockSub').textContent='Неверный ПИН-код';shakePinDots('pinLockDots','ld',pinLockLen);pinLockBuf='';
+                setTimeout(()=>{document.getElementById('pinLockSub').textContent='Для входа в приложение';fillPinDots('pinLockDots','ld',0,pinLockLen);},500);
+            }
+        },100);
+    }
+}
+function pinLockDel(){pinLockBuf=pinLockBuf.slice(0,-1);fillPinDots('pinLockDots','ld',pinLockBuf.length,pinLockLen);}
+function startSetPin(){const s=ls.get(PIN_K);if(s){pinSetVerifyMode='change';openPinVerify('Введите текущий ПИН','Для смены защиты');}else openNewPin();}
+function doRemoveLock(){const s=ls.get(PIN_K);if(s){pinSetVerifyMode='remove';openPinVerify('Подтвердите удаление','Введите текущий ПИН-код');}else _removeLock();}
+function _removeLock(){ls.rm(PIN_K);ls.rm(PIN_LEN_K);lockPanelOpen=false;document.getElementById('lockButtons').style.display='none';document.getElementById('lockStatusRow').classList.remove('open');updateSettingsUI();showToast('Защита снята');}
+function toggleLockPanel(){lockPanelOpen=!lockPanelOpen;document.getElementById('lockButtons').style.display=lockPanelOpen?'':'none';document.getElementById('lockStatusRow').classList.toggle('open',lockPanelOpen);}
 
-function evaluateLaunch() { if (!authResolved || !splashTimerDone) return; document.getElementById('splash').classList.add('hidden'); if (currentUser) { document.getElementById('authScreen').style.display = 'none'; document.getElementById('app').classList.add('visible'); loadCredits(); } else { document.getElementById('app').classList.remove('visible'); document.getElementById('authScreen').style.display = 'flex'; } }
+let spoilerRAF = null;
+const spoilerMap = new Map();
 
-window.onload = () => { loadTheme(); buildCatGrid(); splashTimerDone = true; evaluateLaunch(); setTimeout(() => { if (!window._fbAppInited) document.getElementById('splash').innerHTML = '<div style="padding:20px;text-align:center">⚠️ Ошибка сети. Проверьте интернет.</div>'; }, 8000); };
-if (typeof firebase !== 'undefined') _initFirebase();
+function makeDotColor(){const dark=theme==='dark';const v=dark?(160+Math.random()*90)|0:(50+Math.random()*80)|0;return `rgba(${v},${v},${v},${(0.08+Math.random()*0.22).toFixed(2)})`;}
+function initSpoilerCanvas(el){if(el.querySelector('.spoiler-canvas'))return;const cv=document.createElement('canvas');cv.className='spoiler-canvas';el.appendChild(cv);const r=el.getBoundingClientRect();cv.width=r.width+8;cv.height=r.height+4;const count=Math.ceil((cv.width*cv.height)/6);const pts=[];for(let i=0;i<count;i++)pts.push({x:Math.random()*cv.width,y:Math.random()*cv.height,r:0.5+Math.random()*1.1,vx:(Math.random()-0.5)*0.35,vy:(Math.random()-0.5)*0.35,color:makeDotColor()});spoilerMap.set(cv,pts);}
+function animateSpoilers(){document.querySelectorAll('.spoiler-canvas').forEach(cv=>{const pts=spoilerMap.get(cv);if(!pts)return;const ctx=cv.getContext('2d');ctx.clearRect(0,0,cv.width,cv.height);pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=cv.width;else if(p.x>cv.width)p.x=0;if(p.y<0)p.y=cv.height;else if(p.y>cv.height)p.y=0;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=p.color;ctx.fill();});});spoilerRAF=requestAnimationFrame(animateSpoilers);}
+function startSpoilers(){document.querySelectorAll('.credit-amount,.total-val,.s-amount,.s-paid-val,.s-remain-val').forEach(initSpoilerCanvas);if(!spoilerRAF)spoilerRAF=requestAnimationFrame(animateSpoilers);}
+function stopSpoilers(){if(spoilerRAF){cancelAnimationFrame(spoilerRAF);spoilerRAF=null;}document.querySelectorAll('.spoiler-canvas').forEach(cv=>{spoilerMap.delete(cv);cv.remove();});}
+
+function toggleCompleted(){
+    const list=document.getElementById('completedList');
+    const arrow=document.getElementById('completedArrow');
+    const open=!list.classList.contains('open');
+    list.classList.toggle('open',open);
+    arrow.classList.toggle('open',open);
+    if(open){
+        const cm=new Date().getMonth(),cy=new Date().getFullYear();
+        list.innerHTML='';
+        const frag = document.createDocumentFragment();
+        credits.filter(c=>c.completed).forEach(c=>frag.appendChild(buildCreditItem(c,cm,cy)));
+        list.appendChild(frag);
+    }
+}
+
+function showToast(msg){document.querySelectorAll('.toast').forEach(t=>t.remove());const d=document.createElement('div');d.className='toast';d.textContent=msg;document.body.appendChild(d);setTimeout(()=>d.remove(),2200);}
+function closeAllPaid(){document.getElementById('allPaidOverlay').classList.remove('active');}
+function fmt(n){return Math.round(n).toLocaleString('ru-RU');}
+function esc(t){const d=document.createElement('div');d.textContent=t;return d.innerHTML;}
+
+function setupBackBtn(){
+    document.addEventListener('backbutton',()=>{
+        if(document.getElementById('changePassOverlay').classList.contains('active')){closeChangePass();return;}
+        if(document.getElementById('deleteOverlay').classList.contains('active')){closeDelete();return;}
+        if(document.getElementById('actionOverlay').classList.contains('active')){closeAction();return;}
+        if(document.getElementById('formOverlay').classList.contains('active')){closeForm();return;}
+        if(document.getElementById('settingsOverlay').classList.contains('active')){closeSettings();return;}
+        if(backPressedOnce){navigator.app&&navigator.app.exitApp();return;}
+        backPressedOnce=true;showToast('Нажмите ещё раз для выхода');setTimeout(()=>backPressedOnce=false,2000);
+    });
+}
+
+function evaluateLaunch(){
+    if(!authResolved||!splashTimerDone)return;
+    document.getElementById('splash').classList.add('hidden');
+    if(authUser){
+        document.getElementById('authScreen').style.display='none';
+        const hasPin=ls.get(PIN_K);
+        if(hasPin&&!sessionStorage.getItem('pin_ok')){openPinLock();}
+        else{sessionStorage.setItem('pin_ok','1');sessionStorage.setItem('session_started','1');document.getElementById('app').classList.add('visible');loadCredits();}
+    } else {
+        document.getElementById('app').classList.remove('visible');
+        document.getElementById('authScreen').style.display='flex';
+    }
+}
+
+(function setupResume(){
+    let _hidden=false;
+
+    // Блокируем любую навигацию которая может вызвать 500 от webintoapp
+    window.addEventListener('beforeunload',e=>{e.preventDefault();e.returnValue='';return '';},true);
+
+    function _resume(){
+        if(!window._fbAppInited||!auth||!db)return;
+        db.enableNetwork().then(()=>{
+            const u=auth.currentUser;
+            if(u){
+                authUser=u;
+                if(creditsUnsubscribe){creditsUnsubscribe();creditsUnsubscribe=null;}
+                loadCredits();
+            } else {
+                // Ждём onAuthStateChanged — он сам вызовет evaluateLaunch
+            }
+        }).catch(()=>{});
+    }
+
+    document.addEventListener('visibilitychange',()=>{
+        if(document.hidden){
+            // При сворачивании отключаем сеть Firestore — это предотвращает таймауты
+            if(window._fbAppInited&&db) db.disableNetwork().catch(()=>{});
+            _hidden=true;
+            return;
+        }
+        if(!_hidden)return;
+        _hidden=false;
+        setTimeout(_resume,800);
+    });
+
+    document.addEventListener('resume',()=>setTimeout(_resume,800),false);
+})();
+
+window.onload=()=>{
+    loadTheme();loadFontSize();loadAmounts();setupBackBtn();
+    selectCat('mortgage');setDateMode('cal');
+    document.getElementById('endMonth').value=new Date().getMonth();
+    document.getElementById('endYear').value=new Date().getFullYear()+1;
+    buildPinDots('pinSetDots',4,'sd');
+
+    const noSplash=document.documentElement.classList.contains('no-splash');
+    if(noSplash){splashTimerDone=true;evaluateLaunch();}
+    else setTimeout(()=>{splashTimerDone=true;evaluateLaunch();},1000);
+
+    setTimeout(()=>{if(!authResolved){authResolved=true;authUser=null;evaluateLaunch();}},6000);
+};
+
+document.getElementById('lockStatusRow').onclick=e=>{toggleLockPanel();e.stopPropagation();};
+
+document.addEventListener('DOMContentLoaded',()=>{
+    function bindPad(padId,keyFn,delId,delFn){
+        const pad=document.getElementById(padId);if(!pad)return;
+        const handle=(btn,e)=>{e.preventDefault();btn.classList.add('pressed');setTimeout(()=>btn.classList.remove('pressed'),100);const v=btn.getAttribute('data-v');if(v!==null)keyFn(v);else if(btn.id===delId)delFn();};
+        pad.addEventListener('touchstart',e=>{const btn=e.target.closest('.pin-key');if(!btn||btn.classList.contains('empty'))return;handle(btn,e);},{passive:false});
+        pad.addEventListener('mousedown',e=>{const btn=e.target.closest('.pin-key');if(!btn||btn.classList.contains('empty'))return;handle(btn,e);});
+    }
+    bindPad('pinSetPad',pinSetKey,'pinSetDel',pinSetDel);
+    bindPad('pinLockPad',pinLockKey,'pinLockDel',pinLockDel);
+});
+
+if(typeof firebase!=='undefined') _initFirebase();
+
+setTimeout(()=>{
+    if(!window._fbAppInited){
+        const splash=document.getElementById('splash');
+        if(splash){splash.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;padding:32px;text-align:center"><div style="font-size:3rem">📶</div><div style="color:#fff;font-size:1.1rem;font-weight:700">Нет подключения к сети</div><div style="color:rgba(255,255,255,0.6);font-size:0.85rem">Для работы приложения необходим интернет. Проверьте соединение и попробуйте снова.</div></div>`;splash.style.opacity='1';splash.style.visibility='visible';}
+    }
+},8000);
+
 </script>
 </body>
 </html>
