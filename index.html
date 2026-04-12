@@ -72,7 +72,7 @@
         .splash-tagline { color: rgba(255,255,255,0.7); font-size: 1rem; font-weight: 500; letter-spacing: 0.5px; text-align: center; white-space: nowrap; }
         .splash-version { position: absolute; bottom: 30px; left: 0; right: 0; text-align: center; color: rgba(255,255,255,0.4); font-size: 0.75rem; font-weight: 500; }
 
-        /* Auth — светлая тема */
+        /* Auth */
         .auth-screen {
             position: fixed; inset: 0; background: var(--bg);
             display: none; flex-direction: column; align-items: center; justify-content: flex-end;
@@ -102,6 +102,7 @@
             display: flex; flex-direction: column; gap: 14px;
             border-top: 1px solid var(--border);
             box-shadow: 0 -4px 24px rgba(0,0,0,0.06);
+            max-height: 85vh; overflow-y: auto;
         }
         .auth-sheet-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 6px; }
         .auth-sheet-title { font-size: 1.1rem; font-weight: 700; color: var(--text); text-align: center; margin-bottom: 2px; }
@@ -129,7 +130,6 @@
         }
         .auth-switch-link span { color: var(--accent-dark); font-weight: 600; }
 
-        /* Auth — тёмная тема (оригинальный стиль) */
         [data-theme="dark"] .auth-screen { background: #0A0A0A; }
         [data-theme="dark"] .auth-bg-glow { background: radial-gradient(circle, rgba(255,221,45,0.18) 0%, transparent 70%); }
         [data-theme="dark"] .auth-logo-title { color: #fff; }
@@ -195,11 +195,11 @@
         .credit-item > * { position: relative; z-index: 1; }
         .credit-item:active { background: var(--surface-2); }
         .credit-item.paid { opacity: 0.55; }
-        .credit-item.paid .credit-amount { text-decoration: line-through; } /* Зачеркивание суммы при оплате */
+        .credit-item.paid .credit-amount { text-decoration: line-through; }
         .credit-item.completed { opacity: 0.4; }
         .credit-icon-wrap { width: 40px; height: 40px; border-radius: 12px; background: var(--surface-2); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; border: 1px solid var(--border); }
         .credit-main { flex: 1; min-width: 0; }
-        .credit-name { font-size: 0.95rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
+        .credit-name { font-size: 0.95rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; display: flex; align-items: center; gap: 6px; }
         .credit-meta { display: flex; align-items: center; gap: 6px; }
         .credit-date-tag { font-size: 0.72rem; color: var(--text-2); font-weight: 500; }
         .credit-term-tag { font-size: 0.7rem; padding: 1px 6px; border-radius: 4px; font-weight: 500; }
@@ -207,6 +207,7 @@
         .credit-term-tag.soon { background: rgba(255,159,28,0.1); color: var(--warning); }
         .credit-term-tag.ok { background: var(--surface-2); color: var(--text-2); }
         .credit-term-tag.infinite { background: var(--surface-2); color: var(--text-3); }
+        .credit-shared-tag { font-size: 0.65rem; background: rgba(102,126,234,0.15); color: #667eea; padding: 2px 6px; border-radius: 4px; font-weight: 600; text-transform: uppercase; }
         .credit-right { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex-shrink: 0; }
         .credit-amount { font-size: 0.92rem; font-weight: 600; color: var(--text); }
         .credit-paid-badge { font-size: 0.68rem; font-weight: 600; padding: 2px 7px; border-radius: 4px; background: rgba(44,182,125,0.12); color: var(--success); }
@@ -221,15 +222,21 @@
         .empty-title { font-size: 0.95rem; font-weight: 600; color: var(--text-2); }
         .empty-sub { font-size: 0.82rem; color: var(--text-3); text-align: center; }
 
-        /* FAB */
-        .fab { position: fixed; bottom: calc(28px + env(safe-area-inset-bottom)); right: 20px; width: 56px; height: 56px; border-radius: 50%; background: var(--text); color: var(--bg); border: none; cursor: pointer; z-index: 200; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md); transition: transform 0.3s cubic-bezier(0.175,0.885,0.32,1.275), background 0.2s; }
+        /* FABs */
+        .fab-container { position: fixed; bottom: calc(28px + env(safe-area-inset-bottom)); right: 20px; display: flex; gap: 12px; z-index: 200; align-items: center; }
+        .fab { width: 56px; height: 56px; border-radius: 50%; background: var(--text); color: var(--bg); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md); transition: transform 0.3s cubic-bezier(0.175,0.885,0.32,1.275), background 0.2s; }
         [data-theme="dark"] .fab { background: var(--accent); color: #1A1A1A; }
         .fab:active { transform: scale(0.92); }
         .fab svg { width: 22px; height: 22px; transition: transform 0.3s ease; }
         .fab.active svg { transform: rotate(45deg); }
         .fab.active { background: var(--danger); color: #fff; }
 
-        /* Overlays */
+        .fab-filter { width: 44px; height: 44px; border-radius: 50%; background: var(--surface); color: var(--text); border: 1.5px solid var(--border); box-shadow: var(--shadow); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        [data-theme="dark"] .fab-filter { background: var(--surface-2); border-color: var(--border); }
+        .fab-filter:active { transform: scale(0.92); }
+        .fab-filter svg { width: 20px; height: 20px; stroke: currentColor; }
+
+        /* Overlays & Sheets */
         .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); backdrop-filter: blur(6px); display: none; align-items: flex-end; justify-content: center; z-index: 500; opacity: 0; transition: opacity 0.25s ease; }
         .overlay.active { display: flex; opacity: 1; }
         .sheet { background: var(--surface); border-radius: 20px 20px 0 0; width: 100%; max-width: 500px; padding: 0 0 max(20px, env(safe-area-inset-bottom)); transform: translateY(20px); transition: transform 0.3s ease; max-height: 85vh; overflow-y: auto; }
@@ -249,6 +256,11 @@
             outline: none; transition: border-color 0.15s; -webkit-appearance: none;
         }
         input:focus, select:focus { border-color: var(--accent-dark); }
+        
+        .share-toggle { display: flex; background: var(--surface-2); border-radius: var(--radius-sm); padding: 4px; border: 1px solid var(--border); margin-bottom: 4px; }
+        .share-btn { flex: 1; padding: 10px; font-size: 0.85rem; font-weight: 600; border: none; background: transparent; color: var(--text-2); border-radius: 7px; cursor: pointer; transition: all 0.15s; }
+        .share-btn.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+
         .cat-grid { display: flex; gap: 6px; flex-wrap: wrap; }
         .cat-item { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 10px; border-radius: var(--radius-sm); border: 1.5px solid var(--border); background: var(--surface-2); cursor: pointer; transition: all 0.12s; min-width: 54px; flex: 1; }
         .cat-item.selected { border-color: var(--text); background: var(--text); }
@@ -267,9 +279,11 @@
         .btn:active { transform: scale(0.97); }
         .btn-primary { background: var(--text); color: var(--bg); }
         [data-theme="dark"] .btn-primary { background: #FFDD2D; color: #1A1A1A; }
+        
         .action-sheet { padding: 0 12px max(16px, env(safe-area-inset-bottom)); }
-        .action-credit-name { text-align: center; padding: 16px 20px 12px; font-size: 1rem; font-weight: 700; color: var(--text); }
-        .action-credit-sub { font-size: 0.8rem; color: var(--text-2); font-weight: 400; margin-top: 2px; }
+        .action-credit-name { text-align: center; padding: 16px 20px 6px; font-size: 1rem; font-weight: 700; color: var(--text); }
+        .action-credit-sub { font-size: 0.8rem; color: var(--text-2); font-weight: 400; margin-top: 2px; text-align: center; }
+        .action-credit-mod { font-size: 0.7rem; color: var(--text-3); font-style: italic; margin-top: 6px; text-align: center; margin-bottom: 12px; }
         .action-btn { width: 100%; padding: 16px; background: var(--surface-2); border: none; border-radius: var(--radius-sm); margin-bottom: 8px; font-family: inherit; font-size: 0.95rem; font-weight: 600; color: var(--text); cursor: pointer; transition: all 0.12s; display: flex; align-items: center; gap: 10px; }
         .action-btn:active { transform: scale(0.98); background: var(--border); }
         .action-btn.danger { color: var(--danger); }
@@ -288,13 +302,27 @@
         .settings-section-label { font-size: 0.72rem; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 14px; }
 
         /* Account */
-        .account-email-box { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 16px; font-size: 0.9rem; font-weight: 500; color: var(--text-2); text-align: center; word-break: break-all; margin-bottom: 12px; }
+        .account-box { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 4px; }
+        .account-nick { font-weight: 700; font-size: 1.05rem; color: var(--text); }
+        .account-email { font-size: 0.85rem; color: var(--text-2); word-break: break-all; }
+        .account-code { font-size: 0.85rem; color: var(--text-2); margin-top: 4px; }
+        .account-code span { font-weight: 700; color: var(--text); background: var(--surface); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border); letter-spacing: 1px; }
+        
+        .partner-box { background: rgba(102,126,234,0.1); border: 1px solid rgba(102,126,234,0.25); border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 12px; }
+        .partner-info { display: flex; flex-direction: column; gap: 4px; }
+        .partner-label { font-size: 0.75rem; font-weight: 600; color: #667eea; text-transform: uppercase; }
+        .partner-name { font-weight: 700; color: var(--text); font-size: 0.95rem; }
+        
+        .partner-link-row { display: flex; gap: 8px; margin-top: 6px; }
+        .partner-link-row input { flex: 1; padding: 10px 12px; text-transform: uppercase; }
+        .partner-link-btn { padding: 10px 14px; border-radius: var(--radius-sm); font-weight: 600; border: none; background: #667eea; color: #fff; cursor: pointer; }
+
         .account-btns-row { display: flex; gap: 10px; }
         .account-btn { flex: 1; padding: 14px 10px; border-radius: var(--radius-sm); border: 1.5px solid var(--border); background: var(--surface-2); font-family: inherit; font-size: 0.88rem; font-weight: 600; color: var(--text); cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 7px; }
         .account-btn:active { transform: scale(0.97); background: var(--border); }
         .account-btn.btn-logout { color: var(--danger); border-color: rgba(230,57,70,0.25); background: rgba(230,57,70,0.05); }
 
-        /* Toggles */
+        /* ... Твои остальные стили (Toggles, Lock, PIN, Toasts) ... */
         .settings-two-controls { display: flex; align-items: center; gap: 12px; justify-content: space-between; }
         .settings-control-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 10px; }
         .settings-control-label { font-size: 0.78rem; font-weight: 600; color: var(--text-2); }
@@ -310,7 +338,6 @@
         .font-step span:first-child { font-size: 1.1rem; }
         .font-step-label { font-size: 0.65rem; font-weight: 500; display: block; }
 
-        /* Lock */
         .lock-status-row { display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 4px 0; }
         .lock-status-icon { font-size: 1.6rem; }
         .lock-status-text { flex: 1; display: flex; flex-direction: column; gap: 2px; }
@@ -324,7 +351,6 @@
         .lock-btn-remove { border-color: rgba(231,76,60,0.2); color: #e74c3c; background: rgba(231,76,60,0.06); }
         .lock-btn:active { transform: scale(0.97); }
 
-        /* PIN */
         .pin-overlay { position: fixed; inset: 0; z-index: 9998; background: var(--bg); display: none; flex-direction: column; align-items: center; justify-content: flex-end; padding: max(env(safe-area-inset-top), 60px) 0 max(env(safe-area-inset-bottom), 24px); gap: 48px; }
         .pin-overlay.active { display: flex; }
         .pin-top { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 0 20px; width: 100%; }
@@ -370,7 +396,7 @@
         <img class="splash-logo" src="logo.png" alt="Logo" onerror="this.style.display='none'">
         <div class="splash-tagline">Думай о более важном!</div>
     </div>
-    <div class="splash-version">Версия 1.0</div>
+    <div class="splash-version">Версия 1.1</div>
 </div>
 
 <div class="auth-screen" id="authScreen">
@@ -384,6 +410,10 @@
         <div class="auth-sheet-handle"></div>
         <div class="auth-sheet-title" id="authTitle">Войти в аккаунт</div>
         <div class="auth-input-group">
+            <div class="auth-field" id="nicknameField" style="display:none">
+                <div class="auth-field-label">Имя (Никнейм)</div>
+                <input type="text" id="authNickname" placeholder="Например: Алекс" autocomplete="off">
+            </div>
             <div class="auth-field">
                 <div class="auth-field-label">Email</div>
                 <input type="email" id="authEmail" placeholder="mail@example.com" autocomplete="email">
@@ -422,7 +452,7 @@
     </div>
     <div id="resetMsg">Новый месяц — статусы платежей сброшены</div>
     <div class="section">
-        <div class="section-header"><span class="section-title">Активные</span><span class="section-count" id="activeCount"></span></div>
+        <div class="section-header"><span class="section-title" id="activeListTitle">Активные</span><span class="section-count" id="activeCount"></span></div>
         <div class="credit-list" id="creditList"></div>
     </div>
     <div class="completed-section" id="completedSection" style="display:none">
@@ -432,13 +462,34 @@
     <div style="height:20px"></div>
 </div>
 
-<button class="fab" id="fab" onclick="fabClick(event)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+<div class="fab-container">
+    <button class="fab-filter" onclick="openFilter()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg></button>
+    <button class="fab" id="fab" onclick="fabClick(event)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+</div>
+
+<div class="overlay" id="filterOverlay" onclick="if(event.target===this)closeFilter()">
+    <div class="sheet" style="padding-bottom: max(16px, env(safe-area-inset-bottom))">
+        <div class="sheet-handle"></div>
+        <div class="sheet-title"><span>Отображение</span><button class="sheet-close" onclick="closeFilter()">✕</button></div>
+        <div style="padding: 0 16px;">
+            <button class="action-btn" onclick="setFilter('all')"><div class="action-btn-icon">📋</div>Все кредиты</button>
+            <button class="action-btn" onclick="setFilter('personal')"><div class="action-btn-icon">👤</div>Только мои</button>
+            <button class="action-btn" onclick="setFilter('shared')" id="filterSharedBtn" style="display:none"><div class="action-btn-icon">👥</div>Только общие</button>
+        </div>
+    </div>
+</div>
 
 <div class="overlay" id="formOverlay" onclick="if(event.target===this)closeForm()">
     <div class="sheet">
         <div class="sheet-handle"></div>
         <div class="sheet-title"><span id="formTitleText">Новый кредит</span><button class="sheet-close" onclick="closeForm()">✕</button></div>
         <div class="form-body">
+            <div id="shareToggleWrapper" style="display:none;">
+                <div class="share-toggle">
+                    <button class="share-btn active" id="sharePersonal" onclick="setShareMode('personal')">Мой кредит</button>
+                    <button class="share-btn" id="shareShared" onclick="setShareMode('shared')">Общий кредит</button>
+                </div>
+            </div>
             <div class="form-group"><label class="form-label">Название</label><input type="text" id="nameInput" placeholder="Например: Ипотека Сбербанк" autocomplete="off"></div>
             <div class="form-group"><label class="form-label">Тип</label><div class="cat-grid">
                 <div class="cat-item" data-cat="mortgage" onclick="selectCat('mortgage')"><span>🏠</span><span class="cat-label">Ипотека</span></div>
@@ -464,7 +515,11 @@
     <div class="sheet action-sheet">
         <div class="sheet-handle"></div>
         <div class="sheet-title"><span>Действия с кредитом</span><button class="sheet-close" onclick="closeAction()">✕</button></div>
-        <div class="action-credit-name"><div id="actionNameText"></div><div class="action-credit-sub" id="actionSub"></div></div>
+        <div class="action-credit-name">
+            <div id="actionNameText"></div>
+            <div class="action-credit-sub" id="actionSub"></div>
+            <div class="action-credit-mod" id="actionModifiedBy"></div>
+        </div>
         <div class="partial-section" id="partialSection">
             <div class="partial-label">Частичная оплата</div>
             <div class="partial-info">
@@ -486,7 +541,7 @@
     <div class="sheet" style="padding-bottom:max(16px,env(safe-area-inset-bottom))">
         <div class="sheet-handle"></div>
         <div class="sheet-title"><span>Удаление кредита</span><button class="sheet-close" onclick="closeDelete()">✕</button></div>
-        <div class="confirm-body"><div class="confirm-text">Вы уверены, что хотите удалить этот кредит? Это действие нельзя отменить.</div><button class="btn" style="background:var(--danger);color:#fff;margin-bottom:10px;width:100%" onclick="doDelete()">Удалить</button></div>
+        <div class="confirm-body"><div class="confirm-text">Вы уверены, что хотите удалить этот кредит? Это действие нельзя отменить. У партнера он также удалится.</div><button class="btn" style="background:var(--danger);color:#fff;margin-bottom:10px;width:100%" onclick="doDelete()">Удалить</button></div>
     </div>
 </div>
 
@@ -497,9 +552,17 @@
 
         <div class="settings-section">
             <div class="settings-section-label">Аккаунт</div>
-            <div class="account-email-box" id="userEmailDisplay">Загрузка...</div>
+            <div class="account-box">
+                <div class="account-nick" id="userNickDisplay">Загрузка...</div>
+                <div class="account-email" id="userEmailDisplay">—</div>
+                <div class="account-code" id="userCodeDisplay">Ваш код-приглашение: <span>—</span></div>
+            </div>
+            
+            <div id="partnerSection">
+                </div>
+
             <div class="account-btns-row">
-                <button class="account-btn" onclick="changePassword()">🔑 Сменить пароль</button>
+                <button class="account-btn" onclick="changePassword()">🔑 Пароль</button>
                 <button class="account-btn btn-logout" onclick="doLogout()">🚪 Выйти</button>
             </div>
         </div>
@@ -547,7 +610,6 @@
         <div class="sheet-handle"></div>
         <div class="sheet-title"><span>Смена пароля</span><button class="sheet-close" onclick="closeChangePass()">✕</button></div>
         <div class="form-body" style="padding-bottom:16px">
-            <div class="account-email-box" id="changePassEmail">—</div>
             <div class="form-group"><label class="form-label">Текущий пароль</label><input type="password" id="cpOldPass" placeholder="••••••••" autocomplete="current-password"></div>
             <div class="form-group"><label class="form-label">Новый пароль</label><input type="password" id="cpNewPass" placeholder="Минимум 6 символов" autocomplete="new-password"></div>
             <div class="form-group"><label class="form-label">Подтвердите новый пароль</label><input type="password" id="cpConfirmPass" placeholder="Повторите пароль" autocomplete="new-password"></div>
@@ -610,10 +672,20 @@ function _initFirebase() {
     auth = firebase.auth();
     db   = firebase.firestore();
     db.enablePersistence({synchronizeTabs:false}).catch(()=>{});
-    auth.onAuthStateChanged(user => { authResolved = true; authUser = user; evaluateLaunch(); });
+    
+    auth.onAuthStateChanged(user => { 
+        authResolved = true; 
+        authUser = user; 
+        if(user) {
+            fetchUserData();
+        } else {
+            userData = null;
+            partnerData = null;
+            evaluateLaunch();
+        }
+    });
 }
 
-const MONTH_K   = 'crt_month_v4';
 const THEME_K   = 'crt_theme_v4';
 const AMT_K     = 'crt_amounts_v4';
 const FONT_K    = 'crt_font_v4';
@@ -641,6 +713,12 @@ let lockPanelOpen = false;
 let backPressedOnce = false;
 let _isSaving = false;
 
+// Совместный доступ
+let userData = null;
+let partnerData = null;
+let currentFilter = 'all'; // all, personal, shared
+let selectedShare = 'personal'; // при создании/редактировании
+
 let pinSetBuf = '', pinSetStep = 0, pinSetFirst = '', pinSetLen = 4, pinSetVerifyMode = null;
 let pinLockBuf = '', pinLockLen = 4;
 
@@ -649,7 +727,7 @@ let authResolved = false;
 let authUser = null;
 let splashTimerDone = false;
 let creditsUnsubscribe = null;
-let monthResetDone = false;
+let userUnsubscribe = null;
 
 const ls = {
     get: k     => { try { return localStorage.getItem(k); }    catch(e) { return null; } },
@@ -665,66 +743,101 @@ function formatPaymentDate(dayNumber) {
     return `${dayNumber} ${months[new Date().getMonth()]}`;
 }
 
+function fetchUserData() {
+    if(userUnsubscribe) userUnsubscribe();
+    userUnsubscribe = db.collection('users').doc(authUser.uid).onSnapshot(doc => {
+        if(doc.exists) {
+            userData = doc.data();
+            if(userData.partnerUid) {
+                db.collection('users').doc(userData.partnerUid).get().then(pDoc => {
+                    partnerData = pDoc.exists ? pDoc.data() : null;
+                    if(document.getElementById('app').classList.contains('visible')) render();
+                    evaluateLaunch();
+                });
+            } else {
+                partnerData = null;
+                if(document.getElementById('app').classList.contains('visible')) render();
+                evaluateLaunch();
+            }
+        } else {
+            // Фолбэк, если документа нет
+            userData = { nickname: 'Пользователь', email: authUser.email };
+            evaluateLaunch();
+        }
+    });
+}
+
 function loadCredits() {
     if (!authUser) return;
     if (creditsUnsubscribe) { creditsUnsubscribe(); creditsUnsubscribe = null; }
 
     creditsUnsubscribe = db.collection('credits')
-        .where('userId', '==', authUser.uid)
+        .where('viewers', 'array-contains', authUser.uid)
         .onSnapshot(snapshot => {
+            let batch = db.batch();
+            let needsUpdate = false;
+            const currentKey = `${new Date().getMonth()}-${new Date().getFullYear()}`;
+
             credits = [];
-            snapshot.forEach(doc => credits.push({ id: doc.id, ...doc.data() }));
+            snapshot.forEach(doc => {
+                let c = doc.data();
+                c.id = doc.id;
+                
+                // Проверяем сброс месяца (теперь логика на сервере, не багует на новых устройствах)
+                if (!c.completed && c.lastResetMonth !== currentKey) {
+                    c.paid = false;
+                    c.partial = 0;
+                    c.lastResetMonth = currentKey;
+                    batch.update(doc.ref, { paid: false, partial: 0, lastResetMonth: currentKey });
+                    needsUpdate = true;
+                }
+                credits.push(c);
+            });
+            
+            if(needsUpdate) {
+                batch.commit();
+                const m = document.getElementById('resetMsg');
+                m.style.display = 'block';
+                setTimeout(() => m.style.display = 'none', 5000);
+            }
             render();
-            if (!monthResetDone) { monthResetDone = true; checkMonthReset(); }
         }, e => {
             console.error('Ошибка синхронизации:', e);
             showToast('Ошибка синхронизации данных');
         });
 }
 
-async function saveCredit(creditData) {
-    if (!authUser) throw new Error('No user');
-    creditData.userId = authUser.uid;
-    if (editMode && editId) {
-        const id = editId;
-        editMode = false; editId = null;
-        await db.collection('credits').doc(id).update(creditData);
-    } else {
-        await db.collection('credits').add(creditData);
-    }
-}
-
 async function deleteCredit(id) { await db.collection('credits').doc(id).delete(); }
 
-async function updateCreditField(id, data) { await db.collection('credits').doc(id).update(data); }
-
-async function checkMonthReset() {
-    if (!authUser) return;
-    const n = new Date();
-    const key = `${n.getMonth()}-${n.getFullYear()}`;
-    if (ls.get(MONTH_K) === key) return;
-    ls.set(MONTH_K, key);
-    const toReset = credits.filter(c => !c.completed);
-    for (const c of toReset) await updateCreditField(c.id, { paid: false, partial: 0 });
-    if (toReset.length > 0) {
-        const m = document.getElementById('resetMsg');
-        m.style.display = 'block';
-        setTimeout(() => m.style.display = 'none', 5000);
-    }
+async function updateCreditField(id, data) { 
+    data.lastModifiedBy = userData ? userData.nickname : 'Пользователь';
+    await db.collection('credits').doc(id).update(data); 
 }
 
 function render() {
     const now = new Date();
     const cm = now.getMonth(), cy = now.getFullYear();
-    const active    = credits.filter(c => !c.completed);
-    const completed = credits.filter(c =>  c.completed);
+    
+    let filtered = credits;
+    if (currentFilter !== 'all') {
+        filtered = credits.filter(c => c.type === currentFilter);
+    }
+
+    const active    = filtered.filter(c => !c.completed);
+    const completed = filtered.filter(c =>  c.completed);
     active.sort((a,b) => a.paid === b.paid ? a.day - b.day : a.paid ? 1 : -1);
 
     const list = document.getElementById('creditList');
     list.innerHTML = '';
     
+    // Заголовок с учетом фильтра
+    let titleStr = 'Активные';
+    if(currentFilter === 'personal') titleStr = 'Мои кредиты';
+    if(currentFilter === 'shared') titleStr = 'Общие кредиты';
+    document.getElementById('activeListTitle').textContent = titleStr;
+
     if (!active.length) {
-        list.innerHTML = `<div class="empty-state"><div class="empty-icon">💳</div><div class="empty-title">Нет активных кредитов</div><div class="empty-sub">Нажмите + чтобы добавить первый</div></div>`;
+        list.innerHTML = `<div class="empty-state"><div class="empty-icon">💳</div><div class="empty-title">Нет активных кредитов</div><div class="empty-sub">Нажмите + чтобы добавить</div></div>`;
     } else {
         const activeFragment = document.createDocumentFragment();
         active.forEach(c => activeFragment.appendChild(buildCreditItem(c, cm, cy)));
@@ -763,6 +876,13 @@ function buildCreditItem(c, cm, cy) {
         else              termHtml = `<span class="credit-term-tag ok">${ml} мес.</span>`;
     } else termHtml = `<span class="credit-term-tag infinite">Бессрочный</span>`;
 
+    let sharedHtml = '';
+    if (c.type === 'shared') {
+        const withWho = (c.userId === authUser.uid && partnerData) ? partnerData.nickname : 
+                        (c.userId !== authUser.uid && partnerData) ? partnerData.nickname : 'партнером';
+        sharedHtml = `<span class="credit-shared-tag">Общий с ${withWho}</span>`;
+    }
+
     const cat  = CATS[c.category] || CATS.other;
     const wrap = document.createElement('div');
     wrap.style.background = 'var(--surface)';
@@ -775,7 +895,20 @@ function buildCreditItem(c, cm, cy) {
     
     const displayAmount = c.paid ? fmt(c.amount) : (partial > 0 ? fmt(remain) : fmt(c.amount));
     
-    item.innerHTML = `<div class="credit-icon-wrap">${cat.emoji}</div><div class="credit-main"><div class="credit-name">${esc(c.name)}</div><div class="credit-meta"><span class="credit-date-tag">${formatPaymentDate(c.day)}</span>${termHtml}</div></div><div class="credit-right"><span class="credit-amount">${displayAmount} ₽</span>${c.paid ? '<span class="credit-paid-badge">Оплачен</span>' : (partial > 0 ? `<span style="font-size:0.68rem;color:var(--text-2);font-weight:500">из ${fmt(c.amount)} ₽</span>` : '')}</div><div class="check-wrap ${c.paid||c.completed?'checked':''}" data-id="${c.id}"><svg viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="2.5"><polyline points="2,7 6,11 12,3"/></svg></div>`;
+    item.innerHTML = `
+        <div class="credit-icon-wrap">${cat.emoji}</div>
+        <div class="credit-main">
+            <div class="credit-name">${esc(c.name)}</div>
+            <div class="credit-meta"><span class="credit-date-tag">${formatPaymentDate(c.day)}</span>${termHtml}${sharedHtml}</div>
+        </div>
+        <div class="credit-right">
+            <span class="credit-amount">${displayAmount} ₽</span>
+            ${c.paid ? '<span class="credit-paid-badge">Оплачен</span>' : (partial > 0 ? `<span style="font-size:0.68rem;color:var(--text-2);font-weight:500">из ${fmt(c.amount)} ₽</span>` : '')}
+        </div>
+        <div class="check-wrap ${c.paid||c.completed?'checked':''}" data-id="${c.id}">
+            <svg viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="2.5"><polyline points="2,7 6,11 12,3"/></svg>
+        </div>`;
+    
     item.addEventListener('click', e => { if (!c.completed && !e.target.closest('.check-wrap')) openAction(c.id); });
     item.querySelector('.check-wrap').addEventListener('click', async e => {
         e.stopPropagation();
@@ -789,7 +922,6 @@ function updateSummary(active) {
     const total        = active.reduce((s,c) => s + c.amount, 0);
     const paidTotalSum = active.reduce((s,c) => s + (c.paid ? c.amount : (c.partial||0)), 0);
     const remain = total > 0 ? Math.max(0, total - paidTotalSum) : 0;
-    
     const pct = total > 0 ? Math.floor((paidTotalSum/total)*100) : 0;
     
     document.getElementById('summaryAmount').textContent    = fmt(total)+' ₽';
@@ -807,12 +939,31 @@ function updateSummary(active) {
     else if (pct < 100) allPaidShown = false;
 }
 
+/* Фильтры */
+function openFilter() {
+    document.getElementById('filterSharedBtn').style.display = (userData && userData.partnerUid) ? '' : 'none';
+    document.getElementById('filterOverlay').classList.add('active');
+}
+function closeFilter() { document.getElementById('filterOverlay').classList.remove('active'); }
+function setFilter(f) {
+    currentFilter = f;
+    closeFilter();
+    render();
+}
+
 function openAction(id) {
     const c = credits.find(x => x.id === id); if (!c) return;
     selectedCreditId = id;
     const cat = CATS[c.category] || CATS.other;
     document.getElementById('actionNameText').textContent   = cat.emoji+' '+c.name;
     document.getElementById('actionSub').textContent        = fmt(c.amount)+' ₽ · '+formatPaymentDate(c.day);
+    
+    if(c.lastModifiedBy) {
+        document.getElementById('actionModifiedBy').textContent = `Добавил/Изменил: ${c.lastModifiedBy}`;
+    } else {
+        document.getElementById('actionModifiedBy').textContent = '';
+    }
+
     const partial = c.partial || 0;
     document.getElementById('partialPaidDisplay').textContent   = fmt(partial)+' ₽';
     document.getElementById('partialRemainDisplay').textContent = fmt(Math.max(0,c.amount-partial))+' ₽';
@@ -842,9 +993,24 @@ async function savePartial() {
     showToast(newPaid?'Кредит полностью оплачен':'Внесено '+fmt(inp)+' ₽');
 }
 
+function setShareMode(mode) {
+    selectedShare = mode;
+    document.getElementById('sharePersonal').classList.toggle('active', mode==='personal');
+    document.getElementById('shareShared').classList.toggle('active', mode==='shared');
+}
+
 function openEdit() {
     const c = credits.find(x=>x.id===selectedCreditId); if (!c) return;
     editMode=true; editId=selectedCreditId;
+    
+    if(userData && userData.partnerUid) {
+        document.getElementById('shareToggleWrapper').style.display = '';
+        setShareMode(c.type || 'personal');
+    } else {
+        document.getElementById('shareToggleWrapper').style.display = 'none';
+        setShareMode('personal');
+    }
+
     document.getElementById('nameInput').value   = c.name;
     document.getElementById('amountInput').value = c.amount;
     document.getElementById('dayInput').value    = c.day;
@@ -866,7 +1032,15 @@ async function doDelete() {
 
 function toggleForm() {
     const ov = document.getElementById('formOverlay');
-    if (!ov.classList.contains('active')) { ov.classList.add('active'); updateFab(true); } else closeForm();
+    if (!ov.classList.contains('active')) { 
+        if(userData && userData.partnerUid) {
+            document.getElementById('shareToggleWrapper').style.display = '';
+        } else {
+            document.getElementById('shareToggleWrapper').style.display = 'none';
+        }
+        ov.classList.add('active'); 
+        updateFab(true); 
+    } else closeForm();
 }
 
 function closeForm() {
@@ -883,7 +1057,7 @@ function resetForm() {
     document.getElementById('formTitleText').innerText = 'Новый кредит';
     document.getElementById('formSaveBtn').innerText   = 'Добавить';
     document.getElementById('formSaveBtn').disabled    = false;
-    selectCat('mortgage'); setDateMode('cal');
+    selectCat('mortgage'); setDateMode('cal'); setShareMode('personal');
 }
 
 async function handleSave() {
@@ -895,11 +1069,17 @@ async function handleSave() {
     if (!amount || amount <= 0)      { showToast('Введите сумму'); return; }
     if (!day || day < 1 || day > 31) { showToast('День оплаты: 1–31'); return; }
 
-    // Capture BEFORE closeForm() resets them
     const isEdit    = editMode;
     const saveId    = editId;
     const saveCat   = selectedCat;
     const endDate   = getEndDate();
+    
+    let viewers = [authUser.uid];
+    let type = 'personal';
+    if (selectedShare === 'shared' && userData && userData.partnerUid) {
+        viewers.push(userData.partnerUid);
+        type = 'shared';
+    }
 
     _isSaving = true;
     const saveBtn = document.getElementById('formSaveBtn');
@@ -910,26 +1090,29 @@ async function handleSave() {
     showToast('Сохранение...');
 
     try {
-        const creditData = { name, amount, day, category: saveCat, endDate };
+        const currentKey = `${new Date().getMonth()}-${new Date().getFullYear()}`;
+        const creditData = { 
+            name, amount, day, category: saveCat, endDate,
+            viewers, type,
+            lastModifiedBy: userData ? userData.nickname : 'Пользователь',
+            lastResetMonth: currentKey
+        };
+
         if (isEdit && saveId) {
-            creditData.userId = authUser.uid;
             await db.collection('credits').doc(saveId).update(creditData);
             showToast('Кредит обновлён');
         } else {
+            creditData.userId = authUser.uid; // Владелец
             creditData.paid = false;
             creditData.completed = false;
             creditData.partial = 0;
             creditData.createdAt = new Date().toISOString();
-            creditData.userId = authUser.uid;
             await db.collection('credits').add(creditData);
             showToast('Кредит добавлен');
         }
     } catch(e) {
         console.error('Ошибка сохранения:', e);
-        let errMsg = 'Ошибка сохранения';
-        if (e.code === 'permission-denied') errMsg = 'Нет доступа. Проверьте правила безопасности Firebase.';
-        else if (e.message) errMsg = e.message;
-        showToast(errMsg);
+        showToast(e.message || 'Ошибка сохранения');
     } finally {
         _isSaving = false;
     }
@@ -968,12 +1151,64 @@ function gearClick(e) {
     btn.classList.add('spinning');
     btn.addEventListener('animationend', function h() { btn.classList.remove('spinning'); btn.removeEventListener('animationend',h); openSettings(); });
 }
+
 function openSettings() {
-    if (authUser) document.getElementById('userEmailDisplay').textContent = authUser.email||'—';
+    if (authUser && userData) {
+        document.getElementById('userNickDisplay').textContent = userData.nickname || 'Пользователь';
+        document.getElementById('userEmailDisplay').textContent = authUser.email || '—';
+        document.querySelector('#userCodeDisplay span').textContent = userData.inviteCode || '—';
+        
+        const partnerSec = document.getElementById('partnerSection');
+        if (userData.partnerUid && partnerData) {
+            partnerSec.innerHTML = `
+                <div class="partner-box">
+                    <div class="partner-info">
+                        <span class="partner-label">Связан с аккаунтом:</span>
+                        <span class="partner-name">${partnerData.nickname}</span>
+                    </div>
+                </div>`;
+        } else {
+            partnerSec.innerHTML = `
+                <div class="partner-box">
+                    <div class="partner-info">
+                        <span class="partner-label">Связь с партнером</span>
+                        <span style="font-size:0.8rem;color:var(--text-2);margin-top:2px;">Введите код приглашения супруга(и), чтобы вести общие кредиты.</span>
+                    </div>
+                    <div class="partner-link-row">
+                        <input type="text" id="partnerCodeInput" placeholder="КОД">
+                        <button class="partner-link-btn" onclick="linkPartner()">Связать</button>
+                    </div>
+                </div>`;
+        }
+    }
     updateSettingsUI();
     document.getElementById('settingsOverlay').classList.add('active');
 }
 function closeSettings() { document.getElementById('settingsOverlay').classList.remove('active'); }
+
+async function linkPartner() {
+    const input = document.getElementById('partnerCodeInput').value.trim().toUpperCase();
+    if(!input) return showToast('Введите код');
+    if(input === userData.inviteCode) return showToast('Это ваш собственный код');
+
+    try {
+        const snap = await db.collection('users').where('inviteCode', '==', input).get();
+        if(snap.empty) return showToast('Партнер с таким кодом не найден');
+        
+        const pDoc = snap.docs[0];
+        const pId = pDoc.id;
+        
+        // Связываем взаимно (Для этого правила Firestore должны разрешать обновление этих полей)
+        await db.collection('users').doc(authUser.uid).update({ partnerUid: pId });
+        await db.collection('users').doc(pId).update({ partnerUid: authUser.uid });
+        
+        showToast('Аккаунты успешно связаны!');
+        closeSettings();
+    } catch(e) {
+        showToast('Ошибка при связи аккаунтов');
+        console.error(e);
+    }
+}
 
 function loadTheme()  { const t=ls.get(THEME_K); if(t) theme=t; applyTheme(); }
 function applyTheme() { document.documentElement.setAttribute('data-theme',theme); if(!amountsVisible){stopSpoilers();startSpoilers();} }
@@ -1003,7 +1238,6 @@ function updateSettingsUI() {
 function changePassword() {
     closeSettings();
     setTimeout(()=>{
-        if(authUser) document.getElementById('changePassEmail').textContent=authUser.email||'—';
         document.getElementById('cpOldPass').value='';
         document.getElementById('cpNewPass').value='';
         document.getElementById('cpConfirmPass').value='';
@@ -1036,23 +1270,39 @@ function toggleAuthMode() {
     isLoginMode=!isLoginMode;
     document.getElementById('authTitle').textContent=isLoginMode?'Войти в аккаунт':'Создать аккаунт';
     document.getElementById('authBtn').textContent=isLoginMode?'Войти':'Зарегистрироваться';
+    document.getElementById('nicknameField').style.display=isLoginMode?'none':'flex';
     const sw=document.querySelector('.auth-switch-link');
     sw.innerHTML=isLoginMode?'Нет аккаунта? <span>Зарегистрироваться</span>':'Уже есть аккаунт? <span>Войти</span>';
 }
+
 async function doAuth() {
     const email=document.getElementById('authEmail').value.trim();
     const pass=document.getElementById('authPassword').value;
+    let nick='';
+    if(!isLoginMode) {
+        nick = document.getElementById('authNickname').value.trim();
+        if(!nick) { showToast('Введите имя (никнейм)'); return; }
+    }
+    
     if(!email||!pass) { showToast('Заполните все поля'); return; }
+    
     const btn=document.getElementById('authBtn');
     btn.disabled=true; btn.textContent='Подождите...';
     try {
-        // При входе на новом устройстве (нет активной сессии) — сбрасываем ПИН
         const isNewDevice=!sessionStorage.getItem('session_started');
         if(isLoginMode) {
             await auth.signInWithEmailAndPassword(email,pass);
             if(isNewDevice){ ls.rm(PIN_K); ls.rm(PIN_LEN_K); }
         } else {
-            await auth.createUserWithEmailAndPassword(email,pass);
+            const cred = await auth.createUserWithEmailAndPassword(email,pass);
+            // Создаем профиль в базе
+            const inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+            await db.collection('users').doc(cred.user.uid).set({
+                nickname: nick,
+                email: email,
+                inviteCode: inviteCode,
+                partnerUid: null
+            });
             ls.rm(PIN_K); ls.rm(PIN_LEN_K);
         }
     } catch(e) {
@@ -1063,40 +1313,35 @@ async function doAuth() {
         else if(e.code==='auth/weak-password') msg='Пароль слишком простой (минимум 6 символов)';
         else msg=e.message;
         showToast(msg);
-    } finally {
         btn.disabled=false; btn.textContent=isLoginMode?'Войти':'Создать аккаунт';
     }
 }
+
 async function doLogout() {
     if(creditsUnsubscribe) { creditsUnsubscribe(); creditsUnsubscribe=null; }
+    if(userUnsubscribe) { userUnsubscribe(); userUnsubscribe=null; }
     await auth.signOut();
     closeSettings();
     sessionStorage.removeItem('pin_ok');
     sessionStorage.removeItem('session_started');
-    monthResetDone=false;
+    userData = null; partnerData = null;
     credits=[]; render();
     document.getElementById('authEmail').value='';
     document.getElementById('authPassword').value='';
     isLoginMode=true;
     document.getElementById('authTitle').textContent='Войти в аккаунт';
     document.getElementById('authBtn').textContent='Войти';
+    document.getElementById('nicknameField').style.display='none';
     document.querySelector('.auth-switch-link').innerHTML='Нет аккаунта? <span>Зарегистрироваться</span>';
     document.getElementById('app').classList.remove('visible');
     document.getElementById('authScreen').style.display='flex';
     showToast('Вы вышли из аккаунта');
 }
 
-function buildPinDots(cId,count,pfx) {
-    const el=document.getElementById(cId); el.innerHTML='';
-    for(let i=0;i<count;i++){const d=document.createElement('div');d.className='pin-dot';d.id=pfx+i;el.appendChild(d);}
-}
-function fillPinDots(cId,pfx,filled,count) {
-    for(let i=0;i<count;i++){const d=document.getElementById(pfx+i);if(d){d.classList.toggle('filled',i<filled);d.classList.remove('error');}}
-}
-function shakePinDots(cId,pfx,count) {
-    for(let i=0;i<count;i++){const d=document.getElementById(pfx+i);if(d)d.classList.add('error');}
-    const el=document.getElementById(cId);el.classList.add('shake');setTimeout(()=>el.classList.remove('shake'),400);
-}
+/* PIN functions start */
+function buildPinDots(cId,count,pfx) { const el=document.getElementById(cId); el.innerHTML=''; for(let i=0;i<count;i++){const d=document.createElement('div');d.className='pin-dot';d.id=pfx+i;el.appendChild(d);} }
+function fillPinDots(cId,pfx,filled,count) { for(let i=0;i<count;i++){const d=document.getElementById(pfx+i);if(d){d.classList.toggle('filled',i<filled);d.classList.remove('error');}} }
+function shakePinDots(cId,pfx,count) { for(let i=0;i<count;i++){const d=document.getElementById(pfx+i);if(d)d.classList.add('error');} const el=document.getElementById(cId);el.classList.add('shake');setTimeout(()=>el.classList.remove('shake'),400); }
 function hashPin(s){let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=(h*0x01000193)>>>0;}return h.toString(16);}
 
 function selectPinLen(n) {
@@ -1113,9 +1358,7 @@ function pinSetKey(v) {
                 if(hashPin(pinSetBuf)===ls.get(PIN_K)) {
                     if(pinSetVerifyMode==='remove'){document.getElementById('pinSetOverlay').classList.remove('active');_removeLock();}
                     else{pinSetBuf='';pinSetStep=0;pinSetVerifyMode=null;document.getElementById('pinSetTitle').textContent='Создайте новый ПИН-код';document.getElementById('pinSetSub').textContent='Выберите длину и введите цифры';document.getElementById('pinLenRow').style.display='';pinSetLen=4;selectPinLen(4);}
-                } else {
-                    document.getElementById('pinSetSub').textContent='Неверный ПИН-код';shakePinDots('pinSetDots','sd',pinSetLen);pinSetBuf='';setTimeout(()=>fillPinDots('pinSetDots','sd',0,pinSetLen),400);
-                }
+                } else { document.getElementById('pinSetSub').textContent='Неверный ПИН-код';shakePinDots('pinSetDots','sd',pinSetLen);pinSetBuf='';setTimeout(()=>fillPinDots('pinSetDots','sd',0,pinSetLen),400); }
             } else if(pinSetStep===0) {
                 pinSetFirst=pinSetBuf;pinSetBuf='';pinSetStep=1;
                 document.getElementById('pinLenRow').style.display='none';document.getElementById('pinSetTitle').textContent='Повторите ПИН-код';document.getElementById('pinSetSub').textContent=`Введите ${pinSetLen} цифр ещё раз`;fillPinDots('pinSetDots','sd',0,pinSetLen);
@@ -1139,8 +1382,10 @@ function pinLockKey(v){
             if(hashPin(pinLockBuf)===ls.get(PIN_K)){
                 sessionStorage.setItem('pin_ok','1');sessionStorage.setItem('session_started','1');
                 document.getElementById('pinLockOverlay').classList.remove('active');
-                document.getElementById('app').classList.add('visible');
-                loadCredits();
+                if(userData) {
+                    document.getElementById('app').classList.add('visible');
+                    loadCredits();
+                }
             } else {
                 document.getElementById('pinLockSub').textContent='Неверный ПИН-код';shakePinDots('pinLockDots','ld',pinLockLen);pinLockBuf='';
                 setTimeout(()=>{document.getElementById('pinLockSub').textContent='Для входа в приложение';fillPinDots('pinLockDots','ld',0,pinLockLen);},500);
@@ -1153,6 +1398,7 @@ function startSetPin(){const s=ls.get(PIN_K);if(s){pinSetVerifyMode='change';ope
 function doRemoveLock(){const s=ls.get(PIN_K);if(s){pinSetVerifyMode='remove';openPinVerify('Подтвердите удаление','Введите текущий ПИН-код');}else _removeLock();}
 function _removeLock(){ls.rm(PIN_K);ls.rm(PIN_LEN_K);lockPanelOpen=false;document.getElementById('lockButtons').style.display='none';document.getElementById('lockStatusRow').classList.remove('open');updateSettingsUI();showToast('Защита снята');}
 function toggleLockPanel(){lockPanelOpen=!lockPanelOpen;document.getElementById('lockButtons').style.display=lockPanelOpen?'':'none';document.getElementById('lockStatusRow').classList.toggle('open',lockPanelOpen);}
+/* PIN functions end */
 
 let spoilerRAF = null;
 const spoilerMap = new Map();
@@ -1189,6 +1435,7 @@ function setupBackBtn(){
         if(document.getElementById('deleteOverlay').classList.contains('active')){closeDelete();return;}
         if(document.getElementById('actionOverlay').classList.contains('active')){closeAction();return;}
         if(document.getElementById('formOverlay').classList.contains('active')){closeForm();return;}
+        if(document.getElementById('filterOverlay').classList.contains('active')){closeFilter();return;}
         if(document.getElementById('settingsOverlay').classList.contains('active')){closeSettings();return;}
         if(backPressedOnce){navigator.app&&navigator.app.exitApp();return;}
         backPressedOnce=true;showToast('Нажмите ещё раз для выхода');setTimeout(()=>backPressedOnce=false,2000);
@@ -1199,10 +1446,16 @@ function evaluateLaunch(){
     if(!authResolved||!splashTimerDone)return;
     document.getElementById('splash').classList.add('hidden');
     if(authUser){
+        if(!userData) return; // Ждем загрузки профиля
         document.getElementById('authScreen').style.display='none';
         const hasPin=ls.get(PIN_K);
         if(hasPin&&!sessionStorage.getItem('pin_ok')){openPinLock();}
-        else{sessionStorage.setItem('pin_ok','1');sessionStorage.setItem('session_started','1');document.getElementById('app').classList.add('visible');loadCredits();}
+        else{
+            sessionStorage.setItem('pin_ok','1');
+            sessionStorage.setItem('session_started','1');
+            document.getElementById('app').classList.add('visible');
+            loadCredits();
+        }
     } else {
         document.getElementById('app').classList.remove('visible');
         document.getElementById('authScreen').style.display='flex';
@@ -1211,8 +1464,6 @@ function evaluateLaunch(){
 
 (function setupResume(){
     let _hidden=false;
-
-    // Блокируем любую навигацию которая может вызвать 500 от webintoapp
     window.addEventListener('beforeunload',e=>{e.preventDefault();e.returnValue='';return '';},true);
 
     function _resume(){
@@ -1221,17 +1472,15 @@ function evaluateLaunch(){
             const u=auth.currentUser;
             if(u){
                 authUser=u;
+                if(!userData) fetchUserData();
                 if(creditsUnsubscribe){creditsUnsubscribe();creditsUnsubscribe=null;}
                 loadCredits();
-            } else {
-                // Ждём onAuthStateChanged — он сам вызовет evaluateLaunch
             }
         }).catch(()=>{});
     }
 
     document.addEventListener('visibilitychange',()=>{
         if(document.hidden){
-            // При сворачивании отключаем сеть Firestore — это предотвращает таймауты
             if(window._fbAppInited&&db) db.disableNetwork().catch(()=>{});
             _hidden=true;
             return;
