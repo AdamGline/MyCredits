@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>\u041a\u0440\u0435\u0434\u0438\u0442\u044b \u2014 \u0424\u0438\u043d\u0430\u043d\u0441\u043e\u0432\u044b\u0439 \u0442\u0440\u0435\u043a\u0435\u0440</title>
+    <title>Кредиты — Финансовый трекер</title>
     
     <script>
     window._fbLoaded = 0;
@@ -56,7 +56,7 @@
             background: var(--bg); color: var(--text); min-height: 100vh;
             -webkit-tap-highlight-color: transparent;
             padding-top: env(safe-area-inset-top);
-            padding-bottom: max(100px, env(safe-area-inset-bottom));
+            padding-bottom: max(80px, env(safe-area-inset-bottom));
             padding-left: env(safe-area-inset-left);
             padding-right: env(safe-area-inset-right);
             transition: background 0.3s, color 0.3s;
@@ -72,7 +72,7 @@
         .splash-tagline { color: rgba(255,255,255,0.7); font-size: 1rem; font-weight: 500; letter-spacing: 0.5px; text-align: center; white-space: nowrap; }
         .splash-version { position: absolute; bottom: 30px; left: 0; right: 0; text-align: center; color: rgba(255,255,255,0.4); font-size: 0.75rem; font-weight: 500; }
 
-        /* Auth */
+        /* Auth — светлая тема */
         .auth-screen {
             position: fixed; inset: 0; background: var(--bg);
             display: none; flex-direction: column; align-items: center; justify-content: flex-end;
@@ -90,7 +90,7 @@
             position: absolute; top: 0; left: 0; right: 0;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             padding-top: max(60px, env(safe-area-inset-top));
-            bottom: 460px;
+            bottom: 420px;
         }
         .auth-logo-icon { font-size: 3rem; margin-bottom: 10px; }
         .auth-logo-title { font-size: 1.6rem; font-weight: 800; color: var(--text); letter-spacing: -0.5px; }
@@ -102,10 +102,9 @@
             display: flex; flex-direction: column; gap: 14px;
             border-top: 1px solid var(--border);
             box-shadow: 0 -4px 24px rgba(0,0,0,0.06);
-            max-height: 85vh; overflow-y: auto;
         }
-        .auth-sheet-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 6px; flex-shrink: 0; }
-        .auth-sheet-title { font-size: 1.1rem; font-weight: 700; color: var(--text); text-align: center; margin-bottom: 2px; flex-shrink: 0; }
+        .auth-sheet-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 6px; }
+        .auth-sheet-title { font-size: 1.1rem; font-weight: 700; color: var(--text); text-align: center; margin-bottom: 2px; }
         .auth-input-group { display: flex; flex-direction: column; gap: 10px; }
         .auth-field { display: flex; flex-direction: column; gap: 5px; }
         .auth-field-label { font-size: 0.72rem; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.06em; }
@@ -130,7 +129,7 @@
         }
         .auth-switch-link span { color: var(--accent-dark); font-weight: 600; }
 
-        /* Auth dark */
+        /* Auth — тёмная тема (оригинальный стиль) */
         [data-theme="dark"] .auth-screen { background: #0A0A0A; }
         [data-theme="dark"] .auth-bg-glow { background: radial-gradient(circle, rgba(255,221,45,0.18) 0%, transparent 70%); }
         [data-theme="dark"] .auth-logo-title { color: #fff; }
@@ -196,19 +195,18 @@
         .credit-item > * { position: relative; z-index: 1; }
         .credit-item:active { background: var(--surface-2); }
         .credit-item.paid { opacity: 0.55; }
-        .credit-item.paid .credit-amount { text-decoration: line-through; }
+        .credit-item.paid .credit-amount { text-decoration: line-through; } /* Зачеркивание суммы при оплате */
         .credit-item.completed { opacity: 0.4; }
         .credit-icon-wrap { width: 40px; height: 40px; border-radius: 12px; background: var(--surface-2); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; border: 1px solid var(--border); }
         .credit-main { flex: 1; min-width: 0; }
         .credit-name { font-size: 0.95rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
-        .credit-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .credit-meta { display: flex; align-items: center; gap: 6px; }
         .credit-date-tag { font-size: 0.72rem; color: var(--text-2); font-weight: 500; }
         .credit-term-tag { font-size: 0.7rem; padding: 1px 6px; border-radius: 4px; font-weight: 500; }
         .credit-term-tag.ending { background: rgba(230,57,70,0.1); color: var(--danger); }
         .credit-term-tag.soon { background: rgba(255,159,28,0.1); color: var(--warning); }
         .credit-term-tag.ok { background: var(--surface-2); color: var(--text-2); }
         .credit-term-tag.infinite { background: var(--surface-2); color: var(--text-3); }
-        .credit-group-tag { font-size: 0.68rem; padding: 1px 7px; border-radius: 4px; font-weight: 600; background: rgba(102,126,234,0.12); color: #667eea; white-space: nowrap; }
         .credit-right { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex-shrink: 0; }
         .credit-amount { font-size: 0.92rem; font-weight: 600; color: var(--text); }
         .credit-paid-badge { font-size: 0.68rem; font-weight: 600; padding: 2px 7px; border-radius: 4px; background: rgba(44,182,125,0.12); color: var(--success); }
@@ -223,20 +221,13 @@
         .empty-title { font-size: 0.95rem; font-weight: 600; color: var(--text-2); }
         .empty-sub { font-size: 0.82rem; color: var(--text-3); text-align: center; }
 
-        /* FAB area */
-        .fab-area { position: fixed; bottom: calc(28px + env(safe-area-inset-bottom)); right: 20px; display: flex; align-items: center; gap: 12px; z-index: 200; }
-        .fab { width: 56px; height: 56px; border-radius: 50%; background: var(--text); color: var(--bg); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md); transition: transform 0.3s cubic-bezier(0.175,0.885,0.32,1.275), background 0.2s; }
+        /* FAB */
+        .fab { position: fixed; bottom: calc(28px + env(safe-area-inset-bottom)); right: 20px; width: 56px; height: 56px; border-radius: 50%; background: var(--text); color: var(--bg); border: none; cursor: pointer; z-index: 200; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md); transition: transform 0.3s cubic-bezier(0.175,0.885,0.32,1.275), background 0.2s; }
         [data-theme="dark"] .fab { background: var(--accent); color: #1A1A1A; }
         .fab:active { transform: scale(0.92); }
         .fab svg { width: 22px; height: 22px; transition: transform 0.3s ease; }
         .fab.active svg { transform: rotate(45deg); }
         .fab.active { background: var(--danger); color: #fff; }
-
-        /* Filter button */
-        .filter-btn { height: 44px; padding: 0 16px; border-radius: 22px; background: var(--surface); border: 1.5px solid var(--border); color: var(--text); font-family: inherit; font-size: 0.82rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: var(--shadow); transition: all 0.15s; white-space: nowrap; }
-        .filter-btn:active { transform: scale(0.95); }
-        .filter-btn.has-filter { background: var(--text); color: var(--bg); border-color: var(--text); }
-        [data-theme="dark"] .filter-btn.has-filter { background: var(--accent); color: #1A1A1A; border-color: var(--accent); }
 
         /* Overlays */
         .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); backdrop-filter: blur(6px); display: none; align-items: flex-end; justify-content: center; z-index: 500; opacity: 0; transition: opacity 0.25s ease; }
@@ -276,17 +267,9 @@
         .btn:active { transform: scale(0.97); }
         .btn-primary { background: var(--text); color: var(--bg); }
         [data-theme="dark"] .btn-primary { background: #FFDD2D; color: #1A1A1A; }
-
-        /* Credit type toggle in form */
-        .credit-type-toggle { display: flex; gap: 4px; background: var(--surface-2); border-radius: var(--radius-sm); padding: 4px; border: 1px solid var(--border); }
-        .credit-type-btn { flex: 1; padding: 9px 8px; font-size: 0.82rem; font-weight: 600; border: none; background: transparent; color: var(--text-2); border-radius: 7px; cursor: pointer; transition: all 0.15s; font-family: inherit; }
-        .credit-type-btn.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
-
-        /* Action sheet */
         .action-sheet { padding: 0 12px max(16px, env(safe-area-inset-bottom)); }
         .action-credit-name { text-align: center; padding: 16px 20px 12px; font-size: 1rem; font-weight: 700; color: var(--text); }
         .action-credit-sub { font-size: 0.8rem; color: var(--text-2); font-weight: 400; margin-top: 2px; }
-        .action-credit-meta { font-size: 0.78rem; color: #667eea; font-weight: 600; margin-top: 4px; }
         .action-btn { width: 100%; padding: 16px; background: var(--surface-2); border: none; border-radius: var(--radius-sm); margin-bottom: 8px; font-family: inherit; font-size: 0.95rem; font-weight: 600; color: var(--text); cursor: pointer; transition: all 0.12s; display: flex; align-items: center; gap: 10px; }
         .action-btn:active { transform: scale(0.98); background: var(--border); }
         .action-btn.danger { color: var(--danger); }
@@ -305,26 +288,11 @@
         .settings-section-label { font-size: 0.72rem; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 14px; }
 
         /* Account */
-        .account-nick-box { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 16px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
-        .account-nick-label { font-size: 0.7rem; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.05em; }
-        .account-nick-val { font-size: 1rem; font-weight: 700; color: var(--text); }
         .account-email-box { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 16px; font-size: 0.9rem; font-weight: 500; color: var(--text-2); text-align: center; word-break: break-all; margin-bottom: 12px; }
-        .account-btns-row { display: flex; gap: 10px; flex-wrap: wrap; }
-        .account-btn { flex: 1; min-width: 120px; padding: 14px 10px; border-radius: var(--radius-sm); border: 1.5px solid var(--border); background: var(--surface-2); font-family: inherit; font-size: 0.88rem; font-weight: 600; color: var(--text); cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 7px; }
+        .account-btns-row { display: flex; gap: 10px; }
+        .account-btn { flex: 1; padding: 14px 10px; border-radius: var(--radius-sm); border: 1.5px solid var(--border); background: var(--surface-2); font-family: inherit; font-size: 0.88rem; font-weight: 600; color: var(--text); cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 7px; }
         .account-btn:active { transform: scale(0.97); background: var(--border); }
         .account-btn.btn-logout { color: var(--danger); border-color: rgba(230,57,70,0.25); background: rgba(230,57,70,0.05); }
-
-        /* Group section in settings */
-        .group-info-box { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 12px; }
-        .group-info-name { font-size: 0.9rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
-        .group-info-code { font-size: 0.78rem; color: var(--text-2); font-weight: 500; }
-        .group-info-code span { font-weight: 700; color: #667eea; letter-spacing: 0.1em; }
-        .group-info-members { font-size: 0.75rem; color: var(--text-3); margin-top: 4px; }
-        .group-btns-row { display: flex; gap: 8px; flex-wrap: wrap; }
-        .group-btn { flex: 1; min-width: 110px; padding: 12px 10px; border-radius: var(--radius-sm); border: 1.5px solid var(--border); background: var(--surface-2); font-family: inherit; font-size: 0.85rem; font-weight: 600; color: var(--text); cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 6px; }
-        .group-btn:active { transform: scale(0.97); }
-        .group-btn.primary { background: rgba(102,126,234,0.1); border-color: rgba(102,126,234,0.3); color: #667eea; }
-        .group-btn.danger { color: var(--danger); border-color: rgba(230,57,70,0.2); background: rgba(230,57,70,0.05); }
 
         /* Toggles */
         .settings-two-controls { display: flex; align-items: center; gap: 12px; justify-content: space-between; }
@@ -376,7 +344,7 @@
         .pin-len-btn { padding: 7px 16px; border-radius: 8px; border: 1.5px solid var(--border); background: var(--surface-2); font-family: inherit; font-size: 0.82rem; font-weight: 600; color: var(--text-2); cursor: pointer; }
         .pin-len-btn.active { border-color: var(--text); color: var(--text); background: var(--surface); }
 
-        .toast { position: fixed; bottom: calc(110px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 10px 18px; border-radius: 10px; font-size: 0.85rem; font-weight: 600; z-index: 999; pointer-events: none; white-space: nowrap; }
+        .toast { position: fixed; bottom: calc(90px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 10px 18px; border-radius: 10px; font-size: 0.85rem; font-weight: 600; z-index: 999; pointer-events: none; white-space: nowrap; }
 
         .all-paid-overlay { position: fixed; inset: 0; z-index: 800; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; }
         .all-paid-overlay.active { display: flex; }
@@ -393,28 +361,6 @@
         .completed-arrow.open { transform: rotate(180deg); }
         .completed-list { margin-top: 4px; display: none; }
         .completed-list.open { display: block; }
-
-        /* Filter sheet */
-        .filter-option { display: flex; align-items: center; gap: 12px; padding: 16px 20px; cursor: pointer; transition: background 0.12s; border-bottom: 1px solid var(--border); }
-        .filter-option:last-child { border-bottom: none; }
-        .filter-option:active { background: var(--surface-2); }
-        .filter-option-icon { font-size: 1.4rem; width: 32px; text-align: center; }
-        .filter-option-text { flex: 1; }
-        .filter-option-title { font-size: 0.95rem; font-weight: 600; color: var(--text); }
-        .filter-option-sub { font-size: 0.78rem; color: var(--text-2); margin-top: 2px; }
-        .filter-option-check { font-size: 1.2rem; color: var(--success); }
-
-        /* Group invite overlay */
-        .code-display { text-align: center; padding: 20px; }
-        .code-big { font-size: 2.2rem; font-weight: 800; letter-spacing: 0.18em; color: #667eea; font-variant-numeric: tabular-nums; background: rgba(102,126,234,0.08); border-radius: 16px; padding: 16px 24px; display: inline-block; margin-bottom: 8px; }
-        .code-hint { font-size: 0.82rem; color: var(--text-2); }
-
-        /* Edit account overlay */
-        .edit-account-sheet { padding-bottom: max(20px, env(safe-area-inset-bottom)); }
-
-        @keyframes shake { 0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)} }
-        .pin-dots.shake { animation: shake 0.35s ease; }
-        .pin-dot.error { border-color: var(--danger); background: rgba(230,57,70,0.2); }
     </style>
 </head>
 <body>
@@ -422,38 +368,33 @@
 <div class="splash" id="splash">
     <div class="splash-content">
         <img class="splash-logo" src="logo.png" alt="Logo" onerror="this.style.display='none'">
-        <div class="splash-tagline">\u0414\u0443\u043c\u0430\u0439 \u043e \u0431\u043e\u043b\u0435\u0435 \u0432\u0430\u0436\u043d\u043e\u043c!</div>
+        <div class="splash-tagline">Думай о более важном!</div>
     </div>
-    <div class="splash-version">\u0412\u0435\u0440\u0441\u0438\u044f 2.0</div>
+    <div class="splash-version">Версия 1.0</div>
 </div>
 
 <div class="auth-screen" id="authScreen">
     <div class="auth-bg-glow"></div>
     <div class="auth-logo-area">
-        <div class="auth-logo-icon">\ud83d\udcb3</div>
+        <div class="auth-logo-icon">💳</div>
         <div class="auth-logo-title">My Credits</div>
-        <div class="auth-logo-sub">\u0414\u0443\u043c\u0430\u0439 \u043e \u0431\u043e\u043b\u0435\u0435 \u0432\u0430\u0436\u043d\u043e\u043c!</div>
+        <div class="auth-logo-sub">Думай о более важном!</div>
     </div>
     <div class="auth-sheet">
         <div class="auth-sheet-handle"></div>
-        <div class="auth-sheet-title" id="authTitle">\u0412\u043e\u0439\u0442\u0438 \u0432 \u0430\u043a\u043a\u0430\u0443\u043d\u0442</div>
+        <div class="auth-sheet-title" id="authTitle">Войти в аккаунт</div>
         <div class="auth-input-group">
-            <!-- \u041f\u043e\u043b\u0435 \u043d\u0438\u043a\u0430 \u2014 \u0442\u043e\u043b\u044c\u043a\u043e \u043f\u0440\u0438 \u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0430\u0446\u0438\u0438 -->
-            <div class="auth-field" id="authNickField" style="display:none">
-                <div class="auth-field-label">\u041d\u0438\u043a\u043d\u0435\u0439\u043c</div>
-                <input type="text" id="authNick" placeholder="\u041a\u0430\u043a \u0432\u0430\u0441 \u043d\u0430\u0437\u044b\u0432\u0430\u0442\u044c?" autocomplete="nickname" maxlength="20">
-            </div>
             <div class="auth-field">
                 <div class="auth-field-label">Email</div>
                 <input type="email" id="authEmail" placeholder="mail@example.com" autocomplete="email">
             </div>
             <div class="auth-field">
-                <div class="auth-field-label">\u041f\u0430\u0440\u043e\u043b\u044c</div>
-                <input type="password" id="authPassword" placeholder="\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u043f\u0430\u0440\u043e\u043b\u044c" autocomplete="current-password">
+                <div class="auth-field-label">Пароль</div>
+                <input type="password" id="authPassword" placeholder="Введите пароль" autocomplete="current-password">
             </div>
         </div>
-        <button class="auth-submit-btn" id="authBtn" onclick="doAuth()">\u0412\u043e\u0439\u0442\u0438</button>
-        <div class="auth-switch-link" onclick="toggleAuthMode()">\u041d\u0435\u0442 \u0430\u043a\u043a\u0430\u0443\u043d\u0442\u0430? <span>\u0417\u0430\u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0438\u0440\u043e\u0432\u0430\u0442\u044c\u0441\u044f</span></div>
+        <button class="auth-submit-btn" id="authBtn" onclick="doAuth()">Войти</button>
+        <div class="auth-switch-link" onclick="toggleAuthMode()">Нет аккаунта? <span>Зарегистрироваться</span></div>
     </div>
 </div>
 
@@ -461,7 +402,7 @@
     <div class="summary-card">
         <div class="summary-header">
             <div class="summary-header-left">
-                <div class="summary-label">\u041a \u043e\u043f\u043b\u0430\u0442\u0435 \u0432 \u044d\u0442\u043e\u043c \u043c\u0435\u0441\u044f\u0446\u0435</div>
+                <div class="summary-label">К оплате в этом месяце</div>
             </div>
             <button class="summary-settings-btn" id="settingsBtn" onclick="gearClick(event)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -470,294 +411,184 @@
                 </svg>
             </button>
         </div>
-        <div class="summary-amount s-amount" id="summaryAmount">0 \u20bd</div>
-        <div class="summary-progress-label"><span class="s-paid-val" id="summaryPaid">\u0412\u043d\u0435\u0441\u0435\u043d\u043e 0 \u20bd</span><span id="summaryPercent">0%</span></div>
+        <div class="summary-amount s-amount" id="summaryAmount">0 ₽</div>
+        <div class="summary-progress-label"><span class="s-paid-val" id="summaryPaid">Внесено 0 ₽</span><span id="summaryPercent">0%</span></div>
         <div class="summary-bar"><div class="summary-bar-fill" id="summaryBarFill" style="width:0%"></div></div>
         <div class="summary-stats">
-            <div class="summary-stat"><div class="summary-stat-label">\u0412\u0441\u0435\u0433\u043e \u043a\u0440\u0435\u0434\u0438\u0442\u043e\u0432</div><div class="summary-stat-val" id="summaryCount">0</div></div>
-            <div class="summary-stat"><div class="summary-stat-label">\u041e\u043f\u043b\u0430\u0447\u0435\u043d\u043e</div><div class="summary-stat-val" id="summaryPaidCount">0</div></div>
-            <div class="summary-stat"><div class="summary-stat-label">\u041e\u0441\u0442\u0430\u0442\u043e\u043a</div><div class="summary-stat-val s-remain-val" id="summaryRemain">0 \u20bd</div></div>
+            <div class="summary-stat"><div class="summary-stat-label">Всего кредитов</div><div class="summary-stat-val" id="summaryCount">0</div></div>
+            <div class="summary-stat"><div class="summary-stat-label">Оплачено</div><div class="summary-stat-val" id="summaryPaidCount">0</div></div>
+            <div class="summary-stat"><div class="summary-stat-label">Остаток</div><div class="summary-stat-val s-remain-val" id="summaryRemain">0 ₽</div></div>
         </div>
     </div>
-    <div id="resetMsg">\u041d\u043e\u0432\u044b\u0439 \u043c\u0435\u0441\u044f\u0446 \u2014 \u0441\u0442\u0430\u0442\u0443\u0441\u044b \u043f\u043b\u0430\u0442\u0435\u0436\u0435\u0439 \u0441\u0431\u0440\u043e\u0448\u0435\u043d\u044b</div>
+    <div id="resetMsg">Новый месяц — статусы платежей сброшены</div>
     <div class="section">
-        <div class="section-header"><span class="section-title" id="sectionTitle">\u0410\u043a\u0442\u0438\u0432\u043d\u044b\u0435</span><span class="section-count" id="activeCount"></span></div>
+        <div class="section-header"><span class="section-title">Активные</span><span class="section-count" id="activeCount"></span></div>
         <div class="credit-list" id="creditList"></div>
     </div>
     <div class="completed-section" id="completedSection" style="display:none">
-        <div class="completed-header-btn" onclick="toggleCompleted()"><span id="completedLabel">\u0417\u0430\u0432\u0435\u0440\u0448\u0451\u043d\u043d\u044b\u0435</span><span class="completed-arrow" id="completedArrow">\u25bc</span></div>
+        <div class="completed-header-btn" onclick="toggleCompleted()"><span id="completedLabel">Завершённые</span><span class="completed-arrow" id="completedArrow">▼</span></div>
         <div class="credit-list completed-list" id="completedList"></div>
     </div>
     <div style="height:20px"></div>
 </div>
 
-<!-- FAB area: filter + add -->
-<div class="fab-area">
-    <button class="filter-btn" id="filterBtn" onclick="openFilterSheet()">
-        <span id="filterBtnIcon">\u2699\ufe0f</span> <span id="filterBtnLabel">\u0412\u0441\u0435</span>
-    </button>
-    <button class="fab" id="fab" onclick="fabClick(event)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-    </button>
-</div>
+<button class="fab" id="fab" onclick="fabClick(event)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
 
-<!-- Add/Edit credit form -->
 <div class="overlay" id="formOverlay" onclick="if(event.target===this)closeForm()">
     <div class="sheet">
         <div class="sheet-handle"></div>
-        <div class="sheet-title"><span id="formTitleText">\u041d\u043e\u0432\u044b\u0439 \u043a\u0440\u0435\u0434\u0438\u0442</span><button class="sheet-close" onclick="closeForm()">\u2715</button></div>
+        <div class="sheet-title"><span id="formTitleText">Новый кредит</span><button class="sheet-close" onclick="closeForm()">✕</button></div>
         <div class="form-body">
-            <div class="form-group"><label class="form-label">\u041d\u0430\u0437\u0432\u0430\u043d\u0438\u0435</label><input type="text" id="nameInput" placeholder="\u041d\u0430\u043f\u0440\u0438\u043c\u0435\u0440: \u0418\u043f\u043e\u0442\u0435\u043a\u0430 \u0421\u0431\u0435\u0440\u0431\u0430\u043d\u043a" autocomplete="off"></div>
-            <div class="form-group"><label class="form-label">\u0422\u0438\u043f</label><div class="cat-grid">
-                <div class="cat-item" data-cat="mortgage" onclick="selectCat('mortgage')"><span>\ud83c\udfe0</span><span class="cat-label">\u0418\u043f\u043e\u0442\u0435\u043a\u0430</span></div>
-                <div class="cat-item" data-cat="auto" onclick="selectCat('auto')"><span>\ud83d\ude97</span><span class="cat-label">\u0410\u0432\u0442\u043e</span></div>
-                <div class="cat-item" data-cat="consumer" onclick="selectCat('consumer')"><span>\ud83d\udcb3</span><span class="cat-label">\u041f\u043e\u0442\u0440\u0435\u0431.</span></div>
-                <div class="cat-item" data-cat="card" onclick="selectCat('card')"><span>\ud83d\udcb0</span><span class="cat-label">\u041a\u0430\u0440\u0442\u0430</span></div>
-                <div class="cat-item" data-cat="other" onclick="selectCat('other')"><span>\ud83d\udcc4</span><span class="cat-label">\u041f\u0440\u043e\u0447\u0435\u0435</span></div>
+            <div class="form-group"><label class="form-label">Название</label><input type="text" id="nameInput" placeholder="Например: Ипотека Сбербанк" autocomplete="off"></div>
+            <div class="form-group"><label class="form-label">Тип</label><div class="cat-grid">
+                <div class="cat-item" data-cat="mortgage" onclick="selectCat('mortgage')"><span>🏠</span><span class="cat-label">Ипотека</span></div>
+                <div class="cat-item" data-cat="auto" onclick="selectCat('auto')"><span>🚗</span><span class="cat-label">Авто</span></div>
+                <div class="cat-item" data-cat="consumer" onclick="selectCat('consumer')"><span>💳</span><span class="cat-label">Потреб.</span></div>
+                <div class="cat-item" data-cat="card" onclick="selectCat('card')"><span>💰</span><span class="cat-label">Карта</span></div>
+                <div class="cat-item" data-cat="other" onclick="selectCat('other')"><span>📄</span><span class="cat-label">Прочее</span></div>
             </div></div>
-            <div class="form-group" id="creditTypeGroup">
-                <label class="form-label">\u0412\u0438\u0434\u0438\u043c\u043e\u0441\u0442\u044c</label>
-                <div class="credit-type-toggle">
-                    <button class="credit-type-btn active" id="ctBtnMy" onclick="selectCreditType('my')">\ud83d\udc64 \u041c\u043e\u0439</button>
-                    <button class="credit-type-btn" id="ctBtnGroup" onclick="selectCreditType('group')" id="ctBtnGroup">\ud83d\udc65 \u041e\u0431\u0449\u0438\u0439</button>
-                </div>
-                <span class="form-hint" id="creditTypeHint">\u0412\u0438\u0434\u0435\u043d \u0442\u043e\u043b\u044c\u043a\u043e \u0432\u0430\u043c</span>
-            </div>
-            <div class="form-group"><label class="form-label">\u0415\u0436\u0435\u043c\u0435\u0441\u044f\u0447\u043d\u044b\u0439 \u043f\u043b\u0430\u0442\u0451\u0436 \u0438 \u0434\u0435\u043d\u044c \u043e\u043f\u043b\u0430\u0442\u044b</label><div class="form-row"><input type="number" id="amountInput" placeholder="\u0421\u0443\u043c\u043c\u0430, \u20bd" inputmode="decimal" style="flex:2"><input type="number" id="dayInput" placeholder="\u0414\u0435\u043d\u044c" min="1" max="31" inputmode="numeric" style="flex:1"></div></div>
-            <div class="form-group"><label class="form-label">\u0414\u0430\u0442\u0430 \u043e\u043a\u043e\u043d\u0447\u0430\u043d\u0438\u044f</label>
-                <div class="date-toggle"><button class="date-toggle-btn active" id="dtBtnCal" onclick="setDateMode('cal')">\u041a\u0430\u043b\u0435\u043d\u0434\u0430\u0440\u044c</button><button class="date-toggle-btn" id="dtBtnMan" onclick="setDateMode('man')">\u0412\u0440\u0443\u0447\u043d\u0443\u044e</button></div>
+            <div class="form-group"><label class="form-label">Ежемесячный платёж и день оплаты</label><div class="form-row"><input type="number" id="amountInput" placeholder="Сумма, ₽" inputmode="decimal" style="flex:2"><input type="number" id="dayInput" placeholder="День" min="1" max="31" inputmode="numeric" style="flex:1"></div></div>
+            <div class="form-group"><label class="form-label">Дата окончания</label>
+                <div class="date-toggle"><button class="date-toggle-btn active" id="dtBtnCal" onclick="setDateMode('cal')">Календарь</button><button class="date-toggle-btn" id="dtBtnMan" onclick="setDateMode('man')">Вручную</button></div>
                 <div class="date-inputs active" id="calInput"><input type="date" id="endDateCal"></div>
-                <div class="date-inputs" id="manInput"><div class="form-row"><select id="endMonth"><option value="0">\u042f\u043d\u0432\u0430\u0440\u044c</option><option value="1">\u0424\u0435\u0432\u0440\u0430\u043b\u044c</option><option value="2">\u041c\u0430\u0440\u0442</option><option value="3">\u0410\u043f\u0440\u0435\u043b\u044c</option><option value="4">\u041c\u0430\u0439</option><option value="5">\u0418\u044e\u043d\u044c</option><option value="6">\u0418\u044e\u043b\u044c</option><option value="7">\u0410\u0432\u0433\u0443\u0441\u0442</option><option value="8">\u0421\u0435\u043d\u0442\u044f\u0431\u0440\u044c</option><option value="9">\u041e\u043a\u0442\u044f\u0431\u0440\u044c</option><option value="10">\u041d\u043e\u044f\u0431\u0440\u044c</option><option value="11">\u0414\u0435\u043a\u0430\u0431\u0440\u044c</option></select><input type="number" id="endYear" placeholder="\u0413\u043e\u0434" min="2024" max="2050"></div></div>
-                <span class="form-hint">\u041e\u0441\u0442\u0430\u0432\u044c\u0442\u0435 \u043f\u0443\u0441\u0442\u044b\u043c \u0434\u043b\u044f \u0431\u0435\u0441\u0441\u0440\u043e\u0447\u043d\u043e\u0433\u043e \u043a\u0440\u0435\u0434\u0438\u0442\u0430</span>
+                <div class="date-inputs" id="manInput"><div class="form-row"><select id="endMonth"><option value="0">Январь</option><option value="1">Февраль</option><option value="2">Март</option><option value="3">Апрель</option><option value="4">Май</option><option value="5">Июнь</option><option value="6">Июль</option><option value="7">Август</option><option value="8">Сентябрь</option><option value="9">Октябрь</option><option value="10">Ноябрь</option><option value="11">Декабрь</option></select><input type="number" id="endYear" placeholder="Год" min="2024" max="2050"></div></div>
+                <span class="form-hint">Оставьте пустым для бессрочного кредита</span>
             </div>
         </div>
-        <div class="form-actions"><button class="btn btn-primary" id="formSaveBtn" onclick="handleSave()">\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c</button></div>
+        <div class="form-actions"><button class="btn btn-primary" id="formSaveBtn" onclick="handleSave()">Добавить</button></div>
         <div style="height:8px"></div>
     </div>
 </div>
 
-<!-- Action sheet -->
 <div class="overlay" id="actionOverlay" onclick="if(event.target===this)closeAction()">
     <div class="sheet action-sheet">
         <div class="sheet-handle"></div>
-        <div class="sheet-title"><span>\u0414\u0435\u0439\u0441\u0442\u0432\u0438\u044f \u0441 \u043a\u0440\u0435\u0434\u0438\u0442\u043e\u043c</span><button class="sheet-close" onclick="closeAction()">\u2715</button></div>
-        <div class="action-credit-name">
-            <div id="actionNameText"></div>
-            <div class="action-credit-sub" id="actionSub"></div>
-            <div class="action-credit-meta" id="actionMeta" style="display:none"></div>
-        </div>
+        <div class="sheet-title"><span>Действия с кредитом</span><button class="sheet-close" onclick="closeAction()">✕</button></div>
+        <div class="action-credit-name"><div id="actionNameText"></div><div class="action-credit-sub" id="actionSub"></div></div>
         <div class="partial-section" id="partialSection">
-            <div class="partial-label">\u0427\u0430\u0441\u0442\u0438\u0447\u043d\u0430\u044f \u043e\u043f\u043b\u0430\u0442\u0430</div>
+            <div class="partial-label">Частичная оплата</div>
             <div class="partial-info">
-                <div><div class="partial-info-label">\u0412\u043d\u0435\u0441\u0435\u043d\u043e</div><div class="partial-info-val credit-amount" id="partialPaidDisplay">0 \u20bd</div></div>
-                <div style="text-align:right"><div class="partial-info-label">\u041e\u0441\u0442\u0430\u0442\u043e\u043a</div><div class="partial-info-val credit-amount" id="partialRemainDisplay">0 \u20bd</div></div>
+                <div><div class="partial-info-label">Внесено</div><div class="partial-info-val credit-amount" id="partialPaidDisplay">0 ₽</div></div>
+                <div style="text-align:right"><div class="partial-info-label">Остаток</div><div class="partial-info-val credit-amount" id="partialRemainDisplay">0 ₽</div></div>
             </div>
-            <div class="partial-input-wrap"><input type="number" id="partialInput" placeholder="\u0421\u0443\u043c\u043c\u0430 \u0432\u0437\u043d\u043e\u0441\u0430, \u20bd" inputmode="decimal"><button class="btn btn-primary" onclick="savePartial()" style="flex:0 0 auto;min-width:90px;padding:13px 16px">\u0412\u043d\u0435\u0441\u0442\u0438</button></div>
+            <div class="partial-input-wrap"><input type="number" id="partialInput" placeholder="Сумма взноса, ₽" inputmode="decimal"><button class="btn btn-primary" onclick="savePartial()" style="flex:0 0 auto;min-width:90px;padding:13px 16px">Внести</button></div>
         </div>
         <div style="padding:0 12px">
-            <button class="action-btn" onclick="openEdit()"><div class="action-btn-icon">\u270e</div>\u0420\u0435\u0434\u0430\u043a\u0442\u0438\u0440\u043e\u0432\u0430\u0442\u044c</button>
-            <button class="action-btn" id="resetPartialBtn" style="display:none" onclick="resetPartial()"><div class="action-btn-icon">\u21ba</div>\u0421\u0431\u0440\u043e\u0441\u0438\u0442\u044c \u0447\u0430\u0441\u0442\u0438\u0447\u043d\u0443\u044e \u043e\u043f\u043b\u0430\u0442\u0443</button>
-            <button class="action-btn danger" onclick="showDeleteConfirm()"><div class="action-btn-icon">\ud83d\uddd1</div>\u0423\u0434\u0430\u043b\u0438\u0442\u044c \u043a\u0440\u0435\u0434\u0438\u0442</button>
+            <button class="action-btn" onclick="openEdit()"><div class="action-btn-icon">✎</div>Редактировать</button>
+            <button class="action-btn" id="resetPartialBtn" style="display:none" onclick="resetPartial()"><div class="action-btn-icon">↺</div>Сбросить частичную оплату</button>
+            <button class="action-btn danger" onclick="showDeleteConfirm()"><div class="action-btn-icon">🗑</div>Удалить кредит</button>
         </div>
         <div style="height:4px"></div>
     </div>
 </div>
 
-<!-- Delete confirm -->
 <div class="overlay" id="deleteOverlay" onclick="if(event.target===this)closeDelete()">
     <div class="sheet" style="padding-bottom:max(16px,env(safe-area-inset-bottom))">
         <div class="sheet-handle"></div>
-        <div class="sheet-title"><span>\u0423\u0434\u0430\u043b\u0435\u043d\u0438\u0435 \u043a\u0440\u0435\u0434\u0438\u0442\u0430</span><button class="sheet-close" onclick="closeDelete()">\u2715</button></div>
-        <div class="confirm-body"><div class="confirm-text">\u0412\u044b \u0443\u0432\u0435\u0440\u0435\u043d\u044b, \u0447\u0442\u043e \u0445\u043e\u0442\u0438\u0442\u0435 \u0443\u0434\u0430\u043b\u0438\u0442\u044c \u044d\u0442\u043e\u0442 \u043a\u0440\u0435\u0434\u0438\u0442? \u042d\u0442\u043e \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u0435 \u043d\u0435\u043b\u044c\u0437\u044f \u043e\u0442\u043c\u0435\u043d\u0438\u0442\u044c.</div><button class="btn" style="background:var(--danger);color:#fff;margin-bottom:10px;width:100%" onclick="doDelete()">\u0423\u0434\u0430\u043b\u0438\u0442\u044c</button></div>
+        <div class="sheet-title"><span>Удаление кредита</span><button class="sheet-close" onclick="closeDelete()">✕</button></div>
+        <div class="confirm-body"><div class="confirm-text">Вы уверены, что хотите удалить этот кредит? Это действие нельзя отменить.</div><button class="btn" style="background:var(--danger);color:#fff;margin-bottom:10px;width:100%" onclick="doDelete()">Удалить</button></div>
     </div>
 </div>
 
-<!-- Settings overlay -->
 <div class="overlay" id="settingsOverlay" onclick="if(event.target===this)closeSettings()">
     <div class="sheet settings-sheet">
         <div class="sheet-handle"></div>
-        <div class="sheet-title">\u041d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0438 <button class="sheet-close" onclick="closeSettings()">\u2715</button></div>
+        <div class="sheet-title">Настройки <button class="sheet-close" onclick="closeSettings()">✕</button></div>
 
         <div class="settings-section">
-            <div class="settings-section-label">\u0410\u043a\u043a\u0430\u0443\u043d\u0442</div>
-            <div class="account-nick-box">
-                <div style="flex:1">
-                    <div class="account-nick-label">\u041d\u0438\u043a\u043d\u0435\u0439\u043c</div>
-                    <div class="account-nick-val" id="userNickDisplay">\u2014</div>
-                </div>
-                <span style="font-size:1.4rem">\ud83d\udc64</span>
-            </div>
-            <div class="account-email-box" id="userEmailDisplay">\u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430...</div>
+            <div class="settings-section-label">Аккаунт</div>
+            <div class="account-email-box" id="userEmailDisplay">Загрузка...</div>
             <div class="account-btns-row">
-                <button class="account-btn" onclick="openEditAccount()">\u270f\ufe0f \u0418\u0437\u043c\u0435\u043d\u0438\u0442\u044c</button>
-                <button class="account-btn btn-logout" onclick="doLogout()">\ud83d\udeaa \u0412\u044b\u0439\u0442\u0438</button>
+                <button class="account-btn" onclick="changePassword()">🔑 Сменить пароль</button>
+                <button class="account-btn btn-logout" onclick="doLogout()">🚪 Выйти</button>
             </div>
         </div>
 
         <div class="settings-section">
-            <div class="settings-section-label">\u041e\u0431\u0449\u0430\u044f \u0433\u0440\u0443\u043f\u043f\u0430</div>
-            <div id="groupSettingsContent">
-                <!-- \u0417\u0430\u043f\u043e\u043b\u043d\u044f\u0435\u0442\u0441\u044f \u0434\u0438\u043d\u0430\u043c\u0438\u0447\u0435\u0441\u043a\u0438 -->
-            </div>
-        </div>
-
-        <div class="settings-section">
-            <div class="settings-section-label">\u0412\u043d\u0435\u0448\u043d\u0438\u0439 \u0432\u0438\u0434</div>
+            <div class="settings-section-label">Внешний вид</div>
             <div class="settings-two-controls">
                 <div class="settings-control-item">
-                    <span class="settings-control-label">\u0422\u0435\u043c\u0430</span>
-                    <div class="theme-toggle-row"><span class="theme-icon-label">\u2600\ufe0f</span><div class="theme-switch-track" id="themeSwitchTrack" onclick="toggleThemeFromSettings();event.stopPropagation()"><div class="theme-switch-thumb"></div></div><span class="theme-icon-label">\ud83c\udf19</span></div>
+                    <span class="settings-control-label">Тема</span>
+                    <div class="theme-toggle-row"><span class="theme-icon-label">☀️</span><div class="theme-switch-track" id="themeSwitchTrack" onclick="toggleThemeFromSettings();event.stopPropagation()"><div class="theme-switch-thumb"></div></div><span class="theme-icon-label">🌙</span></div>
                 </div>
                 <div class="settings-control-item">
-                    <span class="settings-control-label">\u0421\u0443\u043c\u043c\u044b</span>
-                    <div class="theme-toggle-row"><span class="theme-icon-label">\ud83d\udc35</span><div class="theme-switch-track" id="amountsSwitchTrack" onclick="toggleAmountsFromSettings();event.stopPropagation()"><div class="theme-switch-thumb"></div></div><span class="theme-icon-label">\ud83d\ude48</span></div>
+                    <span class="settings-control-label">Суммы</span>
+                    <div class="theme-toggle-row"><span class="theme-icon-label">🐵</span><div class="theme-switch-track" id="amountsSwitchTrack" onclick="toggleAmountsFromSettings();event.stopPropagation()"><div class="theme-switch-thumb"></div></div><span class="theme-icon-label">🙈</span></div>
                 </div>
             </div>
         </div>
 
         <div class="settings-section">
-            <div class="settings-section-label">\u0420\u0430\u0437\u043c\u0435\u0440 \u0442\u0435\u043a\u0441\u0442\u0430</div>
+            <div class="settings-section-label">Размер текста</div>
             <div class="font-size-steps-full">
-                <div class="font-step" data-size="s" onclick="setFontSize('s')"><span>\u0410</span><span class="font-step-label">\u041c\u0435\u043b\u043a\u0438\u0439</span></div>
-                <div class="font-step" data-size="m" onclick="setFontSize('m')"><span>\u0410</span><span class="font-step-label">\u041e\u0431\u044b\u0447\u043d\u044b\u0439</span></div>
-                <div class="font-step" data-size="l" onclick="setFontSize('l')"><span>\u0410</span><span class="font-step-label">\u041a\u0440\u0443\u043f\u043d\u044b\u0439</span></div>
+                <div class="font-step" data-size="s" onclick="setFontSize('s')"><span>А</span><span class="font-step-label">Мелкий</span></div>
+                <div class="font-step" data-size="m" onclick="setFontSize('m')"><span>А</span><span class="font-step-label">Обычный</span></div>
+                <div class="font-step" data-size="l" onclick="setFontSize('l')"><span>А</span><span class="font-step-label">Крупный</span></div>
             </div>
         </div>
 
         <div class="settings-section">
-            <div class="settings-section-label">\u0417\u0430\u0449\u0438\u0442\u0430</div>
+            <div class="settings-section-label">Защита</div>
             <div class="lock-status-row" id="lockStatusRow">
-                <div class="lock-status-icon" id="lockStatusIcon">\ud83d\udd13</div>
-                <div class="lock-status-text"><span class="lock-status-title" id="lockStatusTitle">\u0417\u0430\u0449\u0438\u0442\u0430 \u043d\u0435 \u0443\u0441\u0442\u0430\u043d\u043e\u0432\u043b\u0435\u043d\u0430</span><span class="lock-status-sub" id="lockStatusSub">\u041d\u0430\u0436\u043c\u0438\u0442\u0435 \u0447\u0442\u043e\u0431\u044b \u043d\u0430\u0441\u0442\u0440\u043e\u0438\u0442\u044c</span></div>
-                <div class="lock-chevron">\u203a</div>
+                <div class="lock-status-icon" id="lockStatusIcon">🔓</div>
+                <div class="lock-status-text"><span class="lock-status-title" id="lockStatusTitle">Защита не установлена</span><span class="lock-status-sub" id="lockStatusSub">Нажмите чтобы настроить</span></div>
+                <div class="lock-chevron">›</div>
             </div>
             <div class="lock-buttons" id="lockButtons" style="display:none">
-                <button class="lock-btn lock-btn-set" onclick="startSetPin()">\ud83d\udd22 \u041f\u0418\u041d-\u043a\u043e\u0434</button>
-                <button class="lock-btn lock-btn-remove" id="removeLockBtn" onclick="doRemoveLock()" style="display:none">\ud83d\uddd1 \u0423\u0431\u0440\u0430\u0442\u044c \u0437\u0430\u0449\u0438\u0442\u0443</button>
+                <button class="lock-btn lock-btn-set" onclick="startSetPin()">🔢 ПИН-код</button>
+                <button class="lock-btn lock-btn-remove" id="removeLockBtn" onclick="doRemoveLock()" style="display:none">🗑 Убрать защиту</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Edit account overlay -->
-<div class="overlay" id="editAccountOverlay" onclick="if(event.target===this)closeEditAccount()">
-    <div class="sheet edit-account-sheet">
-        <div class="sheet-handle"></div>
-        <div class="sheet-title"><span>\u0418\u0437\u043c\u0435\u043d\u0438\u0442\u044c \u0430\u043a\u043a\u0430\u0443\u043d\u0442</span><button class="sheet-close" onclick="closeEditAccount()">\u2715</button></div>
-        <div class="form-body" style="padding-bottom:16px">
-            <div class="form-group"><label class="form-label">\u041d\u0438\u043a\u043d\u0435\u0439\u043c</label><input type="text" id="eaNick" placeholder="\u0412\u0430\u0448 \u043d\u0438\u043a\u043d\u0435\u0439\u043c" maxlength="20" autocomplete="off"></div>
-            <div class="form-group"><label class="form-label">Email</label><input type="email" id="eaEmail" placeholder="\u043d\u043e\u0432\u044b\u0439@email.com" autocomplete="email"></div>
-            <div class="form-group"><label class="form-label">\u0422\u0435\u043a\u0443\u0449\u0438\u0439 \u043f\u0430\u0440\u043e\u043b\u044c</label><input type="password" id="eaOldPass" placeholder="\u0414\u043b\u044f \u043f\u043e\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0438\u044f \u0438\u0437\u043c\u0435\u043d\u0435\u043d\u0438\u0439" autocomplete="current-password"></div>
-            <div class="form-group"><label class="form-label">\u041d\u043e\u0432\u044b\u0439 \u043f\u0430\u0440\u043e\u043b\u044c <span style="font-weight:400;color:var(--text-3)">(\u043d\u0435 \u043e\u0431\u044f\u0437\u0430\u0442\u0435\u043b\u044c\u043d\u043e)</span></label><input type="password" id="eaNewPass" placeholder="\u041e\u0441\u0442\u0430\u0432\u044c\u0442\u0435 \u043f\u0443\u0441\u0442\u044b\u043c, \u0447\u0442\u043e\u0431\u044b \u043d\u0435 \u043c\u0435\u043d\u044f\u0442\u044c" autocomplete="new-password"></div>
-            <button class="btn btn-primary" onclick="doEditAccount()" style="margin-top:4px">\u0421\u043e\u0445\u0440\u0430\u043d\u0438\u0442\u044c</button>
-        </div>
-    </div>
-</div>
-
-<!-- Change password (legacy, kept for back button) -->
 <div class="overlay" id="changePassOverlay" onclick="if(event.target===this)closeChangePass()">
     <div class="sheet">
         <div class="sheet-handle"></div>
-        <div class="sheet-title"><span>\u0421\u043c\u0435\u043d\u0430 \u043f\u0430\u0440\u043e\u043b\u044f</span><button class="sheet-close" onclick="closeChangePass()">\u2715</button></div>
+        <div class="sheet-title"><span>Смена пароля</span><button class="sheet-close" onclick="closeChangePass()">✕</button></div>
         <div class="form-body" style="padding-bottom:16px">
-            <div class="account-email-box" id="changePassEmail">\u2014</div>
-            <div class="form-group"><label class="form-label">\u0422\u0435\u043a\u0443\u0449\u0438\u0439 \u043f\u0430\u0440\u043e\u043b\u044c</label><input type="password" id="cpOldPass" placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" autocomplete="current-password"></div>
-            <div class="form-group"><label class="form-label">\u041d\u043e\u0432\u044b\u0439 \u043f\u0430\u0440\u043e\u043b\u044c</label><input type="password" id="cpNewPass" placeholder="\u041c\u0438\u043d\u0438\u043c\u0443\u043c 6 \u0441\u0438\u043c\u0432\u043e\u043b\u043e\u0432" autocomplete="new-password"></div>
-            <div class="form-group"><label class="form-label">\u041f\u043e\u0434\u0442\u0432\u0435\u0440\u0434\u0438\u0442\u0435 \u043d\u043e\u0432\u044b\u0439 \u043f\u0430\u0440\u043e\u043b\u044c</label><input type="password" id="cpConfirmPass" placeholder="\u041f\u043e\u0432\u0442\u043e\u0440\u0438\u0442\u0435 \u043f\u0430\u0440\u043e\u043b\u044c" autocomplete="new-password"></div>
-            <button class="btn btn-primary" onclick="doChangePassword()" style="margin-top:4px">\u0421\u043e\u0445\u0440\u0430\u043d\u0438\u0442\u044c \u043f\u0430\u0440\u043e\u043b\u044c</button>
+            <div class="account-email-box" id="changePassEmail">—</div>
+            <div class="form-group"><label class="form-label">Текущий пароль</label><input type="password" id="cpOldPass" placeholder="••••••••" autocomplete="current-password"></div>
+            <div class="form-group"><label class="form-label">Новый пароль</label><input type="password" id="cpNewPass" placeholder="Минимум 6 символов" autocomplete="new-password"></div>
+            <div class="form-group"><label class="form-label">Подтвердите новый пароль</label><input type="password" id="cpConfirmPass" placeholder="Повторите пароль" autocomplete="new-password"></div>
+            <button class="btn btn-primary" onclick="doChangePassword()" style="margin-top:4px">Сохранить пароль</button>
         </div>
     </div>
 </div>
 
-<!-- Filter sheet -->
-<div class="overlay" id="filterOverlay" onclick="if(event.target===this)closeFilterSheet()">
-    <div class="sheet">
-        <div class="sheet-handle"></div>
-        <div class="sheet-title"><span>\u0424\u0438\u043b\u044c\u0442\u0440 \u043a\u0440\u0435\u0434\u0438\u0442\u043e\u0432</span><button class="sheet-close" onclick="closeFilterSheet()">\u2715</button></div>
-        <div class="filter-option" onclick="setFilter('all')">
-            <div class="filter-option-icon">\ud83d\udccb</div>
-            <div class="filter-option-text"><div class="filter-option-title">\u0412\u0441\u0435 \u043a\u0440\u0435\u0434\u0438\u0442\u044b</div><div class="filter-option-sub">\u041f\u043e\u043a\u0430\u0437\u0430\u0442\u044c \u043b\u0438\u0447\u043d\u044b\u0435 \u0438 \u043e\u0431\u0449\u0438\u0435</div></div>
-            <div class="filter-option-check" id="fcheck-all">\u2713</div>
-        </div>
-        <div class="filter-option" onclick="setFilter('my')">
-            <div class="filter-option-icon">\ud83d\udc64</div>
-            <div class="filter-option-text"><div class="filter-option-title">\u041c\u043e\u0438 \u043a\u0440\u0435\u0434\u0438\u0442\u044b</div><div class="filter-option-sub">\u0422\u043e\u043b\u044c\u043a\u043e \u043b\u0438\u0447\u043d\u044b\u0435, \u0432\u0438\u0434\u043d\u044b \u0442\u043e\u043b\u044c\u043a\u043e \u0432\u0430\u043c</div></div>
-            <div class="filter-option-check" id="fcheck-my" style="display:none">\u2713</div>
-        </div>
-        <div class="filter-option" onclick="setFilter('group')">
-            <div class="filter-option-icon">\ud83d\udc65</div>
-            <div class="filter-option-text"><div class="filter-option-title">\u041e\u0431\u0449\u0438\u0435 \u043a\u0440\u0435\u0434\u0438\u0442\u044b</div><div class="filter-option-sub">\u041a\u0440\u0435\u0434\u0438\u0442\u044b \u0432 \u043e\u0431\u0449\u0435\u0439 \u0433\u0440\u0443\u043f\u043f\u0435</div></div>
-            <div class="filter-option-check" id="fcheck-group" style="display:none">\u2713</div>
-        </div>
-        <div style="height:8px"></div>
-    </div>
-</div>
-
-<!-- Group invite overlay (create / view code) -->
-<div class="overlay" id="groupCodeOverlay" onclick="if(event.target===this)closeGroupCode()">
-    <div class="sheet">
-        <div class="sheet-handle"></div>
-        <div class="sheet-title"><span id="groupCodeTitle">\u041a\u043e\u0434 \u043f\u0440\u0438\u0433\u043b\u0430\u0448\u0435\u043d\u0438\u044f</span><button class="sheet-close" onclick="closeGroupCode()">\u2715</button></div>
-        <div class="code-display">
-            <div class="code-big" id="groupCodeDisplay">\u2014\u2014\u2014\u2014\u2014\u2014</div>
-            <div class="code-hint">\u041f\u043e\u0434\u0435\u043b\u0438\u0442\u0435\u0441\u044c \u044d\u0442\u0438\u043c \u043a\u043e\u0434\u043e\u043c, \u0447\u0442\u043e\u0431\u044b \u043a\u0442\u043e-\u0442\u043e \u043c\u043e\u0433 \u0432\u043e\u0439\u0442\u0438 \u0432 \u043e\u0431\u0449\u0443\u044e \u0433\u0440\u0443\u043f\u043f\u0443</div>
-        </div>
-        <div style="padding:0 16px 16px; display:flex; gap:10px">
-            <button class="btn btn-primary" onclick="copyGroupCode()">\ud83d\udccb \u0421\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u043a\u043e\u0434</button>
-        </div>
-    </div>
-</div>
-
-<!-- Join group overlay -->
-<div class="overlay" id="joinGroupOverlay" onclick="if(event.target===this)closeJoinGroup()">
-    <div class="sheet">
-        <div class="sheet-handle"></div>
-        <div class="sheet-title"><span>\u0412\u0441\u0442\u0443\u043f\u0438\u0442\u044c \u0432 \u0433\u0440\u0443\u043f\u043f\u0443</span><button class="sheet-close" onclick="closeJoinGroup()">\u2715</button></div>
-        <div class="form-body" style="padding-bottom:16px">
-            <div class="form-group">
-                <label class="form-label">\u041a\u043e\u0434 \u043f\u0440\u0438\u0433\u043b\u0430\u0448\u0435\u043d\u0438\u044f</label>
-                <input type="text" id="joinCodeInput" placeholder="\u0412\u0432\u0435\u0434\u0438\u0442\u0435 6-\u0437\u043d\u0430\u0447\u043d\u044b\u0439 \u043a\u043e\u0434" maxlength="6" autocomplete="off" style="text-align:center;letter-spacing:0.15em;font-size:1.2rem;font-weight:700;text-transform:uppercase">
-            </div>
-            <button class="btn btn-primary" onclick="doJoinGroup()">\u0412\u0441\u0442\u0443\u043f\u0438\u0442\u044c</button>
-        </div>
-    </div>
-</div>
-
-<!-- All paid overlay -->
 <div class="all-paid-overlay" id="allPaidOverlay" onclick="if(event.target===this)closeAllPaid()">
-    <div class="all-paid-card"><span class="all-paid-icon">\ud83c\udf89</span><div class="all-paid-title">\u0412 \u044d\u0442\u043e\u043c \u043c\u0435\u0441\u044f\u0446\u0435 \u0432\u0441\u0435 \u043f\u043b\u0430\u0442\u0435\u0436\u0438 \u0432\u044b\u043f\u043e\u043b\u043d\u0435\u043d\u044b!</div><div class="all-paid-sub">\u041e\u0442\u043b\u0438\u0447\u043d\u0430\u044f \u0440\u0430\u0431\u043e\u0442\u0430 \u2014 \u0432\u0441\u0435 \u043a\u0440\u0435\u0434\u0438\u0442\u044b \u0437\u0430 \u044d\u0442\u043e\u0442 \u043c\u0435\u0441\u044f\u0446 \u043e\u0442\u043c\u0435\u0447\u0435\u043d\u044b \u043a\u0430\u043a \u043e\u043f\u043b\u0430\u0447\u0435\u043d\u043d\u044b\u0435.</div><button class="all-paid-btn" onclick="closeAllPaid()">\u041e\u0442\u043b\u0438\u0447\u043d\u043e!</button></div>
+    <div class="all-paid-card"><span class="all-paid-icon">🎉</span><div class="all-paid-title">В этом месяце все платежи выполнены!</div><div class="all-paid-sub">Отличная работа — все кредиты за этот месяц отмечены как оплаченные.</div><button class="all-paid-btn" onclick="closeAllPaid()">Отлично!</button></div>
 </div>
 
-<!-- PIN overlays -->
 <div class="pin-overlay" id="pinSetOverlay">
     <div class="pin-top">
-        <button class="pin-close" onclick="cancelPinSet()">\u2715</button>
-        <div class="pin-lock-icon">\ud83d\udd12</div>
-        <div class="pin-title" id="pinSetTitle">\u0421\u043e\u0437\u0434\u0430\u0439\u0442\u0435 \u041f\u0418\u041d-\u043a\u043e\u0434</div>
-        <div class="pin-sub" id="pinSetSub">\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0434\u043b\u0438\u043d\u0443</div>
-        <div class="pin-length-row" id="pinLenRow"><button class="pin-len-btn active" onclick="selectPinLen(4)">4 \u0446\u0438\u0444\u0440\u044b</button><button class="pin-len-btn" onclick="selectPinLen(6)">6 \u0446\u0438\u0444\u0440</button></div>
+        <button class="pin-close" onclick="cancelPinSet()">✕</button>
+        <div class="pin-lock-icon">🔒</div>
+        <div class="pin-title" id="pinSetTitle">Создайте ПИН-код</div>
+        <div class="pin-sub" id="pinSetSub">Выберите длину</div>
+        <div class="pin-length-row" id="pinLenRow"><button class="pin-len-btn active" onclick="selectPinLen(4)">4 цифры</button><button class="pin-len-btn" onclick="selectPinLen(6)">6 цифр</button></div>
         <div class="pin-dots" id="pinSetDots"></div>
     </div>
     <div class="pin-pad" id="pinSetPad">
         <button class="pin-key" data-v="1">1</button><button class="pin-key" data-v="2">2</button><button class="pin-key" data-v="3">3</button>
         <button class="pin-key" data-v="4">4</button><button class="pin-key" data-v="5">5</button><button class="pin-key" data-v="6">6</button>
         <button class="pin-key" data-v="7">7</button><button class="pin-key" data-v="8">8</button><button class="pin-key" data-v="9">9</button>
-        <button class="pin-key empty"></button><button class="pin-key" data-v="0">0</button><button class="pin-key del" id="pinSetDel">\u232b</button>
+        <button class="pin-key empty"></button><button class="pin-key" data-v="0">0</button><button class="pin-key del" id="pinSetDel">⌫</button>
     </div>
 </div>
 
 <div class="pin-overlay" id="pinLockOverlay">
     <div class="pin-top">
-        <div class="pin-lock-icon">\ud83d\udd10</div>
-        <div class="pin-title">\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u041f\u0418\u041d-\u043a\u043e\u0434</div>
-        <div class="pin-sub" id="pinLockSub">\u0414\u043b\u044f \u0432\u0445\u043e\u0434\u0430 \u0432 \u043f\u0440\u0438\u043b\u043e\u0436\u0435\u043d\u0438\u0435</div>
+        <div class="pin-lock-icon">🔐</div>
+        <div class="pin-title">Введите ПИН-код</div>
+        <div class="pin-sub" id="pinLockSub">Для входа в приложение</div>
         <div class="pin-dots" id="pinLockDots"></div>
     </div>
     <div class="pin-pad" id="pinLockPad">
         <button class="pin-key" data-v="1">1</button><button class="pin-key" data-v="2">2</button><button class="pin-key" data-v="3">3</button>
         <button class="pin-key" data-v="4">4</button><button class="pin-key" data-v="5">5</button><button class="pin-key" data-v="6">6</button>
         <button class="pin-key" data-v="7">7</button><button class="pin-key" data-v="8">8</button><button class="pin-key" data-v="9">9</button>
-        <button class="pin-key empty"></button><button class="pin-key" data-v="0">0</button><button class="pin-key del" id="pinLockDel">\u232b</button>
+        <button class="pin-key empty"></button><button class="pin-key" data-v="0">0</button><button class="pin-key del" id="pinLockDel">⌫</button>
     </div>
 </div>
 
@@ -779,17 +610,10 @@ function _initFirebase() {
     auth = firebase.auth();
     db   = firebase.firestore();
     db.enablePersistence({synchronizeTabs:false}).catch(()=>{});
-    auth.onAuthStateChanged(async user => {
-        authResolved = true;
-        authUser = user;
-        if (user) {
-            await loadUserProfile();
-        }
-        evaluateLaunch();
-    });
+    auth.onAuthStateChanged(user => { authResolved = true; authUser = user; evaluateLaunch(); });
 }
 
-// \u2500\u2500\u2500 Constants \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+const MONTH_K   = 'crt_month_v4';
 const THEME_K   = 'crt_theme_v4';
 const AMT_K     = 'crt_amounts_v4';
 const FONT_K    = 'crt_font_v4';
@@ -797,19 +621,17 @@ const PIN_K     = 'crt_pin_v4';
 const PIN_LEN_K = 'crt_pin_len_v4';
 
 const CATS = {
-    mortgage: {emoji:'\ud83c\udfe0',label:'\u0418\u043f\u043e\u0442\u0435\u043a\u0430'},
-    auto:     {emoji:'\ud83d\ude97',label:'\u0410\u0432\u0442\u043e\u043a\u0440\u0435\u0434\u0438\u0442'},
-    consumer: {emoji:'\ud83d\udcb3',label:'\u041f\u043e\u0442\u0440\u0435\u0431\u0438\u0442\u0435\u043b\u044c\u0441\u043a\u0438\u0439'},
-    card:     {emoji:'\ud83d\udcb0',label:'\u041a\u0430\u0440\u0442\u0430'},
-    other:    {emoji:'\ud83d\udcc4',label:'\u041f\u0440\u043e\u0447\u0435\u0435'}
+    mortgage: {emoji:'🏠',label:'Ипотека'},
+    auto:     {emoji:'🚗',label:'Автокредит'},
+    consumer: {emoji:'💳',label:'Потребительский'},
+    card:     {emoji:'💰',label:'Карта'},
+    other:    {emoji:'📄',label:'Прочее'}
 };
 
-// \u2500\u2500\u2500 State \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 let credits = [];
 let editMode = false, editId = null;
 let selectedCreditId = null;
 let selectedCat = 'mortgage';
-let selectedCreditType = 'my'; // 'my' | 'group'
 let dateMode = 'cal';
 let theme = 'light';
 let amountsVisible = true;
@@ -818,7 +640,6 @@ let allPaidShown = false;
 let lockPanelOpen = false;
 let backPressedOnce = false;
 let _isSaving = false;
-let filterMode = 'all'; // 'all' | 'my' | 'group'
 
 let pinSetBuf = '', pinSetStep = 0, pinSetFirst = '', pinSetLen = 4, pinSetVerifyMode = null;
 let pinLockBuf = '', pinLockLen = 4;
@@ -827,15 +648,8 @@ let isLoginMode = true;
 let authResolved = false;
 let authUser = null;
 let splashTimerDone = false;
-let creditsUnsubscribeOwn = null;
-let creditsUnsubscribeGroup = null;
+let creditsUnsubscribe = null;
 let monthResetDone = false;
-
-// User profile
-let userNick = '';
-let userGroupId = null; // ID \u0433\u0440\u0443\u043f\u043f\u044b, \u0432 \u043a\u043e\u0442\u043e\u0440\u043e\u0439 \u0441\u043e\u0441\u0442\u043e\u0438\u0442 \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c
-let groupData = null;   // { code, name, members: [...], ownerId }
-let groupUnsubscribe = null;
 
 const ls = {
     get: k     => { try { return localStorage.getItem(k); }    catch(e) { return null; } },
@@ -843,110 +657,37 @@ const ls = {
     rm:  k     => { try { localStorage.removeItem(k); }        catch(e) {} }
 };
 
-// \u2500\u2500\u2500 User Profile \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-async function loadUserProfile() {
-    if (!authUser) return;
-    try {
-        const doc = await db.collection('users').doc(authUser.uid).get();
-        if (doc.exists) {
-            const d = doc.data();
-            userNick = d.nick || authUser.email.split('@')[0];
-            userGroupId = d.groupId || null;
-        } else {
-            // Create profile if missing
-            userNick = authUser.email.split('@')[0];
-            userGroupId = null;
-            await db.collection('users').doc(authUser.uid).set({ nick: userNick, groupId: null, email: authUser.email });
-        }
-    } catch(e) {
-        console.error('loadUserProfile error', e);
-    }
+function formatPaymentDate(dayNumber) {
+    const months = [
+        'января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 
+        'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'
+    ];
+    return `${dayNumber} ${months[new Date().getMonth()]}`;
 }
 
-async function saveUserProfile(fields) {
-    if (!authUser) return;
-    await db.collection('users').doc(authUser.uid).set(fields, { merge: true });
-    if (fields.nick !== undefined) userNick = fields.nick;
-    if (fields.groupId !== undefined) userGroupId = fields.groupId;
-}
-
-// \u2500\u2500\u2500 Month Reset (Firestore-based) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-async function checkMonthReset() {
-    if (!authUser) return;
-    const n = new Date();
-    const key = `${n.getMonth()}-${n.getFullYear()}`;
-    // Store reset key in user's Firestore doc to work across devices
-    try {
-        const doc = await db.collection('users').doc(authUser.uid).get();
-        const storedKey = doc.exists ? (doc.data().lastMonthReset || '') : '';
-        if (storedKey === key) return;
-        await db.collection('users').doc(authUser.uid).set({ lastMonthReset: key }, { merge: true });
-        const toReset = credits.filter(c => !c.completed);
-        for (const c of toReset) await updateCreditField(c.id, { paid: false, partial: 0 });
-        if (toReset.length > 0) {
-            const m = document.getElementById('resetMsg');
-            m.style.display = 'block';
-            setTimeout(() => m.style.display = 'none', 5000);
-        }
-    } catch(e) { console.error('checkMonthReset error', e); }
-}
-
-// \u2500\u2500\u2500 Credits Loading \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function loadCredits() {
     if (!authUser) return;
+    if (creditsUnsubscribe) { creditsUnsubscribe(); creditsUnsubscribe = null; }
 
-    // Unsubscribe previous
-    if (creditsUnsubscribeOwn) { creditsUnsubscribeOwn(); creditsUnsubscribeOwn = null; }
-    if (creditsUnsubscribeGroup) { creditsUnsubscribeGroup(); creditsUnsubscribeGroup = null; }
-
-    let ownCredits = [];
-    let groupCredits = [];
-
-    function mergeAndRender() {
-        // Merge, deduplicate by id
-        const map = new Map();
-        [...ownCredits, ...groupCredits].forEach(c => map.set(c.id, c));
-        credits = Array.from(map.values());
-        render();
-        if (!monthResetDone) { monthResetDone = true; checkMonthReset(); }
-    }
-
-    // Listen to own credits (no groupId)
-    creditsUnsubscribeOwn = db.collection('credits')
+    creditsUnsubscribe = db.collection('credits')
         .where('userId', '==', authUser.uid)
-        .where('groupId', '==', null)
-        .onSnapshot(snap => {
-            ownCredits = [];
-            snap.forEach(doc => ownCredits.push({ id: doc.id, ...doc.data() }));
-            mergeAndRender();
-        }, e => { console.error('own credits error:', e); });
-
-    // Listen to group credits if user is in a group
-    subscribeGroupCredits(groupCredits, mergeAndRender);
-}
-
-function subscribeGroupCredits(groupCreditsArr, mergeAndRender) {
-    if (creditsUnsubscribeGroup) { creditsUnsubscribeGroup(); creditsUnsubscribeGroup = null; }
-    if (!userGroupId) return;
-
-    creditsUnsubscribeGroup = db.collection('credits')
-        .where('groupId', '==', userGroupId)
-        .onSnapshot(snap => {
-            groupCreditsArr.length = 0;
-            snap.forEach(doc => groupCreditsArr.push({ id: doc.id, ...doc.data() }));
-            mergeAndRender();
-        }, e => { console.error('group credits error:', e); });
+        .onSnapshot(snapshot => {
+            credits = [];
+            snapshot.forEach(doc => credits.push({ id: doc.id, ...doc.data() }));
+            render();
+            if (!monthResetDone) { monthResetDone = true; checkMonthReset(); }
+        }, e => {
+            console.error('Ошибка синхронизации:', e);
+            showToast('Ошибка синхронизации данных');
+        });
 }
 
 async function saveCredit(creditData) {
     if (!authUser) throw new Error('No user');
     creditData.userId = authUser.uid;
-    creditData.addedByNick = userNick;
     if (editMode && editId) {
         const id = editId;
         editMode = false; editId = null;
-        creditData.updatedByNick = userNick;
-        creditData.updatedAt = new Date().toISOString();
         await db.collection('credits').doc(id).update(creditData);
     } else {
         await db.collection('credits').add(creditData);
@@ -954,195 +695,58 @@ async function saveCredit(creditData) {
 }
 
 async function deleteCredit(id) { await db.collection('credits').doc(id).delete(); }
+
 async function updateCreditField(id, data) { await db.collection('credits').doc(id).update(data); }
 
-// \u2500\u2500\u2500 Groups \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-function genGroupCode() {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    let code = '';
-    for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
-    return code;
-}
-
-async function createGroup() {
+async function checkMonthReset() {
     if (!authUser) return;
-    if (userGroupId) { showToast('\u0412\u044b \u0443\u0436\u0435 \u0441\u043e\u0441\u0442\u043e\u0438\u0442\u0435 \u0432 \u0433\u0440\u0443\u043f\u043f\u0435'); return; }
-    try {
-        const code = genGroupCode();
-        const ref = await db.collection('groups').add({
-            code,
-            ownerId: authUser.uid,
-            members: [{ uid: authUser.uid, nick: userNick }],
-            createdAt: new Date().toISOString()
-        });
-        userGroupId = ref.id;
-        await saveUserProfile({ groupId: ref.id });
-        subscribeToGroup(ref.id);
-        closeSettings();
-        setTimeout(() => {
-            document.getElementById('groupCodeDisplay').textContent = code;
-            document.getElementById('groupCodeTitle').textContent = '\u0412\u0430\u0448 \u043a\u043e\u0434 \u043f\u0440\u0438\u0433\u043b\u0430\u0448\u0435\u043d\u0438\u044f';
-            document.getElementById('groupCodeOverlay').classList.add('active');
-        }, 300);
-        loadCredits();
-    } catch(e) { showToast('\u041e\u0448\u0438\u0431\u043a\u0430 \u0441\u043e\u0437\u0434\u0430\u043d\u0438\u044f \u0433\u0440\u0443\u043f\u043f\u044b: ' + e.message); }
-}
-
-async function doJoinGroup() {
-    const code = document.getElementById('joinCodeInput').value.trim().toUpperCase();
-    if (code.length !== 6) { showToast('\u041a\u043e\u0434 \u0434\u043e\u043b\u0436\u0435\u043d \u0431\u044b\u0442\u044c 6 \u0441\u0438\u043c\u0432\u043e\u043b\u043e\u0432'); return; }
-    if (userGroupId) { showToast('\u0412\u044b \u0443\u0436\u0435 \u0441\u043e\u0441\u0442\u043e\u0438\u0442\u0435 \u0432 \u0433\u0440\u0443\u043f\u043f\u0435. \u0421\u043d\u0430\u0447\u0430\u043b\u0430 \u0432\u044b\u0439\u0434\u0438\u0442\u0435.'); return; }
-    try {
-        const snap = await db.collection('groups').where('code', '==', code).limit(1).get();
-        if (snap.empty) { showToast('\u0413\u0440\u0443\u043f\u043f\u0430 \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d\u0430'); return; }
-        const groupDoc = snap.docs[0];
-        const gData = groupDoc.data();
-        const members = gData.members || [];
-        if (members.find(m => m.uid === authUser.uid)) {
-            showToast('\u0412\u044b \u0443\u0436\u0435 \u0432 \u044d\u0442\u043e\u0439 \u0433\u0440\u0443\u043f\u043f\u0435');
-        } else {
-            members.push({ uid: authUser.uid, nick: userNick });
-            await groupDoc.ref.update({ members });
-        }
-        userGroupId = groupDoc.id;
-        await saveUserProfile({ groupId: groupDoc.id });
-        subscribeToGroup(groupDoc.id);
-        closeJoinGroup();
-        closeSettings();
-        loadCredits();
-        showToast('\u0412\u044b \u0432\u0441\u0442\u0443\u043f\u0438\u043b\u0438 \u0432 \u0433\u0440\u0443\u043f\u043f\u0443!');
-        setTimeout(openSettings, 400);
-    } catch(e) { showToast('\u041e\u0448\u0438\u0431\u043a\u0430: ' + e.message); }
-}
-
-async function leaveGroup() {
-    if (!authUser || !userGroupId) return;
-    if (!confirm('\u0412\u044b\u0439\u0442\u0438 \u0438\u0437 \u043e\u0431\u0449\u0435\u0439 \u0433\u0440\u0443\u043f\u043f\u044b? \u0412\u0430\u0448\u0438 \u043e\u0431\u0449\u0438\u0435 \u043a\u0440\u0435\u0434\u0438\u0442\u044b \u043e\u0441\u0442\u0430\u043d\u0443\u0442\u0441\u044f \u0432 \u0433\u0440\u0443\u043f\u043f\u0435.')) return; // native confirm since overlay is complex
-    try {
-        const groupRef = db.collection('groups').doc(userGroupId);
-        const gDoc = await groupRef.get();
-        if (gDoc.exists) {
-            const members = (gDoc.data().members || []).filter(m => m.uid !== authUser.uid);
-            await groupRef.update({ members });
-        }
-        userGroupId = null;
-        groupData = null;
-        await saveUserProfile({ groupId: null });
-        if (creditsUnsubscribeGroup) { creditsUnsubscribeGroup(); creditsUnsubscribeGroup = null; }
-        if (groupUnsubscribe) { groupUnsubscribe(); groupUnsubscribe = null; }
-        loadCredits();
-        renderGroupSettings();
-        showToast('\u0412\u044b \u0432\u044b\u0448\u043b\u0438 \u0438\u0437 \u0433\u0440\u0443\u043f\u043f\u044b');
-    } catch(e) { showToast('\u041e\u0448\u0438\u0431\u043a\u0430: ' + e.message); }
-}
-
-function subscribeToGroup(groupId) {
-    if (groupUnsubscribe) { groupUnsubscribe(); groupUnsubscribe = null; }
-    groupUnsubscribe = db.collection('groups').doc(groupId).onSnapshot(doc => {
-        if (doc.exists) {
-            groupData = doc.data();
-        } else {
-            groupData = null;
-            userGroupId = null;
-            saveUserProfile({ groupId: null });
-        }
-        renderGroupSettings();
-    }, e => console.error('group subscribe error', e));
-}
-
-function showGroupCode() {
-    if (!groupData) return;
-    document.getElementById('groupCodeDisplay').textContent = groupData.code;
-    document.getElementById('groupCodeTitle').textContent = '\u041a\u043e\u0434 \u043f\u0440\u0438\u0433\u043b\u0430\u0448\u0435\u043d\u0438\u044f';
-    document.getElementById('groupCodeOverlay').classList.add('active');
-}
-
-function copyGroupCode() {
-    const code = document.getElementById('groupCodeDisplay').textContent;
-    if (navigator.clipboard) {
-        navigator.clipboard.writeText(code).then(() => showToast('\u041a\u043e\u0434 \u0441\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u043d: ' + code));
-    } else {
-        showToast('\u041a\u043e\u0434: ' + code);
+    const n = new Date();
+    const key = `${n.getMonth()}-${n.getFullYear()}`;
+    if (ls.get(MONTH_K) === key) return;
+    ls.set(MONTH_K, key);
+    const toReset = credits.filter(c => !c.completed);
+    for (const c of toReset) await updateCreditField(c.id, { paid: false, partial: 0 });
+    if (toReset.length > 0) {
+        const m = document.getElementById('resetMsg');
+        m.style.display = 'block';
+        setTimeout(() => m.style.display = 'none', 5000);
     }
 }
 
-function closeGroupCode() { document.getElementById('groupCodeOverlay').classList.remove('active'); }
-function openJoinGroup() { document.getElementById('joinCodeInput').value=''; document.getElementById('joinGroupOverlay').classList.add('active'); }
-function closeJoinGroup() { document.getElementById('joinGroupOverlay').classList.remove('active'); }
-
-function renderGroupSettings() {
-    const el = document.getElementById('groupSettingsContent');
-    if (!el) return;
-    if (userGroupId && groupData) {
-        const members = groupData.members || [];
-        const memberNames = members.map(m => m.nick).join(', ');
-        el.innerHTML = `
-            <div class="group-info-box">
-                <div class="group-info-name">\ud83d\udc65 \u041e\u0431\u0449\u0430\u044f \u0433\u0440\u0443\u043f\u043f\u0430</div>
-                <div class="group-info-code">\u041a\u043e\u0434: <span>${groupData.code}</span></div>
-                <div class="group-info-members">\u0423\u0447\u0430\u0441\u0442\u043d\u0438\u043a\u0438: ${esc(memberNames)}</div>
-            </div>
-            <div class="group-btns-row">
-                <button class="group-btn primary" onclick="showGroupCode()">\ud83d\udd11 \u041a\u043e\u0434 \u043f\u0440\u0438\u0433\u043b\u0430\u0448\u0435\u043d\u0438\u044f</button>
-                <button class="group-btn danger" onclick="leaveGroup()">\ud83d\udeaa \u0412\u044b\u0439\u0442\u0438 \u0438\u0437 \u0433\u0440\u0443\u043f\u043f\u044b</button>
-            </div>`;
-    } else {
-        el.innerHTML = `
-            <div style="font-size:0.85rem;color:var(--text-2);margin-bottom:12px;line-height:1.5">\u0421\u043e\u0437\u0434\u0430\u0439\u0442\u0435 \u0433\u0440\u0443\u043f\u043f\u0443 \u0438 \u043f\u0440\u0438\u0433\u043b\u0430\u0441\u0438\u0442\u0435 \u0431\u043b\u0438\u0437\u043a\u0438\u0445 \u2014 \u0432\u044b \u0441\u043c\u043e\u0436\u0435\u0442\u0435 \u0432\u043c\u0435\u0441\u0442\u0435 \u0441\u043b\u0435\u0434\u0438\u0442\u044c \u0437\u0430 \u043e\u0431\u0449\u0438\u043c\u0438 \u043a\u0440\u0435\u0434\u0438\u0442\u0430\u043c\u0438.</div>
-            <div class="group-btns-row">
-                <button class="group-btn primary" onclick="createGroup()">\u2795 \u0421\u043e\u0437\u0434\u0430\u0442\u044c \u0433\u0440\u0443\u043f\u043f\u0443</button>
-                <button class="group-btn" onclick="openJoinGroup();closeSettings()">\ud83d\udd11 \u0412\u043e\u0439\u0442\u0438 \u043f\u043e \u043a\u043e\u0434\u0443</button>
-            </div>`;
-    }
-}
-
-// \u2500\u2500\u2500 Render \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function render() {
     const now = new Date();
     const cm = now.getMonth(), cy = now.getFullYear();
-
-    let visible = credits;
-    if (filterMode === 'my') visible = credits.filter(c => !c.groupId);
-    else if (filterMode === 'group') visible = credits.filter(c => !!c.groupId);
-
-    const active    = visible.filter(c => !c.completed);
-    const completed = visible.filter(c =>  c.completed);
+    const active    = credits.filter(c => !c.completed);
+    const completed = credits.filter(c =>  c.completed);
     active.sort((a,b) => a.paid === b.paid ? a.day - b.day : a.paid ? 1 : -1);
-
-    // Section title
-    const titleMap = { all: '\u0410\u043a\u0442\u0438\u0432\u043d\u044b\u0435', my: '\u041c\u043e\u0438', group: '\u041e\u0431\u0449\u0438\u0435' };
-    document.getElementById('sectionTitle').textContent = titleMap[filterMode] || '\u0410\u043a\u0442\u0438\u0432\u043d\u044b\u0435';
 
     const list = document.getElementById('creditList');
     list.innerHTML = '';
     
     if (!active.length) {
-        list.innerHTML = `<div class="empty-state"><div class="empty-icon">\ud83d\udcb3</div><div class="empty-title">\u041d\u0435\u0442 \u043a\u0440\u0435\u0434\u0438\u0442\u043e\u0432</div><div class="empty-sub">\u041d\u0430\u0436\u043c\u0438\u0442\u0435 + \u0447\u0442\u043e\u0431\u044b \u0434\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u043f\u0435\u0440\u0432\u044b\u0439</div></div>`;
+        list.innerHTML = `<div class="empty-state"><div class="empty-icon">💳</div><div class="empty-title">Нет активных кредитов</div><div class="empty-sub">Нажмите + чтобы добавить первый</div></div>`;
     } else {
-        const frag = document.createDocumentFragment();
-        active.forEach(c => frag.appendChild(buildCreditItem(c, cm, cy)));
-        list.appendChild(frag);
+        const activeFragment = document.createDocumentFragment();
+        active.forEach(c => activeFragment.appendChild(buildCreditItem(c, cm, cy)));
+        list.appendChild(activeFragment);
     }
 
     const compSec = document.getElementById('completedSection');
     if (completed.length) {
         compSec.style.display = '';
-        document.getElementById('completedLabel').textContent = `\u0417\u0430\u0432\u0435\u0440\u0448\u0451\u043d\u043d\u044b\u0435 (${completed.length})`;
+        document.getElementById('completedLabel').textContent = `Завершённые (${completed.length})`;
         const compList = document.getElementById('completedList');
         if (compList.classList.contains('open')) {
             compList.innerHTML = '';
-            const frag2 = document.createDocumentFragment();
-            completed.forEach(c => frag2.appendChild(buildCreditItem(c, cm, cy)));
-            compList.appendChild(frag2);
+            const compFragment = document.createDocumentFragment();
+            completed.forEach(c => compFragment.appendChild(buildCreditItem(c, cm, cy)));
+            compList.appendChild(compFragment);
         }
     } else compSec.style.display = 'none';
 
     document.getElementById('activeCount').textContent = active.length ? `${active.length}` : '';
     updateSummary(active);
     if (!amountsVisible) setTimeout(startSpoilers, 30);
-
-    // Update filter button
-    updateFilterBtn();
 }
 
 function buildCreditItem(c, cm, cy) {
@@ -1154,18 +758,10 @@ function buildCreditItem(c, cm, cy) {
     if (c.endDate) {
         const ed = new Date(c.endDate);
         const ml = (ed.getFullYear() - cy) * 12 + (ed.getMonth() - cm);
-        if (ml <= 0)      termHtml = `<span class="credit-term-tag ending">\u0417\u0430\u0432\u0435\u0440\u0448\u0430\u0435\u0442\u0441\u044f</span>`;
-        else if (ml <= 3) termHtml = `<span class="credit-term-tag soon">\u0415\u0449\u0451 ${ml} \u043c\u0435\u0441.</span>`;
-        else              termHtml = `<span class="credit-term-tag ok">${ml} \u043c\u0435\u0441.</span>`;
-    } else termHtml = `<span class="credit-term-tag infinite">\u0411\u0435\u0441\u0441\u0440\u043e\u0447\u043d\u044b\u0439</span>`;
-
-    // Group tag
-    let groupTag = '';
-    if (c.groupId) {
-        const nick = c.addedByNick || '?';
-        const isOwn = c.userId === authUser.uid;
-        groupTag = `<span class="credit-group-tag">\ud83d\udc65 ${isOwn ? '\u041e\u0431\u0449\u0438\u0439' : esc(nick)}</span>`;
-    }
+        if (ml <= 0)      termHtml = `<span class="credit-term-tag ending">Завершается</span>`;
+        else if (ml <= 3) termHtml = `<span class="credit-term-tag soon">Ещё ${ml} мес.</span>`;
+        else              termHtml = `<span class="credit-term-tag ok">${ml} мес.</span>`;
+    } else termHtml = `<span class="credit-term-tag infinite">Бессрочный</span>`;
 
     const cat  = CATS[c.category] || CATS.other;
     const wrap = document.createElement('div');
@@ -1179,7 +775,7 @@ function buildCreditItem(c, cm, cy) {
     
     const displayAmount = c.paid ? fmt(c.amount) : (partial > 0 ? fmt(remain) : fmt(c.amount));
     
-    item.innerHTML = `<div class="credit-icon-wrap">${cat.emoji}</div><div class="credit-main"><div class="credit-name">${esc(c.name)}</div><div class="credit-meta"><span class="credit-date-tag">${formatPaymentDate(c.day)}</span>${termHtml}${groupTag}</div></div><div class="credit-right"><span class="credit-amount">${displayAmount} \u20bd</span>${c.paid ? '<span class="credit-paid-badge">\u041e\u043f\u043b\u0430\u0447\u0435\u043d</span>' : (partial > 0 ? `<span style="font-size:0.68rem;color:var(--text-2);font-weight:500">\u0438\u0437 ${fmt(c.amount)} \u20bd</span>` : '')}</div><div class="check-wrap ${c.paid||c.completed?'checked':''}" data-id="${c.id}"><svg viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="2.5"><polyline points="2,7 6,11 12,3"/></svg></div>`;
+    item.innerHTML = `<div class="credit-icon-wrap">${cat.emoji}</div><div class="credit-main"><div class="credit-name">${esc(c.name)}</div><div class="credit-meta"><span class="credit-date-tag">${formatPaymentDate(c.day)}</span>${termHtml}</div></div><div class="credit-right"><span class="credit-amount">${displayAmount} ₽</span>${c.paid ? '<span class="credit-paid-badge">Оплачен</span>' : (partial > 0 ? `<span style="font-size:0.68rem;color:var(--text-2);font-weight:500">из ${fmt(c.amount)} ₽</span>` : '')}</div><div class="check-wrap ${c.paid||c.completed?'checked':''}" data-id="${c.id}"><svg viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="2.5"><polyline points="2,7 6,11 12,3"/></svg></div>`;
     item.addEventListener('click', e => { if (!c.completed && !e.target.closest('.check-wrap')) openAction(c.id); });
     item.querySelector('.check-wrap').addEventListener('click', async e => {
         e.stopPropagation();
@@ -1193,15 +789,16 @@ function updateSummary(active) {
     const total        = active.reduce((s,c) => s + c.amount, 0);
     const paidTotalSum = active.reduce((s,c) => s + (c.paid ? c.amount : (c.partial||0)), 0);
     const remain = total > 0 ? Math.max(0, total - paidTotalSum) : 0;
+    
     const pct = total > 0 ? Math.floor((paidTotalSum/total)*100) : 0;
     
-    document.getElementById('summaryAmount').textContent    = fmt(total)+' \u20bd';
-    document.getElementById('summaryPaid').textContent      = `\u0412\u043d\u0435\u0441\u0435\u043d\u043e ${fmt(paidTotalSum)} \u20bd`;
+    document.getElementById('summaryAmount').textContent    = fmt(total)+' ₽';
+    document.getElementById('summaryPaid').textContent      = `Внесено ${fmt(paidTotalSum)} ₽`;
     document.getElementById('summaryPercent').textContent   = pct+'%';
     document.getElementById('summaryBarFill').style.width   = pct+'%';
     document.getElementById('summaryCount').textContent     = active.length;
     document.getElementById('summaryPaidCount').textContent = active.filter(c=>c.paid).length;
-    document.getElementById('summaryRemain').textContent    = fmt(remain)+' \u20bd';
+    document.getElementById('summaryRemain').textContent    = fmt(remain)+' ₽';
     
     if (paidTotalSum >= total && total > 0 && active.length > 0 && !allPaidShown) { 
         allPaidShown = true; 
@@ -1210,52 +807,15 @@ function updateSummary(active) {
     else if (pct < 100) allPaidShown = false;
 }
 
-// \u2500\u2500\u2500 Filter \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-function openFilterSheet() { document.getElementById('filterOverlay').classList.add('active'); }
-function closeFilterSheet() { document.getElementById('filterOverlay').classList.remove('active'); }
-function setFilter(mode) {
-    filterMode = mode;
-    closeFilterSheet();
-    render();
-}
-function updateFilterBtn() {
-    const btn = document.getElementById('filterBtn');
-    const lbl = document.getElementById('filterBtnLabel');
-    const icon = document.getElementById('filterBtnIcon');
-    const labels = { all: '\u0412\u0441\u0435', my: '\u041c\u043e\u0438', group: '\u041e\u0431\u0449\u0438\u0435' };
-    const icons  = { all: '\ud83d\udccb', my: '\ud83d\udc64', group: '\ud83d\udc65' };
-    lbl.textContent  = labels[filterMode] || '\u0412\u0441\u0435';
-    icon.textContent = icons[filterMode] || '\ud83d\udccb';
-    btn.classList.toggle('has-filter', filterMode !== 'all');
-    // Update check marks
-    ['all','my','group'].forEach(f => {
-        const el = document.getElementById('fcheck-'+f);
-        if (el) el.style.display = filterMode === f ? '' : 'none';
-    });
-}
-
-// \u2500\u2500\u2500 Action sheet \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function openAction(id) {
     const c = credits.find(x => x.id === id); if (!c) return;
     selectedCreditId = id;
     const cat = CATS[c.category] || CATS.other;
     document.getElementById('actionNameText').textContent   = cat.emoji+' '+c.name;
-    document.getElementById('actionSub').textContent        = fmt(c.amount)+' \u20bd \u00b7 '+formatPaymentDate(c.day);
-    
-    // Show who added/updated
-    const metaEl = document.getElementById('actionMeta');
-    if (c.groupId) {
-        let metaText = c.addedByNick ? `\u0414\u043e\u0431\u0430\u0432\u0438\u043b: ${c.addedByNick}` : '';
-        if (c.updatedByNick) metaText += (metaText ? ' \u00b7 ' : '') + `\u0418\u0437\u043c\u0435\u043d\u0438\u043b: ${c.updatedByNick}`;
-        metaEl.textContent = metaText;
-        metaEl.style.display = metaText ? '' : 'none';
-    } else {
-        metaEl.style.display = 'none';
-    }
-
+    document.getElementById('actionSub').textContent        = fmt(c.amount)+' ₽ · '+formatPaymentDate(c.day);
     const partial = c.partial || 0;
-    document.getElementById('partialPaidDisplay').textContent   = fmt(partial)+' \u20bd';
-    document.getElementById('partialRemainDisplay').textContent = fmt(Math.max(0,c.amount-partial))+' \u20bd';
+    document.getElementById('partialPaidDisplay').textContent   = fmt(partial)+' ₽';
+    document.getElementById('partialRemainDisplay').textContent = fmt(Math.max(0,c.amount-partial))+' ₽';
     document.getElementById('partialInput').value = '';
     const ps = document.getElementById('partialSection');
     const rb = document.getElementById('resetPartialBtn');
@@ -1266,7 +826,7 @@ function openAction(id) {
 
 async function resetPartial() {
     const c = credits.find(x=>x.id===selectedCreditId);
-    if (c&&!c.paid&&!c.completed) { await updateCreditField(c.id,{partial:0}); closeAction(); showToast('\u0427\u0430\u0441\u0442\u0438\u0447\u043d\u0430\u044f \u043e\u043f\u043b\u0430\u0442\u0430 \u0441\u0431\u0440\u043e\u0448\u0435\u043d\u0430'); }
+    if (c&&!c.paid&&!c.completed) { await updateCreditField(c.id,{partial:0}); closeAction(); showToast('Частичная оплата сброшена'); }
 }
 
 function closeAction() { document.getElementById('actionOverlay').classList.remove('active'); }
@@ -1274,12 +834,12 @@ function closeAction() { document.getElementById('actionOverlay').classList.remo
 async function savePartial() {
     const c = credits.find(x=>x.id===selectedCreditId); if (!c) return;
     const inp = parseFloat(document.getElementById('partialInput').value);
-    if (!inp||inp<=0) { showToast('\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0441\u0443\u043c\u043c\u0443'); return; }
+    if (!inp||inp<=0) { showToast('Введите сумму'); return; }
     const newPartial = Math.min(c.amount,(c.partial||0)+inp);
     const newPaid = newPartial >= c.amount;
     await updateCreditField(c.id,{partial:newPartial,paid:newPaid});
     closeAction();
-    showToast(newPaid?'\u041a\u0440\u0435\u0434\u0438\u0442 \u043f\u043e\u043b\u043d\u043e\u0441\u0442\u044c\u044e \u043e\u043f\u043b\u0430\u0447\u0435\u043d':'\u0412\u043d\u0435\u0441\u0435\u043d\u043e '+fmt(inp)+' \u20bd');
+    showToast(newPaid?'Кредит полностью оплачен':'Внесено '+fmt(inp)+' ₽');
 }
 
 function openEdit() {
@@ -1289,12 +849,9 @@ function openEdit() {
     document.getElementById('amountInput').value = c.amount;
     document.getElementById('dayInput').value    = c.day;
     selectCat(c.category);
-    selectCreditType(c.groupId ? 'group' : 'my');
-    // Hide type toggle when editing (keep existing type)
-    document.getElementById('creditTypeGroup').style.display = 'none';
     if (c.endDate) { setDateMode('cal'); document.getElementById('endDateCal').value=c.endDate; }
-    document.getElementById('formTitleText').innerText = '\u0420\u0435\u0434\u0430\u043a\u0442\u0438\u0440\u043e\u0432\u0430\u0442\u044c';
-    document.getElementById('formSaveBtn').innerText   = '\u0421\u043e\u0445\u0440\u0430\u043d\u0438\u0442\u044c';
+    document.getElementById('formTitleText').innerText = 'Редактировать';
+    document.getElementById('formSaveBtn').innerText   = 'Сохранить';
     closeAction();
     document.getElementById('formOverlay').classList.add('active');
     updateFab(true);
@@ -1303,11 +860,10 @@ function openEdit() {
 function showDeleteConfirm() { closeAction(); setTimeout(()=>document.getElementById('deleteOverlay').classList.add('active'),100); }
 function closeDelete() { document.getElementById('deleteOverlay').classList.remove('active'); }
 async function doDelete() {
-    if (selectedCreditId) { await deleteCredit(selectedCreditId); showToast('\u0423\u0434\u0430\u043b\u0435\u043d\u043e'); }
+    if (selectedCreditId) { await deleteCredit(selectedCreditId); showToast('Удалено'); }
     closeDelete(); selectedCreditId=null;
 }
 
-// \u2500\u2500\u2500 Form \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function toggleForm() {
     const ov = document.getElementById('formOverlay');
     if (!ov.classList.contains('active')) { ov.classList.add('active'); updateFab(true); } else closeForm();
@@ -1324,37 +880,10 @@ function resetForm() {
     document.getElementById('amountInput').value = '';
     document.getElementById('dayInput').value    = '';
     document.getElementById('endDateCal').value  = '';
-    document.getElementById('formTitleText').innerText = '\u041d\u043e\u0432\u044b\u0439 \u043a\u0440\u0435\u0434\u0438\u0442';
-    document.getElementById('formSaveBtn').innerText   = '\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c';
+    document.getElementById('formTitleText').innerText = 'Новый кредит';
+    document.getElementById('formSaveBtn').innerText   = 'Добавить';
     document.getElementById('formSaveBtn').disabled    = false;
-    document.getElementById('creditTypeGroup').style.display = '';
     selectCat('mortgage'); setDateMode('cal');
-    selectCreditType('my');
-    // Show group type only if user is in a group
-    updateCreditTypeBtn();
-}
-
-function updateCreditTypeBtn() {
-    const groupBtn = document.getElementById('ctBtnGroup');
-    if (groupBtn) groupBtn.disabled = !userGroupId;
-    if (!userGroupId) {
-        selectCreditType('my');
-        const hint = document.getElementById('creditTypeHint');
-        if (hint) hint.textContent = '\u0412\u043e\u0439\u0434\u0438\u0442\u0435 \u0432 \u0433\u0440\u0443\u043f\u043f\u0443 \u0432 \u043d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0430\u0445, \u0447\u0442\u043e\u0431\u044b \u0434\u043e\u0431\u0430\u0432\u043b\u044f\u0442\u044c \u043e\u0431\u0449\u0438\u0435';
-    }
-}
-
-function selectCreditType(type) {
-    selectedCreditType = type;
-    const btnMy = document.getElementById('ctBtnMy');
-    const btnGroup = document.getElementById('ctBtnGroup');
-    const hint = document.getElementById('creditTypeHint');
-    if (btnMy) btnMy.classList.toggle('active', type === 'my');
-    if (btnGroup) btnGroup.classList.toggle('active', type === 'group');
-    if (hint) {
-        if (type === 'my') hint.textContent = '\u0412\u0438\u0434\u0435\u043d \u0442\u043e\u043b\u044c\u043a\u043e \u0432\u0430\u043c';
-        else if (type === 'group') hint.textContent = '\u0412\u0438\u0434\u0435\u043d \u0432\u0441\u0435\u043c \u0443\u0447\u0430\u0441\u0442\u043d\u0438\u043a\u0430\u043c \u0433\u0440\u0443\u043f\u043f\u044b';
-    }
 }
 
 async function handleSave() {
@@ -1362,50 +891,43 @@ async function handleSave() {
     const name   = document.getElementById('nameInput').value.trim();
     const amount = parseFloat(document.getElementById('amountInput').value);
     const day    = parseInt(document.getElementById('dayInput').value);
-    if (!name)                       { showToast('\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u043d\u0430\u0437\u0432\u0430\u043d\u0438\u0435'); return; }
-    if (!amount || amount <= 0)      { showToast('\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0441\u0443\u043c\u043c\u0443'); return; }
-    if (!day || day < 1 || day > 31) { showToast('\u0414\u0435\u043d\u044c \u043e\u043f\u043b\u0430\u0442\u044b: 1\u201331'); return; }
+    if (!name)                       { showToast('Введите название'); return; }
+    if (!amount || amount <= 0)      { showToast('Введите сумму'); return; }
+    if (!day || day < 1 || day > 31) { showToast('День оплаты: 1–31'); return; }
 
+    // Capture BEFORE closeForm() resets them
     const isEdit    = editMode;
     const saveId    = editId;
     const saveCat   = selectedCat;
     const endDate   = getEndDate();
-    const isGroup   = selectedCreditType === 'group' && !!userGroupId;
 
     _isSaving = true;
     const saveBtn = document.getElementById('formSaveBtn');
     saveBtn.disabled = true;
-    saveBtn.textContent = '\u0421\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u0438\u0435...';
+    saveBtn.textContent = 'Сохранение...';
 
     closeForm();
-    showToast('\u0421\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u0438\u0435...');
+    showToast('Сохранение...');
 
     try {
-        const creditData = {
-            name, amount, day,
-            category: saveCat,
-            endDate,
-            groupId: isGroup ? userGroupId : null,
-            addedByNick: userNick,
-            userId: authUser.uid
-        };
+        const creditData = { name, amount, day, category: saveCat, endDate };
         if (isEdit && saveId) {
-            creditData.updatedByNick = userNick;
-            creditData.updatedAt = new Date().toISOString();
+            creditData.userId = authUser.uid;
             await db.collection('credits').doc(saveId).update(creditData);
-            showToast('\u041a\u0440\u0435\u0434\u0438\u0442 \u043e\u0431\u043d\u043e\u0432\u043b\u0451\u043d');
+            showToast('Кредит обновлён');
         } else {
             creditData.paid = false;
             creditData.completed = false;
             creditData.partial = 0;
             creditData.createdAt = new Date().toISOString();
+            creditData.userId = authUser.uid;
             await db.collection('credits').add(creditData);
-            showToast('\u041a\u0440\u0435\u0434\u0438\u0442 \u0434\u043e\u0431\u0430\u0432\u043b\u0451\u043d');
+            showToast('Кредит добавлен');
         }
     } catch(e) {
-        console.error('\u041e\u0448\u0438\u0431\u043a\u0430 \u0441\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u0438\u044f:', e);
-        let errMsg = '\u041e\u0448\u0438\u0431\u043a\u0430 \u0441\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u0438\u044f';
-        if (e.code === 'permission-denied') errMsg = '\u041d\u0435\u0442 \u0434\u043e\u0441\u0442\u0443\u043f\u0430. \u041f\u0440\u043e\u0432\u0435\u0440\u044c\u0442\u0435 \u043f\u0440\u0430\u0432\u0438\u043b\u0430 Firebase.';
+        console.error('Ошибка сохранения:', e);
+        let errMsg = 'Ошибка сохранения';
+        if (e.code === 'permission-denied') errMsg = 'Нет доступа. Проверьте правила безопасности Firebase.';
         else if (e.message) errMsg = e.message;
         showToast(errMsg);
     } finally {
@@ -1436,11 +958,10 @@ function fabClick(e) {
     const fab = document.getElementById('fab');
     if (fab.classList.contains('active')) { closeForm(); return; }
     fab.style.transform='scale(0.88)';
-    setTimeout(()=>{ fab.style.transform=''; updateCreditTypeBtn(); toggleForm(); }, 120);
+    setTimeout(()=>{ fab.style.transform=''; toggleForm(); }, 120);
 }
 function updateFab(active) { document.getElementById('fab').classList.toggle('active',active); }
 
-// \u2500\u2500\u2500 Settings \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function gearClick(e) {
     e.stopPropagation();
     const btn = document.getElementById('settingsBtn');
@@ -1448,180 +969,12 @@ function gearClick(e) {
     btn.addEventListener('animationend', function h() { btn.classList.remove('spinning'); btn.removeEventListener('animationend',h); openSettings(); });
 }
 function openSettings() {
-    if (authUser) {
-        document.getElementById('userEmailDisplay').textContent = authUser.email||'\u2014';
-        document.getElementById('userNickDisplay').textContent = userNick || '\u2014';
-    }
-    renderGroupSettings();
+    if (authUser) document.getElementById('userEmailDisplay').textContent = authUser.email||'—';
     updateSettingsUI();
     document.getElementById('settingsOverlay').classList.add('active');
-    // Subscribe to group if needed
-    if (userGroupId && !groupUnsubscribe) subscribeToGroup(userGroupId);
 }
 function closeSettings() { document.getElementById('settingsOverlay').classList.remove('active'); }
 
-// \u2500\u2500\u2500 Edit Account \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-function openEditAccount() {
-    document.getElementById('eaNick').value = userNick || '';
-    document.getElementById('eaEmail').value = authUser ? authUser.email : '';
-    document.getElementById('eaOldPass').value = '';
-    document.getElementById('eaNewPass').value = '';
-    closeSettings();
-    setTimeout(() => document.getElementById('editAccountOverlay').classList.add('active'), 200);
-}
-function closeEditAccount() { document.getElementById('editAccountOverlay').classList.remove('active'); }
-
-async function doEditAccount() {
-    const nick    = document.getElementById('eaNick').value.trim();
-    const email   = document.getElementById('eaEmail').value.trim();
-    const oldPass = document.getElementById('eaOldPass').value;
-    const newPass = document.getElementById('eaNewPass').value;
-
-    if (!nick) { showToast('\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u043d\u0438\u043a\u043d\u0435\u0439\u043c'); return; }
-    if (!oldPass) { showToast('\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0442\u0435\u043a\u0443\u0449\u0438\u0439 \u043f\u0430\u0440\u043e\u043b\u044c \u0434\u043b\u044f \u043f\u043e\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0438\u044f'); return; }
-
-    try {
-        // Re-authenticate
-        const cred = firebase.auth.EmailAuthProvider.credential(authUser.email, oldPass);
-        await authUser.reauthenticateWithCredential(cred);
-
-        // Update nick
-        if (nick !== userNick) {
-            await saveUserProfile({ nick });
-            userNick = nick;
-            // Update nick in group members
-            if (userGroupId) {
-                const gDoc = await db.collection('groups').doc(userGroupId).get();
-                if (gDoc.exists) {
-                    const members = (gDoc.data().members || []).map(m => m.uid === authUser.uid ? { ...m, nick } : m);
-                    await gDoc.ref.update({ members });
-                }
-            }
-        }
-
-        // Update email
-        if (email && email !== authUser.email) {
-            await authUser.updateEmail(email);
-            await saveUserProfile({ email });
-        }
-
-        // Update password
-        if (newPass) {
-            if (newPass.length < 6) { showToast('\u041f\u0430\u0440\u043e\u043b\u044c \u2014 \u043c\u0438\u043d\u0438\u043c\u0443\u043c 6 \u0441\u0438\u043c\u0432\u043e\u043b\u043e\u0432'); return; }
-            await authUser.updatePassword(newPass);
-        }
-
-        closeEditAccount();
-        showToast('\u0414\u0430\u043d\u043d\u044b\u0435 \u043e\u0431\u043d\u043e\u0432\u043b\u0435\u043d\u044b');
-        setTimeout(openSettings, 400);
-    } catch(e) {
-        if (e.code==='auth/wrong-password'||e.code==='auth/invalid-credential') showToast('\u041d\u0435\u0432\u0435\u0440\u043d\u044b\u0439 \u0442\u0435\u043a\u0443\u0449\u0438\u0439 \u043f\u0430\u0440\u043e\u043b\u044c');
-        else if (e.code==='auth/email-already-in-use') showToast('Email \u0443\u0436\u0435 \u0438\u0441\u043f\u043e\u043b\u044c\u0437\u0443\u0435\u0442\u0441\u044f');
-        else showToast('\u041e\u0448\u0438\u0431\u043a\u0430: ' + e.message);
-    }
-}
-
-// \u2500\u2500\u2500 Change Password (legacy) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-function changePassword() {
-    closeSettings();
-    setTimeout(()=>{
-        if(authUser) document.getElementById('changePassEmail').textContent=authUser.email||'\u2014';
-        document.getElementById('cpOldPass').value='';
-        document.getElementById('cpNewPass').value='';
-        document.getElementById('cpConfirmPass').value='';
-        document.getElementById('changePassOverlay').classList.add('active');
-    }, 200);
-}
-function closeChangePass() { document.getElementById('changePassOverlay').classList.remove('active'); }
-async function doChangePassword() {
-    const oldPass=document.getElementById('cpOldPass').value;
-    const newPass=document.getElementById('cpNewPass').value;
-    const confPass=document.getElementById('cpConfirmPass').value;
-    if(!oldPass)               { showToast('\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0442\u0435\u043a\u0443\u0449\u0438\u0439 \u043f\u0430\u0440\u043e\u043b\u044c'); return; }
-    if(!newPass||newPass.length<6) { showToast('\u041d\u043e\u0432\u044b\u0439 \u043f\u0430\u0440\u043e\u043b\u044c \u2014 \u043c\u0438\u043d\u0438\u043c\u0443\u043c 6 \u0441\u0438\u043c\u0432\u043e\u043b\u043e\u0432'); return; }
-    if(newPass!==confPass)     { showToast('\u041f\u0430\u0440\u043e\u043b\u0438 \u043d\u0435 \u0441\u043e\u0432\u043f\u0430\u0434\u0430\u044e\u0442'); return; }
-    if(oldPass===newPass)      { showToast('\u041d\u043e\u0432\u044b\u0439 \u043f\u0430\u0440\u043e\u043b\u044c \u0441\u043e\u0432\u043f\u0430\u0434\u0430\u0435\u0442 \u0441\u043e \u0441\u0442\u0430\u0440\u044b\u043c'); return; }
-    try {
-        const cred = firebase.auth.EmailAuthProvider.credential(authUser.email, oldPass);
-        await authUser.reauthenticateWithCredential(cred);
-        await authUser.updatePassword(newPass);
-        closeChangePass();
-        showToast('\u041f\u0430\u0440\u043e\u043b\u044c \u0443\u0441\u043f\u0435\u0448\u043d\u043e \u0438\u0437\u043c\u0435\u043d\u0451\u043d');
-    } catch(e) {
-        if(e.code==='auth/wrong-password'||e.code==='auth/invalid-credential') showToast('\u041d\u0435\u0432\u0435\u0440\u043d\u044b\u0439 \u0442\u0435\u043a\u0443\u0449\u0438\u0439 \u043f\u0430\u0440\u043e\u043b\u044c');
-        else if(e.code==='auth/weak-password') showToast('\u041f\u0430\u0440\u043e\u043b\u044c \u0441\u043b\u0438\u0448\u043a\u043e\u043c \u043f\u0440\u043e\u0441\u0442\u043e\u0439');
-        else showToast('\u041e\u0448\u0438\u0431\u043a\u0430: '+e.message);
-    }
-}
-
-// \u2500\u2500\u2500 Auth \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-function toggleAuthMode() {
-    isLoginMode=!isLoginMode;
-    document.getElementById('authTitle').textContent=isLoginMode?'\u0412\u043e\u0439\u0442\u0438 \u0432 \u0430\u043a\u043a\u0430\u0443\u043d\u0442':'\u0421\u043e\u0437\u0434\u0430\u0442\u044c \u0430\u043a\u043a\u0430\u0443\u043d\u0442';
-    document.getElementById('authBtn').textContent=isLoginMode?'\u0412\u043e\u0439\u0442\u0438':'\u0417\u0430\u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0438\u0440\u043e\u0432\u0430\u0442\u044c\u0441\u044f';
-    document.getElementById('authNickField').style.display=isLoginMode?'none':'';
-    const sw=document.querySelector('.auth-switch-link');
-    sw.innerHTML=isLoginMode?'\u041d\u0435\u0442 \u0430\u043a\u043a\u0430\u0443\u043d\u0442\u0430? <span>\u0417\u0430\u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0438\u0440\u043e\u0432\u0430\u0442\u044c\u0441\u044f</span>':'\u0423\u0436\u0435 \u0435\u0441\u0442\u044c \u0430\u043a\u043a\u0430\u0443\u043d\u0442? <span>\u0412\u043e\u0439\u0442\u0438</span>';
-}
-
-async function doAuth() {
-    const email=document.getElementById('authEmail').value.trim();
-    const pass=document.getElementById('authPassword').value;
-    const nick=document.getElementById('authNick').value.trim();
-    if(!email||!pass) { showToast('\u0417\u0430\u043f\u043e\u043b\u043d\u0438\u0442\u0435 \u0432\u0441\u0435 \u043f\u043e\u043b\u044f'); return; }
-    if(!isLoginMode && !nick) { showToast('\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u043d\u0438\u043a\u043d\u0435\u0439\u043c'); return; }
-    const btn=document.getElementById('authBtn');
-    btn.disabled=true; btn.textContent='\u041f\u043e\u0434\u043e\u0436\u0434\u0438\u0442\u0435...';
-    try {
-        if(isLoginMode) {
-            await auth.signInWithEmailAndPassword(email,pass);
-        } else {
-            const cred = await auth.createUserWithEmailAndPassword(email,pass);
-            // Create user profile with nick
-            await db.collection('users').doc(cred.user.uid).set({
-                nick, email, groupId: null, createdAt: new Date().toISOString()
-            });
-            userNick = nick;
-            ls.rm(PIN_K); ls.rm(PIN_LEN_K);
-        }
-    } catch(e) {
-        let msg='\u041e\u0448\u0438\u0431\u043a\u0430 \u0432\u0445\u043e\u0434\u0430';
-        if(e.code==='auth/user-not-found'||e.code==='auth/wrong-password'||e.code==='auth/invalid-credential') msg='\u041d\u0435\u0432\u0435\u0440\u043d\u044b\u0439 email \u0438\u043b\u0438 \u043f\u0430\u0440\u043e\u043b\u044c';
-        else if(e.code==='auth/email-already-in-use') msg='\u042d\u0442\u043e\u0442 email \u0443\u0436\u0435 \u0437\u0430\u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0438\u0440\u043e\u0432\u0430\u043d';
-        else if(e.code==='auth/invalid-email') msg='\u041d\u0435\u043a\u043e\u0440\u0440\u0435\u043a\u0442\u043d\u044b\u0439 email';
-        else if(e.code==='auth/weak-password') msg='\u041f\u0430\u0440\u043e\u043b\u044c \u0441\u043b\u0438\u0448\u043a\u043e\u043c \u043f\u0440\u043e\u0441\u0442\u043e\u0439 (\u043c\u0438\u043d\u0438\u043c\u0443\u043c 6 \u0441\u0438\u043c\u0432\u043e\u043b\u043e\u0432)';
-        else msg=e.message;
-        showToast(msg);
-    } finally {
-        btn.disabled=false; btn.textContent=isLoginMode?'\u0412\u043e\u0439\u0442\u0438':'\u0421\u043e\u0437\u0434\u0430\u0442\u044c \u0430\u043a\u043a\u0430\u0443\u043d\u0442';
-    }
-}
-
-async function doLogout() {
-    if(creditsUnsubscribeOwn) { creditsUnsubscribeOwn(); creditsUnsubscribeOwn=null; }
-    if(creditsUnsubscribeGroup) { creditsUnsubscribeGroup(); creditsUnsubscribeGroup=null; }
-    if(groupUnsubscribe) { groupUnsubscribe(); groupUnsubscribe=null; }
-    await auth.signOut();
-    closeSettings();
-    sessionStorage.removeItem('pin_ok');
-    sessionStorage.removeItem('session_started');
-    monthResetDone=false;
-    credits=[]; userNick=''; userGroupId=null; groupData=null;
-    render();
-    document.getElementById('authEmail').value='';
-    document.getElementById('authPassword').value='';
-    document.getElementById('authNick').value='';
-    isLoginMode=true;
-    document.getElementById('authTitle').textContent='\u0412\u043e\u0439\u0442\u0438 \u0432 \u0430\u043a\u043a\u0430\u0443\u043d\u0442';
-    document.getElementById('authBtn').textContent='\u0412\u043e\u0439\u0442\u0438';
-    document.getElementById('authNickField').style.display='none';
-    document.querySelector('.auth-switch-link').innerHTML='\u041d\u0435\u0442 \u0430\u043a\u043a\u0430\u0443\u043d\u0442\u0430? <span>\u0417\u0430\u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0438\u0440\u043e\u0432\u0430\u0442\u044c\u0441\u044f</span>';
-    document.getElementById('app').classList.remove('visible');
-    document.getElementById('authScreen').style.display='flex';
-    showToast('\u0412\u044b \u0432\u044b\u0448\u043b\u0438 \u0438\u0437 \u0430\u043a\u043a\u0430\u0443\u043d\u0442\u0430');
-}
-
-// \u2500\u2500\u2500 Theme / Font / Amounts \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function loadTheme()  { const t=ls.get(THEME_K); if(t) theme=t; applyTheme(); }
 function applyTheme() { document.documentElement.setAttribute('data-theme',theme); if(!amountsVisible){stopSpoilers();startSpoilers();} }
 function toggleThemeFromSettings() { theme=theme==='light'?'dark':'light'; applyTheme(); ls.set(THEME_K,theme); updateSettingsUI(); }
@@ -1642,18 +995,97 @@ function updateSettingsUI() {
     if(!amountsVisible) at.classList.add('dark-on'); else at.classList.remove('dark-on');
     document.querySelectorAll('.font-step').forEach(el => el.classList.toggle('active', el.getAttribute('data-size')===fontSize));
     const hasPin = !!ls.get(PIN_K);
-    document.getElementById('lockStatusTitle').textContent = hasPin?'\u041f\u0418\u041d-\u043a\u043e\u0434 \u0443\u0441\u0442\u0430\u043d\u043e\u0432\u043b\u0435\u043d':'\u0417\u0430\u0449\u0438\u0442\u0430 \u043d\u0435 \u0443\u0441\u0442\u0430\u043d\u043e\u0432\u043b\u0435\u043d\u0430';
-    document.getElementById('lockStatusSub').textContent   = hasPin?'\u041d\u0430\u0436\u043c\u0438\u0442\u0435 \u0434\u043b\u044f \u0438\u0437\u043c\u0435\u043d\u0435\u043d\u0438\u044f':'\u041d\u0430\u0436\u043c\u0438\u0442\u0435 \u0434\u043b\u044f \u043d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0438';
+    document.getElementById('lockStatusTitle').textContent = hasPin?'ПИН-код установлен':'Защита не установлена';
+    document.getElementById('lockStatusSub').textContent   = hasPin?'Нажмите для изменения':'Нажмите для настройки';
     document.getElementById('removeLockBtn').style.display = hasPin?'':'none';
-    document.getElementById('lockStatusIcon').textContent  = hasPin?'\ud83d\udd12':'\ud83d\udd13';
-    // nick
-    if (authUser) {
-        document.getElementById('userNickDisplay').textContent = userNick || '\u2014';
-        document.getElementById('userEmailDisplay').textContent = authUser.email || '\u2014';
+}
+
+function changePassword() {
+    closeSettings();
+    setTimeout(()=>{
+        if(authUser) document.getElementById('changePassEmail').textContent=authUser.email||'—';
+        document.getElementById('cpOldPass').value='';
+        document.getElementById('cpNewPass').value='';
+        document.getElementById('cpConfirmPass').value='';
+        document.getElementById('changePassOverlay').classList.add('active');
+    }, 200);
+}
+function closeChangePass() { document.getElementById('changePassOverlay').classList.remove('active'); }
+async function doChangePassword() {
+    const oldPass=document.getElementById('cpOldPass').value;
+    const newPass=document.getElementById('cpNewPass').value;
+    const confPass=document.getElementById('cpConfirmPass').value;
+    if(!oldPass)               { showToast('Введите текущий пароль'); return; }
+    if(!newPass||newPass.length<6) { showToast('Новый пароль — минимум 6 символов'); return; }
+    if(newPass!==confPass)     { showToast('Пароли не совпадают'); return; }
+    if(oldPass===newPass)      { showToast('Новый пароль совпадает со старым'); return; }
+    try {
+        const cred = firebase.auth.EmailAuthProvider.credential(authUser.email, oldPass);
+        await authUser.reauthenticateWithCredential(cred);
+        await authUser.updatePassword(newPass);
+        closeChangePass();
+        showToast('Пароль успешно изменён');
+    } catch(e) {
+        if(e.code==='auth/wrong-password'||e.code==='auth/invalid-credential') showToast('Неверный текущий пароль');
+        else if(e.code==='auth/weak-password') showToast('Пароль слишком простой');
+        else showToast('Ошибка: '+e.message);
     }
 }
 
-// \u2500\u2500\u2500 PIN \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+function toggleAuthMode() {
+    isLoginMode=!isLoginMode;
+    document.getElementById('authTitle').textContent=isLoginMode?'Войти в аккаунт':'Создать аккаунт';
+    document.getElementById('authBtn').textContent=isLoginMode?'Войти':'Зарегистрироваться';
+    const sw=document.querySelector('.auth-switch-link');
+    sw.innerHTML=isLoginMode?'Нет аккаунта? <span>Зарегистрироваться</span>':'Уже есть аккаунт? <span>Войти</span>';
+}
+async function doAuth() {
+    const email=document.getElementById('authEmail').value.trim();
+    const pass=document.getElementById('authPassword').value;
+    if(!email||!pass) { showToast('Заполните все поля'); return; }
+    const btn=document.getElementById('authBtn');
+    btn.disabled=true; btn.textContent='Подождите...';
+    try {
+        // При входе на новом устройстве (нет активной сессии) — сбрасываем ПИН
+        const isNewDevice=!sessionStorage.getItem('session_started');
+        if(isLoginMode) {
+            await auth.signInWithEmailAndPassword(email,pass);
+            if(isNewDevice){ ls.rm(PIN_K); ls.rm(PIN_LEN_K); }
+        } else {
+            await auth.createUserWithEmailAndPassword(email,pass);
+            ls.rm(PIN_K); ls.rm(PIN_LEN_K);
+        }
+    } catch(e) {
+        let msg='Ошибка входа';
+        if(e.code==='auth/user-not-found'||e.code==='auth/wrong-password'||e.code==='auth/invalid-credential') msg='Неверный email или пароль';
+        else if(e.code==='auth/email-already-in-use') msg='Этот email уже зарегистрирован';
+        else if(e.code==='auth/invalid-email') msg='Некорректный email';
+        else if(e.code==='auth/weak-password') msg='Пароль слишком простой (минимум 6 символов)';
+        else msg=e.message;
+        showToast(msg);
+    } finally {
+        btn.disabled=false; btn.textContent=isLoginMode?'Войти':'Создать аккаунт';
+    }
+}
+async function doLogout() {
+    if(creditsUnsubscribe) { creditsUnsubscribe(); creditsUnsubscribe=null; }
+    await auth.signOut();
+    closeSettings();
+    sessionStorage.removeItem('pin_ok');
+    sessionStorage.removeItem('session_started');
+    monthResetDone=false;
+    credits=[]; render();
+    document.getElementById('authEmail').value='';
+    document.getElementById('authPassword').value='';
+    isLoginMode=true;
+    document.getElementById('authTitle').textContent='Войти в аккаунт';
+    document.getElementById('authBtn').textContent='Войти';
+    document.querySelector('.auth-switch-link').innerHTML='Нет аккаунта? <span>Зарегистрироваться</span>';
+    document.getElementById('app').classList.remove('visible');
+    document.getElementById('authScreen').style.display='flex';
+    showToast('Вы вышли из аккаунта');
+}
+
 function buildPinDots(cId,count,pfx) {
     const el=document.getElementById(cId); el.innerHTML='';
     for(let i=0;i<count;i++){const d=document.createElement('div');d.className='pin-dot';d.id=pfx+i;el.appendChild(d);}
@@ -1680,25 +1112,25 @@ function pinSetKey(v) {
             if(pinSetStep===2) {
                 if(hashPin(pinSetBuf)===ls.get(PIN_K)) {
                     if(pinSetVerifyMode==='remove'){document.getElementById('pinSetOverlay').classList.remove('active');_removeLock();}
-                    else{pinSetBuf='';pinSetStep=0;pinSetVerifyMode=null;document.getElementById('pinSetTitle').textContent='\u0421\u043e\u0437\u0434\u0430\u0439\u0442\u0435 \u043d\u043e\u0432\u044b\u0439 \u041f\u0418\u041d-\u043a\u043e\u0434';document.getElementById('pinSetSub').textContent='\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0434\u043b\u0438\u043d\u0443 \u0438 \u0432\u0432\u0435\u0434\u0438\u0442\u0435 \u0446\u0438\u0444\u0440\u044b';document.getElementById('pinLenRow').style.display='';pinSetLen=4;selectPinLen(4);}
+                    else{pinSetBuf='';pinSetStep=0;pinSetVerifyMode=null;document.getElementById('pinSetTitle').textContent='Создайте новый ПИН-код';document.getElementById('pinSetSub').textContent='Выберите длину и введите цифры';document.getElementById('pinLenRow').style.display='';pinSetLen=4;selectPinLen(4);}
                 } else {
-                    document.getElementById('pinSetSub').textContent='\u041d\u0435\u0432\u0435\u0440\u043d\u044b\u0439 \u041f\u0418\u041d-\u043a\u043e\u0434';shakePinDots('pinSetDots','sd',pinSetLen);pinSetBuf='';setTimeout(()=>fillPinDots('pinSetDots','sd',0,pinSetLen),400);
+                    document.getElementById('pinSetSub').textContent='Неверный ПИН-код';shakePinDots('pinSetDots','sd',pinSetLen);pinSetBuf='';setTimeout(()=>fillPinDots('pinSetDots','sd',0,pinSetLen),400);
                 }
             } else if(pinSetStep===0) {
                 pinSetFirst=pinSetBuf;pinSetBuf='';pinSetStep=1;
-                document.getElementById('pinLenRow').style.display='none';document.getElementById('pinSetTitle').textContent='\u041f\u043e\u0432\u0442\u043e\u0440\u0438\u0442\u0435 \u041f\u0418\u041d-\u043a\u043e\u0434';document.getElementById('pinSetSub').textContent=`\u0412\u0432\u0435\u0434\u0438\u0442\u0435 ${pinSetLen} \u0446\u0438\u0444\u0440 \u0435\u0449\u0451 \u0440\u0430\u0437`;fillPinDots('pinSetDots','sd',0,pinSetLen);
+                document.getElementById('pinLenRow').style.display='none';document.getElementById('pinSetTitle').textContent='Повторите ПИН-код';document.getElementById('pinSetSub').textContent=`Введите ${pinSetLen} цифр ещё раз`;fillPinDots('pinSetDots','sd',0,pinSetLen);
             } else {
-                if(pinSetBuf===pinSetFirst){ls.set(PIN_K,hashPin(pinSetBuf));ls.set(PIN_LEN_K,String(pinSetLen));document.getElementById('pinSetOverlay').classList.remove('active');updateSettingsUI();showToast('\u041f\u0418\u041d-\u043a\u043e\u0434 \u0443\u0441\u0442\u0430\u043d\u043e\u0432\u043b\u0435\u043d');lockPanelOpen=false;document.getElementById('lockButtons').style.display='none';document.getElementById('lockStatusRow').classList.remove('open');}
-                else{document.getElementById('pinSetSub').textContent='\u041a\u043e\u0434\u044b \u043d\u0435 \u0441\u043e\u0432\u043f\u0430\u0434\u0430\u044e\u0442';shakePinDots('pinSetDots','sd',pinSetLen);pinSetBuf='';pinSetStep=0;pinSetFirst='';document.getElementById('pinLenRow').style.display='';buildPinDots('pinSetDots',pinSetLen,'sd');setTimeout(()=>fillPinDots('pinSetDots','sd',0,pinSetLen),400);}
+                if(pinSetBuf===pinSetFirst){ls.set(PIN_K,hashPin(pinSetBuf));ls.set(PIN_LEN_K,String(pinSetLen));document.getElementById('pinSetOverlay').classList.remove('active');updateSettingsUI();showToast('ПИН-код установлен');lockPanelOpen=false;document.getElementById('lockButtons').style.display='none';document.getElementById('lockStatusRow').classList.remove('open');}
+                else{document.getElementById('pinSetSub').textContent='Коды не совпадают';shakePinDots('pinSetDots','sd',pinSetLen);pinSetBuf='';pinSetStep=0;pinSetFirst='';document.getElementById('pinLenRow').style.display='';buildPinDots('pinSetDots',pinSetLen,'sd');setTimeout(()=>fillPinDots('pinSetDots','sd',0,pinSetLen),400);}
             }
         },100);
     }
 }
 function pinSetDel(){pinSetBuf=pinSetBuf.slice(0,-1);fillPinDots('pinSetDots','sd',pinSetBuf.length,pinSetLen);}
-function openNewPin(){pinSetBuf='';pinSetStep=0;pinSetFirst='';pinSetLen=4;pinSetVerifyMode=null;document.getElementById('pinSetTitle').textContent='\u0421\u043e\u0437\u0434\u0430\u0439\u0442\u0435 \u041f\u0418\u041d-\u043a\u043e\u0434';document.getElementById('pinSetSub').textContent='\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0434\u043b\u0438\u043d\u0443 \u0438 \u0432\u0432\u0435\u0434\u0438\u0442\u0435 \u0446\u0438\u0444\u0440\u044b';document.getElementById('pinLenRow').style.display='';buildPinDots('pinSetDots',pinSetLen,'sd');document.getElementById('pinSetOverlay').classList.add('active');}
+function openNewPin(){pinSetBuf='';pinSetStep=0;pinSetFirst='';pinSetLen=4;pinSetVerifyMode=null;document.getElementById('pinSetTitle').textContent='Создайте ПИН-код';document.getElementById('pinSetSub').textContent='Выберите длину и введите цифры';document.getElementById('pinLenRow').style.display='';buildPinDots('pinSetDots',pinSetLen,'sd');document.getElementById('pinSetOverlay').classList.add('active');}
 function openPinVerify(title,sub){pinSetBuf='';pinSetStep=2;const len=parseInt(ls.get(PIN_LEN_K))||4;pinSetLen=len;document.getElementById('pinSetTitle').textContent=title;document.getElementById('pinSetSub').textContent=sub;document.getElementById('pinLenRow').style.display='none';buildPinDots('pinSetDots',len,'sd');document.getElementById('pinSetOverlay').classList.add('active');}
 function cancelPinSet(){document.getElementById('pinSetOverlay').classList.remove('active');pinSetBuf='';pinSetStep=0;pinSetVerifyMode=null;}
-function openPinLock(){pinLockLen=parseInt(ls.get(PIN_LEN_K))||4;pinLockBuf='';document.getElementById('pinLockSub').textContent='\u0414\u043b\u044f \u0432\u0445\u043e\u0434\u0430 \u0432 \u043f\u0440\u0438\u043b\u043e\u0436\u0435\u043d\u0438\u0435';buildPinDots('pinLockDots',pinLockLen,'ld');fillPinDots('pinLockDots','ld',0,pinLockLen);document.getElementById('pinLockOverlay').classList.add('active');}
+function openPinLock(){pinLockLen=parseInt(ls.get(PIN_LEN_K))||4;pinLockBuf='';document.getElementById('pinLockSub').textContent='Для входа в приложение';buildPinDots('pinLockDots',pinLockLen,'ld');fillPinDots('pinLockDots','ld',0,pinLockLen);document.getElementById('pinLockOverlay').classList.add('active');}
 function pinLockKey(v){
     if(pinLockBuf.length>=pinLockLen)return;
     pinLockBuf+=v;fillPinDots('pinLockDots','ld',pinLockBuf.length,pinLockLen);
@@ -1710,16 +1142,144 @@ function pinLockKey(v){
                 document.getElementById('app').classList.add('visible');
                 loadCredits();
             } else {
-                document.getElementById('pinLockSub').textContent='\u041d\u0435\u0432\u0435\u0440\u043d\u044b\u0439 \u041f\u0418\u041d-\u043a\u043e\u0434';shakePinDots('pinLockDots','ld',pinLockLen);pinLockBuf='';
-                setTimeout(()=>{document.getElementById('pinLockSub').textContent='\u0414\u043b\u044f \u0432\u0445\u043e\u0434\u0430 \u0432 \u043f\u0440\u0438\u043b\u043e\u0436\u0435\u043d\u0438\u0435';fillPinDots('pinLockDots','ld',0,pinLockLen);},500);
+                document.getElementById('pinLockSub').textContent='Неверный ПИН-код';shakePinDots('pinLockDots','ld',pinLockLen);pinLockBuf='';
+                setTimeout(()=>{document.getElementById('pinLockSub').textContent='Для входа в приложение';fillPinDots('pinLockDots','ld',0,pinLockLen);},500);
             }
         },100);
     }
 }
 function pinLockDel(){pinLockBuf=pinLockBuf.slice(0,-1);fillPinDots('pinLockDots','ld',pinLockBuf.length,pinLockLen);}
-function startSetPin(){const s=ls.get(PIN_K);if(s){pinSetVerifyMode='change';openPinVerify('\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0442\u0435\u043a\u0443\u0449\u0438\u0439 \u041f\u0418\u041d','\u0414\u043b\u044f \u0441\u043c\u0435\u043d\u044b \u0437\u0430\u0449\u0438\u0442\u044b');}else openNewPin();}
-function doRemoveLock(){const s=ls.get(PIN_K);if(s){pinSetVerifyMode='remove';openPinVerify('\u041f\u043e\u0434\u0442\u0432\u0435\u0440\u0434\u0438\u0442\u0435 \u0443\u0434\u0430\u043b\u0435\u043d\u0438\u0435','\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0442\u0435\u043a\u0443\u0449\u0438\u0439 \u041f\u0418\u041d-\u043a\u043e\u0434');}else _removeLock();}
-function _removeLock(){ls.rm(PIN_K);ls.rm(PIN_LEN_K);lockPanelOpen=false;document.getElementById('lockButtons').style.display='none';document.getElementById('lockStatusRow').classList.remove('open');updateSettingsUI();showToast('\u0417\u0430\u0449\u0438\u0442\u0430 \u0441\u043d\u044f\u0442\u0430');}
+function startSetPin(){const s=ls.get(PIN_K);if(s){pinSetVerifyMode='change';openPinVerify('Введите текущий ПИН','Для смены защиты');}else openNewPin();}
+function doRemoveLock(){const s=ls.get(PIN_K);if(s){pinSetVerifyMode='remove';openPinVerify('Подтвердите удаление','Введите текущий ПИН-код');}else _removeLock();}
+function _removeLock(){ls.rm(PIN_K);ls.rm(PIN_LEN_K);lockPanelOpen=false;document.getElementById('lockButtons').style.display='none';document.getElementById('lockStatusRow').classList.remove('open');updateSettingsUI();showToast('Защита снята');}
 function toggleLockPanel(){lockPanelOpen=!lockPanelOpen;document.getElementById('lockButtons').style.display=lockPanelOpen?'':'none';document.getElementById('lockStatusRow').classList.toggle('open',lockPanelOpen);}
 
-// \u2500\u2500\u2500 Spoiler \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+let spoilerRAF = null;
+const spoilerMap = new Map();
+
+function makeDotColor(){const dark=theme==='dark';const v=dark?(160+Math.random()*90)|0:(50+Math.random()*80)|0;return `rgba(${v},${v},${v},${(0.08+Math.random()*0.22).toFixed(2)})`;}
+function initSpoilerCanvas(el){if(el.querySelector('.spoiler-canvas'))return;const cv=document.createElement('canvas');cv.className='spoiler-canvas';el.appendChild(cv);const r=el.getBoundingClientRect();cv.width=r.width+8;cv.height=r.height+4;const count=Math.ceil((cv.width*cv.height)/6);const pts=[];for(let i=0;i<count;i++)pts.push({x:Math.random()*cv.width,y:Math.random()*cv.height,r:0.5+Math.random()*1.1,vx:(Math.random()-0.5)*0.35,vy:(Math.random()-0.5)*0.35,color:makeDotColor()});spoilerMap.set(cv,pts);}
+function animateSpoilers(){document.querySelectorAll('.spoiler-canvas').forEach(cv=>{const pts=spoilerMap.get(cv);if(!pts)return;const ctx=cv.getContext('2d');ctx.clearRect(0,0,cv.width,cv.height);pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=cv.width;else if(p.x>cv.width)p.x=0;if(p.y<0)p.y=cv.height;else if(p.y>cv.height)p.y=0;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=p.color;ctx.fill();});});spoilerRAF=requestAnimationFrame(animateSpoilers);}
+function startSpoilers(){document.querySelectorAll('.credit-amount,.total-val,.s-amount,.s-paid-val,.s-remain-val').forEach(initSpoilerCanvas);if(!spoilerRAF)spoilerRAF=requestAnimationFrame(animateSpoilers);}
+function stopSpoilers(){if(spoilerRAF){cancelAnimationFrame(spoilerRAF);spoilerRAF=null;}document.querySelectorAll('.spoiler-canvas').forEach(cv=>{spoilerMap.delete(cv);cv.remove();});}
+
+function toggleCompleted(){
+    const list=document.getElementById('completedList');
+    const arrow=document.getElementById('completedArrow');
+    const open=!list.classList.contains('open');
+    list.classList.toggle('open',open);
+    arrow.classList.toggle('open',open);
+    if(open){
+        const cm=new Date().getMonth(),cy=new Date().getFullYear();
+        list.innerHTML='';
+        const frag = document.createDocumentFragment();
+        credits.filter(c=>c.completed).forEach(c=>frag.appendChild(buildCreditItem(c,cm,cy)));
+        list.appendChild(frag);
+    }
+}
+
+function showToast(msg){document.querySelectorAll('.toast').forEach(t=>t.remove());const d=document.createElement('div');d.className='toast';d.textContent=msg;document.body.appendChild(d);setTimeout(()=>d.remove(),2200);}
+function closeAllPaid(){document.getElementById('allPaidOverlay').classList.remove('active');}
+function fmt(n){return Math.round(n).toLocaleString('ru-RU');}
+function esc(t){const d=document.createElement('div');d.textContent=t;return d.innerHTML;}
+
+function setupBackBtn(){
+    document.addEventListener('backbutton',()=>{
+        if(document.getElementById('changePassOverlay').classList.contains('active')){closeChangePass();return;}
+        if(document.getElementById('deleteOverlay').classList.contains('active')){closeDelete();return;}
+        if(document.getElementById('actionOverlay').classList.contains('active')){closeAction();return;}
+        if(document.getElementById('formOverlay').classList.contains('active')){closeForm();return;}
+        if(document.getElementById('settingsOverlay').classList.contains('active')){closeSettings();return;}
+        if(backPressedOnce){navigator.app&&navigator.app.exitApp();return;}
+        backPressedOnce=true;showToast('Нажмите ещё раз для выхода');setTimeout(()=>backPressedOnce=false,2000);
+    });
+}
+
+function evaluateLaunch(){
+    if(!authResolved||!splashTimerDone)return;
+    document.getElementById('splash').classList.add('hidden');
+    if(authUser){
+        document.getElementById('authScreen').style.display='none';
+        const hasPin=ls.get(PIN_K);
+        if(hasPin&&!sessionStorage.getItem('pin_ok')){openPinLock();}
+        else{sessionStorage.setItem('pin_ok','1');sessionStorage.setItem('session_started','1');document.getElementById('app').classList.add('visible');loadCredits();}
+    } else {
+        document.getElementById('app').classList.remove('visible');
+        document.getElementById('authScreen').style.display='flex';
+    }
+}
+
+(function setupResume(){
+    let _hidden=false;
+
+    // Блокируем любую навигацию которая может вызвать 500 от webintoapp
+    window.addEventListener('beforeunload',e=>{e.preventDefault();e.returnValue='';return '';},true);
+
+    function _resume(){
+        if(!window._fbAppInited||!auth||!db)return;
+        db.enableNetwork().then(()=>{
+            const u=auth.currentUser;
+            if(u){
+                authUser=u;
+                if(creditsUnsubscribe){creditsUnsubscribe();creditsUnsubscribe=null;}
+                loadCredits();
+            } else {
+                // Ждём onAuthStateChanged — он сам вызовет evaluateLaunch
+            }
+        }).catch(()=>{});
+    }
+
+    document.addEventListener('visibilitychange',()=>{
+        if(document.hidden){
+            // При сворачивании отключаем сеть Firestore — это предотвращает таймауты
+            if(window._fbAppInited&&db) db.disableNetwork().catch(()=>{});
+            _hidden=true;
+            return;
+        }
+        if(!_hidden)return;
+        _hidden=false;
+        setTimeout(_resume,800);
+    });
+
+    document.addEventListener('resume',()=>setTimeout(_resume,800),false);
+})();
+
+window.onload=()=>{
+    loadTheme();loadFontSize();loadAmounts();setupBackBtn();
+    selectCat('mortgage');setDateMode('cal');
+    document.getElementById('endMonth').value=new Date().getMonth();
+    document.getElementById('endYear').value=new Date().getFullYear()+1;
+    buildPinDots('pinSetDots',4,'sd');
+
+    const noSplash=document.documentElement.classList.contains('no-splash');
+    if(noSplash){splashTimerDone=true;evaluateLaunch();}
+    else setTimeout(()=>{splashTimerDone=true;evaluateLaunch();},1000);
+
+    setTimeout(()=>{if(!authResolved){authResolved=true;authUser=null;evaluateLaunch();}},6000);
+};
+
+document.getElementById('lockStatusRow').onclick=e=>{toggleLockPanel();e.stopPropagation();};
+
+document.addEventListener('DOMContentLoaded',()=>{
+    function bindPad(padId,keyFn,delId,delFn){
+        const pad=document.getElementById(padId);if(!pad)return;
+        const handle=(btn,e)=>{e.preventDefault();btn.classList.add('pressed');setTimeout(()=>btn.classList.remove('pressed'),100);const v=btn.getAttribute('data-v');if(v!==null)keyFn(v);else if(btn.id===delId)delFn();};
+        pad.addEventListener('touchstart',e=>{const btn=e.target.closest('.pin-key');if(!btn||btn.classList.contains('empty'))return;handle(btn,e);},{passive:false});
+        pad.addEventListener('mousedown',e=>{const btn=e.target.closest('.pin-key');if(!btn||btn.classList.contains('empty'))return;handle(btn,e);});
+    }
+    bindPad('pinSetPad',pinSetKey,'pinSetDel',pinSetDel);
+    bindPad('pinLockPad',pinLockKey,'pinLockDel',pinLockDel);
+});
+
+if(typeof firebase!=='undefined') _initFirebase();
+
+setTimeout(()=>{
+    if(!window._fbAppInited){
+        const splash=document.getElementById('splash');
+        if(splash){splash.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;padding:32px;text-align:center"><div style="font-size:3rem">📶</div><div style="color:#fff;font-size:1.1rem;font-weight:700">Нет подключения к сети</div><div style="color:rgba(255,255,255,0.6);font-size:0.85rem">Для работы приложения необходим интернет. Проверьте соединение и попробуйте снова.</div></div>`;splash.style.opacity='1';splash.style.visibility='visible';}
+    }
+},8000);
+
+</script>
+</body>
+</html>
