@@ -525,9 +525,6 @@
         <button class="account-btn" id="editAccountBtn" onclick="openEditAccount()">✏️ Редактировать</button>
         <button class="account-btn btn-logout" onclick="doLogout()">🚪 Выйти</button>
       </div>
-      <div class="account-btns-row" style="margin-top:8px">
-        <button class="account-btn btn-logout" style="border-color:rgba(230,57,70,0.4)" onclick="openDeleteAccount()">🗑 Удалить аккаунт</button>
-      </div>
     </div>
     <div class="settings-section">
       <div class="settings-section-label">Внешний вид</div>
@@ -574,6 +571,9 @@
             <div class="form-group"><input type="password" id="editConfirmPass" placeholder="Подтвердите новый пароль"></div>
         </div>
         <div class="form-actions" style="margin-top:8px;"><button class="btn btn-primary" onclick="saveAccountChanges()">Сохранить</button></div>
+        <div style="padding:8px 16px 4px">
+            <button class="btn" style="background:rgba(230,57,70,0.08);color:var(--danger);border:1.5px solid rgba(230,57,70,0.25);width:100%" onclick="closeEditAccount();setTimeout(openDeleteAccount,250)">🗑 Удалить аккаунт</button>
+        </div>
         <div style="height:8px"></div>
     </div>
 </div>
@@ -608,6 +608,38 @@
 <script>
 let auth, db;
 
+/*
+ * ══════════════════════════════════════════════════════════
+ * FIRESTORE RULES — скопируй в Firebase Console → Firestore → Rules
+ * ══════════════════════════════════════════════════════════
+ *
+ * rules_version = '2';
+ * service cloud.firestore {
+ *   match /databases/{database}/documents {
+ *
+ *     // Никнеймы: читать может ЛЮБОЙ (нужно для логина по нику без auth)
+ *     // Писать — только авторизованный пользователь
+ *     match /usernames/{nick} {
+ *       allow read: if true;
+ *       allow write: if request.auth != null;
+ *     }
+ *
+ *     // Профили пользователей: только свой
+ *     match /users/{uid} {
+ *       allow read, write: if request.auth != null && request.auth.uid == uid;
+ *     }
+ *
+ *     // Кредиты: только свои записи
+ *     match /credits/{creditId} {
+ *       allow read, update, delete: if request.auth != null
+ *         && resource.data.userId == request.auth.uid;
+ *       allow create: if request.auth != null
+ *         && request.resource.data.userId == request.auth.uid;
+ *     }
+ *   }
+ * }
+ * ══════════════════════════════════════════════════════════
+ */
 function _initFirebase() {
     if (window._fbAppInited) return;
     window._fbAppInited = true;
@@ -623,7 +655,41 @@ function _initFirebase() {
     auth = firebase.auth();
     db   = firebase.firestore();
     db.enablePersistence({synchronizeTabs:false}).catch(()=>{});
-    auth.onAuthStateChanged(user => { authResolved = true; authUser = user; evaluateLaunch(); });
+    auth.onAuthStateChanged(async user => {
+        if (user) {
+            // Обновляем emailVerified — вдруг пользователь только что подтвердил
+            await user.reload().catch(() => {});
+            const freshUser = auth.currentUser;
+            if (freshUser && freshUser.emailVerified) {
+                try { await db.collection('users').doc(freshUser.uid).update({ emailVerified: true }); } catch(e) {}
+                authUser = freshUser;
+            } else {
+                authUser = null; // не подтверждён — не пускаем
+            }
+        } else {
+            authUser = null;
+        }
+        authResolved = true;
+        evaluateLaunch();
+    });
+
+    // После подтверждения email Firebase редиректит обратно с ?verified=1
+    handleVerificationReturn();
+}
+
+function handleVerificationReturn() {
+    const params = new URLSearchParams(window.location.search);
+    if (!params.has('verified')) return;
+    const email = params.get('email') || '';
+    window.history.replaceState({}, '', window.location.origin + window.location.pathname);
+    setTimeout(() => {
+        showToast('✅ Email подтверждён! Теперь войдите в аккаунт.');
+        if (email) {
+            document.getElementById('authEmailOrNick').value = email;
+            const passEl = document.getElementById('authPassword');
+            if (passEl) setTimeout(() => passEl.focus(), 300);
+        }
+    }, 1000);
 }
 
 const MONTH_K   = 'crt_month_v4';
@@ -723,20 +789,23 @@ function updateSettingsUI(){ const tt=document.getElementById('themeSwitchTrack'
 // ── Авторизация с проверкой email ────────────────────────────────────────────
 
 async function resolveEmailFromNick(nick) {
+    // usernames доступны для чтения всем (allow read: if true)
+    // НЕ ходим в users — там нужна авторизация
     try {
         const doc = await db.collection('usernames').doc(nick.toLowerCase()).get();
-        if(doc.exists && doc.data().email) return doc.data().email;
-        if(doc.exists && doc.data().uid) {
-            const userDoc = await db.collection('users').doc(doc.data().uid).get();
-            if(userDoc.exists) return userDoc.data().email;
-        }
+        if (doc.exists && doc.data().email) return doc.data().email;
         return null;
-    } catch(e) { return null; }
+    } catch(e) {
+        console.error('resolveEmailFromNick error:', e);
+        return null;
+    }
 }
 
 async function sendVerificationEmail(user) {
     try {
-        await user.sendEmailVerification();
+        const continueUrl = window.location.origin + window.location.pathname
+            + '?verified=1&email=' + encodeURIComponent(user.email);
+        await user.sendEmailVerification({ url: continueUrl, handleCodeInApp: false });
         showToast('Письмо с подтверждением отправлено на ' + user.email);
         document.getElementById('resendVerificationLink').style.display = 'block';
     } catch(e) {
@@ -815,26 +884,39 @@ async function doAuth() {
             const nameLower = name.toLowerCase();
             if (!name.match(/^[a-zA-Z0-9_]{3,20}$/)) { showToast('Никнейм: 3-20 символов (буквы, цифры, _)'); btn.disabled=false; return; }
 
-            const existing = await db.collection('usernames').doc(nameLower).get();
-            if (existing.exists) { showToast('Никнейм уже занят'); btn.disabled=false; return; }
+            // Шаг 1: проверяем ник ДО создания аккаунта
+            // usernames читаются всеми (allow read: if true) — работает без авторизации
+            const existingNick = await db.collection('usernames').doc(nameLower).get();
+            if (existingNick.exists) { showToast('Никнейм уже занят'); btn.disabled=false; btn.textContent='Зарегистрироваться'; return; }
 
+            // Шаг 2: создаём пользователя — теперь он авторизован
             const userCred = await auth.createUserWithEmailAndPassword(email, pass);
             const user = userCred.user;
             await user.updateProfile({ displayName: name });
-            // Отправляем письмо для подтверждения
-            await sendVerificationEmail(user);
-            // Сохраняем данные во Firestore
+
+            // Шаг 3: пишем в Firestore уже будучи авторизованными
             await db.collection('users').doc(user.uid).set({ email: email, displayName: name, emailVerified: false });
             await db.collection('usernames').doc(nameLower).set({ uid: user.uid, email: email });
-            // Выходим, чтобы пользователь не вошёл до подтверждения
+
+            // Шаг 4: отправляем письмо и выходим
+            await sendVerificationEmail(user);
             await auth.signOut();
+
             showToast('Регистрация успешна! Подтвердите email, перейдя по ссылке в письме.');
             btn.disabled = false; btn.textContent = 'Зарегистрироваться';
-            // Очищаем форму
-            document.getElementById('authEmailOrNick').value = '';
+            document.getElementById('authEmailOrNick').value = email;
             document.getElementById('authPassword').value = '';
             document.getElementById('authConfirmPassword').value = '';
             document.getElementById('authName').value = '';
+            // Переключаемся на форму входа
+            isLoginMode = true;
+            document.getElementById('authTitle').textContent = 'Войти в аккаунт';
+            document.getElementById('authBtn').textContent = 'Войти';
+            document.getElementById('authNameField').style.display = 'none';
+            document.getElementById('authConfirmField').style.display = 'none';
+            document.querySelector('.auth-switch-link').innerHTML = 'Нет аккаунта? <span>Зарегистрироваться</span>';
+            document.getElementById('emailFieldLabel').textContent = 'Email или Никнейм';
+            document.getElementById('authEmailOrNick').placeholder = 'email@example.com или ваш ник';
             return;
         }
     } catch(e) {
