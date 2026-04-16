@@ -602,32 +602,13 @@ function _initFirebase() {
     auth = firebase.auth();
     db   = firebase.firestore();
     db.enablePersistence({synchronizeTabs:false}).catch(()=>{});
-    
-    // Обработка Email Link для автоматического входа после подтверждения
-    if (auth.isSignInWithEmailLink && auth.isSignInWithEmailLink(window.location.href)) {
-        let email = localStorage.getItem('emailForSignIn');
-        if (!email) {
-            email = window.prompt('Пожалуйста, введите ваш email для завершения входа');
-        }
-        if (email) {
-            auth.signInWithEmailLink(email, window.location.href)
-                .then((result) => {
-                    localStorage.removeItem('emailForSignIn');
-                    window.location.href = window.location.pathname;
-                })
-                .catch((error) => {
-                    console.error('Email link sign in error:', error);
-                    showToast('Ошибка входа по ссылке');
-                });
-        }
-    }
-    
     auth.onAuthStateChanged(async user => {
         if (user) {
             await user.reload().catch(() => {});
             const freshUser = auth.currentUser;
             if (freshUser) {
                 authUser = freshUser;
+                // Сохраняем в Firestore информацию о верификации email
                 try {
                     await db.collection('users').doc(freshUser.uid).set({
                         email: freshUser.email,
@@ -744,11 +725,11 @@ function updateEmailStatusUI() {
     const indicator = document.getElementById('emailStatusIndicator');
     const verifyBtn = document.getElementById('verifyEmailBtn');
     if(authUser.emailVerified) {
-        indicator.innerHTML = '✓ Почта подтверждена';
+        indicator.innerHTML = '<span>✓</span> Почта подтверждена';
         indicator.className = 'email-status verified';
         if(verifyBtn) verifyBtn.style.display = 'none';
     } else {
-        indicator.innerHTML = '⚠️ Почта не подтверждена';
+        indicator.innerHTML = '<span>⚠️</span> Почта не подтверждена';
         indicator.className = 'email-status unverified';
         if(verifyBtn) verifyBtn.style.display = 'flex';
     }
@@ -773,13 +754,11 @@ async function sendVerificationEmail() {
         return;
     }
     try {
-        // Используем Email Link для верификации
-        const actionCodeSettings = {
+        await authUser.sendEmailVerification({
             url: window.location.origin + window.location.pathname,
-            handleCodeInApp: true
-        };
-        await authUser.sendEmailVerification(actionCodeSettings);
-        showToast('Письмо отправлено! Перейдите по ссылке для подтверждения');
+            handleCodeInApp: false
+        });
+        showToast('Письмо отправлено! Проверьте почту');
     } catch(e) {
         console.error('sendVerificationEmail error:', e);
         if(e.code === 'auth/too-many-requests') {
@@ -817,6 +796,7 @@ async function doAuth() {
             const userCred = await auth.signInWithEmailAndPassword(email, pass);
             const user = userCred.user;
             
+            // Сохраняем данные пользователя в Firestore
             await db.collection('users').doc(user.uid).set({
                 email: user.email,
                 displayName: user.displayName,
@@ -864,6 +844,7 @@ async function doAuth() {
         const existingLogin = await db.collection('usernames').doc(loginLower).get();
         if (existingLogin.exists) { showToast('Логин уже занят'); btn.disabled=false; btn.textContent='Зарегистрироваться'; return; }
 
+        // Создаём аккаунт
         const userCred = await auth.createUserWithEmailAndPassword(email, pass);
         const newUser = userCred.user;
         
@@ -880,17 +861,13 @@ async function doAuth() {
             email: email
         });
         
-        // Отправляем письмо для подтверждения email через Email Link
-        const actionCodeSettings = {
+        // Отправляем письмо для подтверждения email
+        await newUser.sendEmailVerification({
             url: window.location.origin + window.location.pathname,
-            handleCodeInApp: true
-        };
-        await newUser.sendEmailVerification(actionCodeSettings);
+            handleCodeInApp: false
+        });
         
-        // Сохраняем email для последующего входа по ссылке
-        localStorage.setItem('emailForSignIn', email);
-        
-        showToast('✅ Аккаунт создан! На вашу почту отправлено письмо для подтверждения. Перейдите по ссылке в письме для входа.');
+        showToast('✅ Аккаунт создан! На вашу почту отправлено письмо для подтверждения.');
         
         // Выходим, чтобы пользователь подтвердил почту перед входом
         await auth.signOut();
@@ -903,6 +880,7 @@ async function doAuth() {
         document.getElementById('authNameField').style.display = 'none';
         document.getElementById('authConfirmField').style.display = 'none';
         document.getElementById('authEmailOrNick').style.display = 'block';
+        document.getElementById('emailVerifyRow').style.display = 'none';
         document.querySelector('.auth-switch-link').innerHTML = 'Нет аккаунта? <span>Зарегистрироваться</span>';
         document.getElementById('emailFieldLabel').textContent = 'Email или Логин';
         document.getElementById('authEmailOrNick').placeholder = 'email@example.com или ваш логин';
@@ -926,7 +904,6 @@ async function doLogout(){
     closeSettings();
     sessionStorage.removeItem('pin_ok');
     sessionStorage.removeItem('session_started');
-    localStorage.removeItem('emailForSignIn');
     monthResetDone=false; credits=[];
     render();
     document.getElementById('authEmailOrNick').value='';
