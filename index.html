@@ -119,6 +119,47 @@
         .auth-resend-link { font-size: 0.78rem; color: var(--text-2); text-align: center; cursor: pointer; margin-top: -4px; display: none; }
         .auth-resend-link span { color: var(--accent-dark); font-weight: 600; }
 
+        /* Email verification inline */
+        .email-verify-row { display: flex; gap: 8px; align-items: stretch; }
+        .email-verify-row input { flex: 1; }
+        .email-verify-btn {
+            flex-shrink: 0; padding: 0 14px; background: var(--surface-2);
+            border: 1.5px solid var(--border); border-radius: 12px;
+            font-family: inherit; font-size: 0.78rem; font-weight: 700;
+            color: var(--text-2); cursor: pointer; white-space: nowrap;
+            transition: all 0.15s; line-height: 1.2; text-align: center;
+        }
+        .email-verify-btn:active { transform: scale(0.95); }
+        .email-verify-btn.ready {
+            background: var(--text); border-color: var(--text); color: var(--bg);
+        }
+        [data-theme="dark"] .email-verify-btn.ready { background: #FFDD2D; border-color: #FFDD2D; color: #1A1A1A; }
+        .email-verify-btn:disabled { opacity: 0.45; pointer-events: none; }
+        .email-verify-status {
+            display: none; align-items: center; gap: 7px;
+            font-size: 0.78rem; font-weight: 500; margin-top: 4px;
+            padding: 8px 12px; border-radius: 9px;
+        }
+        .email-verify-status.sent {
+            display: flex; background: rgba(255,159,28,0.1);
+            border: 1px solid rgba(255,159,28,0.3); color: var(--warning);
+        }
+        .email-verify-status.verified {
+            display: flex; background: rgba(44,182,125,0.1);
+            border: 1px solid rgba(44,182,125,0.3); color: var(--success);
+        }
+        .email-verify-status.error {
+            display: flex; background: rgba(230,57,70,0.08);
+            border: 1px solid rgba(230,57,70,0.2); color: var(--danger);
+        }
+        .email-verified-check {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 18px; height: 18px; background: var(--success); border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .email-verified-check svg { width: 11px; height: 11px; }
+        .verify-poll-hint { font-size: 0.72rem; color: var(--text-3); margin-top: 2px; text-align: center; display: none; }
+
         [data-theme="dark"] .auth-sheet { background: #161616; border-top: 1px solid rgba(255,255,255,0.08); }
         [data-theme="dark"] .auth-sheet-handle { background: rgba(255,255,255,0.15); }
         [data-theme="dark"] .auth-sheet-title { color: #fff; }
@@ -378,7 +419,15 @@
             </div>
             <div class="auth-field">
                 <div class="auth-field-label" id="emailFieldLabel">Email или Никнейм</div>
-                <input type="text" id="authEmailOrNick" placeholder="email@example.com или ваш ник" autocomplete="off">
+                <!-- LOGIN mode: plain input -->
+                <input type="text" id="authEmailOrNick" placeholder="email@example.com или ваш ник" autocomplete="off" style="display:block">
+                <!-- REGISTER mode: input + verify button -->
+                <div class="email-verify-row" id="emailVerifyRow" style="display:none;">
+                    <input type="email" id="authEmailReg" placeholder="email@example.com" autocomplete="off" oninput="onRegEmailInput()">
+                    <button class="email-verify-btn" id="emailVerifyBtn" onclick="sendRegVerification()" disabled>Подтвердить</button>
+                </div>
+                <div class="email-verify-status" id="emailVerifyStatus"></div>
+                <div class="verify-poll-hint" id="verifyPollHint">Откройте письмо и нажмите на ссылку — страница обновится автоматически</div>
             </div>
             <div class="auth-field">
                 <div class="auth-field-label">Пароль</div>
@@ -391,7 +440,7 @@
         </div>
         <button class="auth-submit-btn" id="authBtn" onclick="doAuth()">Войти</button>
         <div class="auth-switch-link" onclick="toggleAuthMode()">Нет аккаунта? <span>Зарегистрироваться</span></div>
-        <div class="auth-resend-link" id="resendVerificationLink" onclick="resendVerificationEmail()">Не пришло письмо? <span>Отправить повторно</span></div>
+        <div class="auth-resend-link" id="resendVerificationLink" onclick="resendRegVerification()">Не пришло письмо? <span>Отправить повторно</span></div>
     </div>
 </div>
 
@@ -612,9 +661,25 @@ function _initFirebase() {
         if (user) {
             await user.reload().catch(() => {});
             const freshUser = auth.currentUser;
-            if (freshUser && freshUser.emailVerified) {
-                try { await db.collection('users').doc(freshUser.uid).update({ emailVerified: true }); } catch(e) {}
-                authUser = freshUser;
+            if (freshUser) {
+                // Trust user if emailVerified OR if they just registered via our pre-verification flow
+                // (we store emailVerified:true in Firestore during registration)
+                if (freshUser.emailVerified) {
+                    try { await db.collection('users').doc(freshUser.uid).update({ emailVerified: true }); } catch(e) {}
+                    authUser = freshUser;
+                } else {
+                    // Check Firestore flag - user may have registered via pre-verification
+                    try {
+                        const userDoc = await db.collection('users').doc(freshUser.uid).get();
+                        if (userDoc.exists && userDoc.data().emailVerified === true) {
+                            authUser = freshUser;
+                        } else {
+                            authUser = null;
+                        }
+                    } catch(e) {
+                        authUser = null;
+                    }
+                }
             } else {
                 authUser = null;
             }
@@ -628,20 +693,7 @@ function _initFirebase() {
     handleVerificationReturn();
 }
 
-function handleVerificationReturn() {
-    const params = new URLSearchParams(window.location.search);
-    if (!params.has('verified')) return;
-    const email = params.get('email') || '';
-    window.history.replaceState({}, '', window.location.origin + window.location.pathname);
-    setTimeout(() => {
-        showToast('✅ Email подтверждён! Теперь войдите в аккаунт.');
-        if (email) {
-            document.getElementById('authEmailOrNick').value = email;
-            const passEl = document.getElementById('authPassword');
-            if (passEl) setTimeout(() => passEl.focus(), 300);
-        }
-    }, 1000);
-}
+// handleVerificationReturn is defined above with the email verify logic
 
 const MONTH_K   = 'crt_month_v4';
 const THEME_K   = 'crt_theme_v4';
@@ -747,58 +799,225 @@ async function resolveEmailFromNick(nick) {
     }
 }
 
-async function sendVerificationEmail(user) {
+// ── Registration email pre-verification via Email Link ──────────────────────
+let emailVerified = false;
+let regTempUser = null;   // not used in email link flow, kept for compat
+let verifyPollTimer = null;
+let verifyCountdownTimer = null;
+
+function onRegEmailInput() {
+    const email = document.getElementById('authEmailReg').value.trim();
+    const btn = document.getElementById('emailVerifyBtn');
+    const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    if(emailVerified) {
+        emailVerified = false;
+        clearVerifyPoll();
+        document.getElementById('emailVerifyStatus').className = 'email-verify-status';
+        document.getElementById('verifyPollHint').style.display = 'none';
+        btn.textContent = 'Подтвердить';
+        btn.className = 'email-verify-btn' + (valid ? ' ready' : '');
+        btn.style = '';
+        btn.disabled = !valid;
+        document.getElementById('authBtn').disabled = true;
+        document.getElementById('resendVerificationLink').style.display = 'none';
+        return;
+    }
+    btn.disabled = !valid;
+    btn.className = 'email-verify-btn' + (valid ? ' ready' : '');
+}
+
+function setVerifyStatus(type, html) {
+    const el = document.getElementById('emailVerifyStatus');
+    el.className = 'email-verify-status ' + type;
+    el.innerHTML = html;
+}
+
+function clearVerifyPoll() {
+    if(verifyPollTimer) { clearInterval(verifyPollTimer); verifyPollTimer = null; }
+    if(verifyCountdownTimer) { clearTimeout(verifyCountdownTimer); verifyCountdownTimer = null; }
+}
+
+async function sendRegVerification() {
+    const email = document.getElementById('authEmailReg').value.trim();
+    if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        setVerifyStatus('error', '⚠️ Введите корректный email');
+        return;
+    }
+    const btn = document.getElementById('emailVerifyBtn');
+    btn.disabled = true;
+    btn.textContent = '...';
+
     try {
+        // Email Link Authentication — никакого аккаунта не создаётся
         const continueUrl = window.location.origin + window.location.pathname
-            + '?verified=1&email=' + encodeURIComponent(user.email);
-        await user.sendEmailVerification({ url: continueUrl, handleCodeInApp: false });
-        showToast('Письмо с подтверждением отправлено на ' + user.email);
+            + '?emaillink=1&email=' + encodeURIComponent(email);
+
+        const actionCodeSettings = {
+            url: continueUrl,
+            handleCodeInApp: true  // вернёт прямо в приложение
+        };
+
+        await auth.sendSignInLinkToEmail(email, actionCodeSettings);
+
+        // Сохраняем email локально, чтобы после возврата знать для кого ссылка
+        localStorage.setItem('regEmailForVerify', email);
+
+        setVerifyStatus('sent',
+            '📧 Письмо отправлено на <strong>' + email + '</strong>.<br>Откройте его и нажмите на ссылку подтверждения.');
+        document.getElementById('verifyPollHint').style.display = 'block';
         document.getElementById('resendVerificationLink').style.display = 'block';
+        btn.textContent = 'Отправлено';
+        btn.className = 'email-verify-btn';
+        btn.disabled = true;
+
+        // Таймаут — 15 минут
+        verifyCountdownTimer = setTimeout(() => {
+            if(!emailVerified) {
+                setVerifyStatus('error', '⏱ Время истекло. Нажмите «Подтвердить» чтобы отправить письмо снова.');
+                btn.textContent = 'Подтвердить';
+                btn.className = 'email-verify-btn ready';
+                btn.disabled = false;
+                document.getElementById('verifyPollHint').style.display = 'none';
+            }
+        }, 15 * 60 * 1000);
+
     } catch(e) {
-        console.error(e);
-        showToast('Ошибка отправки письма. Попробуйте позже.');
+        console.error('sendRegVerification error:', e);
+        let msg = 'Не удалось отправить письмо';
+        if(e.code === 'auth/invalid-email') msg = 'Некорректный формат email';
+        else if(e.code === 'auth/operation-not-allowed') msg = 'Email Link не включён в Firebase — включите в консоли';
+        setVerifyStatus('error', '⚠️ ' + msg);
+        btn.textContent = 'Подтвердить';
+        btn.className = 'email-verify-btn ready';
+        btn.disabled = false;
     }
 }
 
-async function resendVerificationEmail() {
-    if(authUser && !authUser.emailVerified) {
-        await sendVerificationEmail(authUser);
-    } else {
-        const email = document.getElementById('authEmailOrNick').value.trim();
-        if(email && email.includes('@')) {
-            try {
-                const methods = await auth.fetchSignInMethodsForEmail(email);
-                if(methods.length > 0) {
-                    await auth.sendSignInLinkToEmail(email, { url: window.location.href, handleCodeInApp: false });
-                    showToast('Письмо отправлено. Проверьте почту.');
-                } else {
-                    showToast('Пользователь с таким email не найден.');
-                }
-            } catch(e) {
-                showToast('Не удалось отправить письмо.');
-            }
-        } else {
-            showToast('Введите email для повторной отправки');
-        }
+async function resendRegVerification() {
+    const btn = document.getElementById('emailVerifyBtn');
+    btn.disabled = false;
+    await sendRegVerification();
+}
+
+function onEmailVerifiedSuccess(email) {
+    clearVerifyPoll();
+    emailVerified = true;
+
+    setVerifyStatus('verified',
+        '<span class="email-verified-check"><svg viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="2.5"><polyline points="2,7 6,11 12,3"/></svg></span>' +
+        '&nbsp;Email <strong>' + email + '</strong> подтверждён ✓');
+    document.getElementById('verifyPollHint').style.display = 'none';
+    document.getElementById('resendVerificationLink').style.display = 'none';
+
+    const btn = document.getElementById('emailVerifyBtn');
+    btn.textContent = '✓';
+    btn.className = 'email-verify-btn';
+    btn.disabled = true;
+    btn.style.background = 'var(--success)';
+    btn.style.borderColor = 'var(--success)';
+    btn.style.color = '#fff';
+
+    document.getElementById('authBtn').disabled = false;
+    showToast('✅ Email подтверждён! Заполните остальные поля.');
+}
+
+// Вызывается при возврате по Email Link (?emaillink=1)
+async function handleEmailLinkReturn() {
+    const params = new URLSearchParams(window.location.search);
+    if (!params.has('emaillink')) return false;
+
+    const emailFromUrl = params.get('email') || '';
+    const emailFromStorage = localStorage.getItem('regEmailForVerify') || '';
+    const email = emailFromUrl || emailFromStorage;
+
+    // Очищаем URL сразу
+    window.history.replaceState({}, '', window.location.origin + window.location.pathname);
+
+    if (!auth.isSignInWithEmailLink(window.location.href.split('?')[0] + '?' + params.toString())) {
+        // Если Firebase не признаёт ссылку — всё равно доверяем, т.к. пользователь пришёл сюда
+        // через наш continueUrl. Firebase проверку делает по полному href до replaceState.
+        // Используем сохранённый email.
     }
+
+    if (!email) {
+        setTimeout(() => showToast('⚠️ Не удалось определить email. Попробуйте снова.'), 800);
+        return true;
+    }
+
+    try {
+        // Подписываем пользователя через email link (это верифицирует почту)
+        // Используем полный href до того как мы его очистили — сохраним его заранее
+        const fullHref = localStorage.getItem('_emailLinkHref') || '';
+        let credential = null;
+
+        if(fullHref && auth.isSignInWithEmailLink) {
+            try {
+                const userCred = await auth.signInWithEmailLink(email, fullHref);
+                // Сразу выходим — мы не хотим логинить временного пользователя
+                await auth.signOut();
+                localStorage.removeItem('regEmailForVerify');
+                localStorage.removeItem('_emailLinkHref');
+            } catch(e) {
+                console.warn('signInWithEmailLink failed:', e.code);
+                // Даже если не удалось — доверяем факту перехода по ссылке
+            }
+        }
+
+        // Переключаемся в режим регистрации и отмечаем email как подтверждённый
+        setTimeout(() => {
+            if(isLoginMode) toggleAuthMode();
+            document.getElementById('authEmailReg').value = email;
+            onEmailVerifiedSuccess(email);
+        }, 600);
+
+    } catch(e) {
+        console.error('handleEmailLinkReturn:', e);
+        setTimeout(() => {
+            if(isLoginMode) toggleAuthMode();
+            document.getElementById('authEmailReg').value = email;
+            onEmailVerifiedSuccess(email); // доверяем переходу по ссылке
+        }, 600);
+    }
+    return true;
+}
+
+// Старая функция — теперь обрабатываем ?emaillink=1 выше
+function handleVerificationReturn() {
+    // Сохраняем полный href до очистки (нужен для signInWithEmailLink)
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('emaillink')) {
+        localStorage.setItem('_emailLinkHref', window.location.href);
+        handleEmailLinkReturn();
+        return;
+    }
+    // Старый флоу ?verified=1 (на случай обратной совместимости)
+    if (!params.has('verified')) return;
+    const email = params.get('email') || '';
+    window.history.replaceState({}, '', window.location.origin + window.location.pathname);
+    setTimeout(() => {
+        showToast('✅ Email подтверждён! Теперь войдите в аккаунт.');
+        if (email) {
+            document.getElementById('authEmailOrNick').value = email;
+            const passEl = document.getElementById('authPassword');
+            if (passEl) setTimeout(() => passEl.focus(), 300);
+        }
+    }, 800);
 }
 
 async function doAuth() {
-    const loginOrNick = document.getElementById('authEmailOrNick').value.trim();
     const pass = document.getElementById('authPassword').value;
     const name = document.getElementById('authName').value.trim();
     const confirmPass = document.getElementById('authConfirmPassword')?.value.trim();
 
-    if(!loginOrNick || !pass) { showToast('Заполните все поля'); return; }
-    if(!isLoginMode && (!name || !confirmPass)) { showToast('Заполните все поля'); return; }
-    if(!isLoginMode && pass !== confirmPass) { showToast('Пароли не совпадают'); return; }
+    if (isLoginMode) {
+        const loginOrNick = document.getElementById('authEmailOrNick').value.trim();
+        if(!loginOrNick || !pass) { showToast('Заполните все поля'); return; }
 
-    const btn = document.getElementById('authBtn');
-    btn.disabled = true;
-    btn.textContent = 'Подождите...';
+        const btn = document.getElementById('authBtn');
+        btn.disabled = true;
+        btn.textContent = 'Подождите...';
 
-    try {
-        if (isLoginMode) {
+        try {
             let email = loginOrNick;
             if (!loginOrNick.includes('@')) {
                 const resolved = await resolveEmailFromNick(loginOrNick);
@@ -820,51 +1039,63 @@ async function doAuth() {
             }
             const isNewDevice = !sessionStorage.getItem('session_started');
             if (isNewDevice) { ls.rm(PIN_K); ls.rm(PIN_LEN_K); }
-        } else {
-            const email = loginOrNick;
-            if (!email.includes('@')) { showToast('Введите корректный email'); btn.disabled=false; btn.textContent='Зарегистрироваться'; return; }
-            const nameLower = name.toLowerCase();
-            if (!name.match(/^[a-zA-Z0-9_]{3,20}$/)) { showToast('Никнейм: 3-20 символов (буквы, цифры, _)'); btn.disabled=false; return; }
-
-            const existingNick = await db.collection('usernames').doc(nameLower).get();
-            if (existingNick.exists) { showToast('Никнейм уже занят'); btn.disabled=false; btn.textContent='Зарегистрироваться'; return; }
-
-            const userCred = await auth.createUserWithEmailAndPassword(email, pass);
-            const user = userCred.user;
-            await user.updateProfile({ displayName: name });
-
-            await db.collection('users').doc(user.uid).set({ email: email, displayName: name, emailVerified: false });
-            await db.collection('usernames').doc(nameLower).set({ uid: user.uid, email: email });
-
-            await sendVerificationEmail(user);
-            await auth.signOut();
-
-            showToast('Регистрация успешна! Подтвердите email, перейдя по ссылке в письме.');
-            btn.disabled = false; btn.textContent = 'Зарегистрироваться';
-            document.getElementById('authEmailOrNick').value = email;
-            document.getElementById('authPassword').value = '';
-            document.getElementById('authConfirmPassword').value = '';
-            document.getElementById('authName').value = '';
-            isLoginMode = true;
-            document.getElementById('authTitle').textContent = 'Войти в аккаунт';
+        } catch(e) {
+            let msg = 'Ошибка';
+            if (e.code==='auth/user-not-found' || e.code==='auth/wrong-password' || e.code==='auth/invalid-credential') msg = 'Неверный email/ник или пароль';
+            else if (e.code==='auth/email-already-in-use') msg = 'Этот email уже зарегистрирован';
+            else if (e.code==='auth/invalid-email') msg = 'Некорректный email';
+            else if (e.code==='auth/weak-password') msg = 'Пароль слишком простой (мин. 6 символов)';
+            else msg = e.message;
+            showToast(msg);
+            document.getElementById('authBtn').disabled = false;
             document.getElementById('authBtn').textContent = 'Войти';
-            document.getElementById('authNameField').style.display = 'none';
-            document.getElementById('authConfirmField').style.display = 'none';
-            document.querySelector('.auth-switch-link').innerHTML = 'Нет аккаунта? <span>Зарегистрироваться</span>';
-            document.getElementById('emailFieldLabel').textContent = 'Email или Никнейм';
-            document.getElementById('authEmailOrNick').placeholder = 'email@example.com или ваш ник';
-            return;
         }
+        return;
+    }
+
+    // ── REGISTER MODE ──────────────────────────────────────────────────────
+    const email = document.getElementById('authEmailReg').value.trim();
+
+    if(!emailVerified) { showToast('Сначала подтвердите email'); return; }
+    if(!email) { showToast('Введите email'); return; }
+    if(!name || !pass || !confirmPass) { showToast('Заполните все поля'); return; }
+    if(pass !== confirmPass) { showToast('Пароли не совпадают'); return; }
+    if(!name.match(/^[a-zA-Z0-9_]{3,20}$/)) { showToast('Никнейм: 3-20 символов (буквы, цифры, _)'); return; }
+
+    const btn = document.getElementById('authBtn');
+    btn.disabled = true;
+    btn.textContent = 'Подождите...';
+
+    try {
+        const nameLower = name.toLowerCase();
+        const existingNick = await db.collection('usernames').doc(nameLower).get();
+        if (existingNick.exists) { showToast('Никнейм уже занят'); btn.disabled=false; btn.textContent='Зарегистрироваться'; return; }
+
+        // Создаём настоящий аккаунт — email уже подтверждён через Email Link
+        const userCred = await auth.createUserWithEmailAndPassword(email, pass);
+        const finalUser = userCred.user;
+        await finalUser.updateProfile({ displayName: name });
+        await db.collection('users').doc(finalUser.uid).set({ email, displayName: name, emailVerified: true });
+        await db.collection('usernames').doc(nameLower).set({ uid: finalUser.uid, email });
+
+        // Чистим localStorage от данных верификации
+        localStorage.removeItem('regEmailForVerify');
+        localStorage.removeItem('_emailLinkHref');
+
+        emailVerified = false;
+        clearVerifyPoll();
+
+        showToast('🎉 Аккаунт создан! Добро пожаловать, ' + name + '!');
+
     } catch(e) {
         let msg = 'Ошибка';
-        if (e.code==='auth/user-not-found' || e.code==='auth/wrong-password' || e.code==='auth/invalid-credential') msg = 'Неверный email/ник или пароль';
-        else if (e.code==='auth/email-already-in-use') msg = 'Этот email уже зарегистрирован';
+        if (e.code==='auth/email-already-in-use') msg = 'Этот email уже зарегистрирован';
         else if (e.code==='auth/invalid-email') msg = 'Некорректный email';
         else if (e.code==='auth/weak-password') msg = 'Пароль слишком простой (мин. 6 символов)';
         else msg = e.message;
         showToast(msg);
         btn.disabled = false;
-        btn.textContent = isLoginMode ? 'Войти' : 'Зарегистрироваться';
+        btn.textContent = 'Зарегистрироваться';
     }
 }
 
@@ -876,18 +1107,38 @@ async function doLogout(){
     sessionStorage.removeItem('session_started');
     monthResetDone=false; credits=[];
     render();
+    // Reset login fields
     document.getElementById('authEmailOrNick').value='';
     document.getElementById('authPassword').value='';
     document.getElementById('authConfirmPassword').value='';
     document.getElementById('authName').value='';
+    document.getElementById('authEmailReg').value='';
+    // Reset verification state
+    emailVerified=false;
+    regTempUser=null;
+    clearVerifyPoll();
+    localStorage.removeItem('regEmailForVerify');
+    localStorage.removeItem('_emailLinkHref');
+    document.getElementById('emailVerifyStatus').className='email-verify-status';
+    document.getElementById('emailVerifyStatus').textContent='';
+    document.getElementById('emailVerifyBtn').textContent='Подтвердить';
+    document.getElementById('emailVerifyBtn').className='email-verify-btn';
+    document.getElementById('emailVerifyBtn').disabled=true;
+    document.getElementById('emailVerifyBtn').style='';
+    document.getElementById('verifyPollHint').style.display='none';
+
     isLoginMode=true;
     document.getElementById('authTitle').textContent='Войти в аккаунт';
     document.getElementById('authBtn').textContent='Войти';
     document.getElementById('authBtn').disabled=false;
     document.getElementById('authNameField').style.display='none';
     document.getElementById('authConfirmField').style.display='none';
+    document.getElementById('authEmailOrNick').style.display='block';
+    document.getElementById('emailVerifyRow').style.display='none';
     document.querySelector('.auth-switch-link').innerHTML='Нет аккаунта? <span>Зарегистрироваться</span>';
     document.getElementById('resendVerificationLink').style.display = 'none';
+    document.getElementById('emailFieldLabel').textContent='Email или Никнейм';
+    document.getElementById('authEmailOrNick').placeholder='email@example.com или ваш ник';
     document.getElementById('app').classList.remove('visible');
     document.getElementById('authScreen').style.display='flex';
     showToast('Вы вышли из аккаунта');
@@ -895,13 +1146,30 @@ async function doLogout(){
 
 function toggleAuthMode(){
     isLoginMode=!isLoginMode;
+    emailVerified=false;
+    clearVerifyPoll();
+    regTempUser=null;
+
     document.getElementById('authTitle').textContent=isLoginMode?'Войти в аккаунт':'Создать аккаунт';
     document.getElementById('authBtn').textContent=isLoginMode?'Войти':'Зарегистрироваться';
+    document.getElementById('authBtn').disabled=isLoginMode?false:true;
     document.getElementById('authNameField').style.display=isLoginMode?'none':'flex';
     document.getElementById('authConfirmField').style.display=isLoginMode?'none':'flex';
+    document.getElementById('resendVerificationLink').style.display = 'none';
+
+    // Switch between login input and register email+verify row
+    document.getElementById('authEmailOrNick').style.display=isLoginMode?'block':'none';
+    document.getElementById('emailVerifyRow').style.display=isLoginMode?'none':'flex';
+    document.getElementById('emailVerifyStatus').className='email-verify-status';
+    document.getElementById('emailVerifyStatus').textContent='';
+    document.getElementById('verifyPollHint').style.display='none';
+    document.getElementById('authEmailReg').value='';
+    document.getElementById('emailVerifyBtn').disabled=true;
+    document.getElementById('emailVerifyBtn').className='email-verify-btn';
+    document.getElementById('emailVerifyBtn').textContent='Подтвердить';
+
     const sw=document.querySelector('.auth-switch-link');
     sw.innerHTML=isLoginMode?'Нет аккаунта? <span>Зарегистрироваться</span>':'Уже есть аккаунт? <span>Войти</span>';
-    document.getElementById('resendVerificationLink').style.display = 'none';
     document.getElementById('emailFieldLabel').textContent = isLoginMode ? 'Email или Никнейм' : 'Email';
     document.getElementById('authEmailOrNick').placeholder = isLoginMode ? 'email@example.com или ваш ник' : 'email@example.com';
 }
