@@ -4,7 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Мои Кредиты / My Credits</title>
-    
+    <link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Мои Кредиты">
+<link rel="apple-touch-icon" href="icon.png">
+<meta name="theme-color" content="#FFDD2D">
     <script>
     window._fbLoaded = 0;
     function _onFbLoad() {
@@ -1100,6 +1105,16 @@ document.addEventListener('DOMContentLoaded',()=>{
 if(typeof firebase!=='undefined') _initFirebase();
 
 setTimeout(()=>{ if(!window._fbAppInited){ const splash=document.getElementById('splash'); if(splash){splash.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;padding:32px;text-align:center"><div style="font-size:3rem">📶</div><div style="color:#fff;font-size:1.1rem;font-weight:700">Нет подключения к сети</div><div style="color:rgba(255,255,255,0.6);font-size:0.85rem">Для работы приложения необходим интернет. Проверьте соединение и попробуйте снова.</div></div>`;splash.style.opacity='1';splash.style.visibility='visible';} } },8000);
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('./sw.js').then(function(registration) {
+      console.log('ServiceWorker registration successful');
+    }, function(err) {
+      console.log('ServiceWorker registration failed: ', err);
+    });
+  });
+}
 </script>
 </body>
 </html>
