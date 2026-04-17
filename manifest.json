@@ -1,7 +1,8 @@
 {
   "name": "Мои Кредиты",
-  "short_name": "Кредиты",
-  "start_url": "/index.html",
+  "short_name": "Мои Кредиты",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#0A0A0A",
   "theme_color": "#FFDD2D",
