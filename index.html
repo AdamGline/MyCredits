@@ -1133,17 +1133,16 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').then(function(registration) {
       console.log('ServiceWorker registration successful');
 
-      // Проверяем обновления при каждом запуске
-      registration.update();
+      setInterval(() => {
+        registration.update();
+      }, 60 * 60 * 1000);
 
-      // Следим за появлением нового сервис-воркера
+      let newWorker = null;
       registration.addEventListener('updatefound', () => {
-        const newWorker = registration.installing;
+        newWorker = registration.installing;
         newWorker.addEventListener('statechange', () => {
-          // Когда новый сервис-воркер установлен и готов
           if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            // Перезагружаем страницу, чтобы активировать новую версию
-            window.location.reload();
+            showUpdateNotification();
           }
         });
       });
@@ -1151,6 +1150,22 @@ if ('serviceWorker' in navigator) {
       console.log('ServiceWorker registration failed: ', err);
     });
   });
+}
+
+function showUpdateNotification() {
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.style.bottom = '120px';
+  toast.style.background = '#FFDD2D';
+  toast.style.color = '#1A1A1A';
+  toast.style.cursor = 'pointer';
+  toast.style.zIndex = '10001';
+  toast.innerHTML = '🔄 Доступна новая версия. Нажмите для обновления';
+  toast.onclick = () => {
+    window.location.reload();
+  };
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 10000);
 }
 </script>
 </body>
