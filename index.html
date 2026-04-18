@@ -429,6 +429,15 @@
         <div class="section-header"><span class="section-title">Активные</span><span class="section-count" id="activeCount"></span></div>
         <div class="credit-list" id="creditList"></div>
     </div>
+    <!-- Кнопка установки PWA (только Android) -->
+<div id="installPwaContainer" style="text-align: center; margin: 16px;">
+  <button id="installBtn" style="display: none; padding: 12px 24px; background: #FFDD2D; border: none; border-radius: 30px; font-weight: bold; font-size: 1rem; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+    📲 Установить приложение
+  </button>
+  <div id="iosInstruction" style="display: none; margin-top: 10px; font-size: 0.75rem; color: var(--text-2);">
+    На iPhone: нажмите «Поделиться» → «На экран «Домой»»
+  </div>
+</div>
     <div class="completed-section" id="completedSection" style="display:none">
         <div class="completed-header-btn" onclick="toggleCompleted()"><span id="completedLabel">Завершённые</span><span class="completed-arrow" id="completedArrow">▼</span></div>
         <div class="credit-list completed-list" id="completedList"></div>
