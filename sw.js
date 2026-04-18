@@ -1,12 +1,15 @@
-const CACHE_NAME = 'mycredits-v2';
+const CACHE_NAME = 'mycredits-v2.5'; // увеличивайте номер при каждом изменении
+
 const urlsToCache = [
   './',
   './index.html',
   './icon.png',
+  './logo.png',
   './manifest.json'
 ];
 
 self.addEventListener('install', event => {
+  self.skipWaiting(); // заставляем нового воркера стать активным сразу
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => cache.addAll(urlsToCache))
@@ -30,6 +33,9 @@ self.addEventListener('activate', event => {
           }
         })
       );
+    }).then(() => {
+      // Захватываем контроль над всеми страницами
+      return self.clients.claim();
     })
   );
 });

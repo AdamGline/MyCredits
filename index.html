@@ -1131,7 +1131,22 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
     navigator.serviceWorker.register('./sw.js').then(function(registration) {
       console.log('ServiceWorker registration successful');
-    }, function(err) {
+
+      // Проверяем обновления при каждом запуске
+      registration.update();
+
+      // Следим за появлением нового сервис-воркера
+      registration.addEventListener('updatefound', () => {
+        const newWorker = registration.installing;
+        newWorker.addEventListener('statechange', () => {
+          // Когда новый сервис-воркер установлен и готов
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            // Перезагружаем страницу, чтобы активировать новую версию
+            window.location.reload();
+          }
+        });
+      });
+    }).catch(function(err) {
       console.log('ServiceWorker registration failed: ', err);
     });
   });
