@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mycredits-v2.5'; // увеличивайте номер при каждом изменении
+const CACHE_NAME = 'mycredits-v3'; // увеличивайте номер при каждом изменении
 
 const urlsToCache = [
   './',
