@@ -1174,6 +1174,34 @@ function showUpdateNotification() {
   document.body.appendChild(toast);
   setTimeout(() => toast.remove(), 10000);
 }
+
+
+// Всегда показываем кнопку (или только если PWA не установлен)
+const installBtnAlways = document.getElementById('installBtn');
+let deferredPromptGlobal = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPromptGlobal = e;
+  installBtnAlways.style.display = 'block'; // показываем кнопку
+  installBtnAlways.onclick = () => {
+    deferredPromptGlobal.prompt();
+    deferredPromptGlobal.userChoice.then(() => { deferredPromptGlobal = null; });
+  };
+});
+
+// Если приложение уже установлено (работает в режиме standalone), скрываем кнопку
+if (window.matchMedia('(display-mode: standalone)').matches) {
+  installBtnAlways.style.display = 'none';
+}
+
+// Для iOS (где нет beforeinstallprompt) – показываем кнопку с инструкцией
+if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+  installBtnAlways.style.display = 'block';
+  installBtnAlways.onclick = () => {
+    alert('Нажмите «Поделиться» → «На экран «Домой»»');
+  };
+}
 </script>
 </body>
 </html>
