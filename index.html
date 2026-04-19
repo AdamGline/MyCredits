@@ -62,17 +62,10 @@
     -webkit-tap-highlight-color: transparent;
     margin: 0;
     padding: 0;
-    overflow: hidden;
     transition: background 0.3s, color 0.3s;
 }
 .app {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
+    min-height: 100vh;
     padding-top: env(safe-area-inset-top);
     padding-bottom: max(80px, env(safe-area-inset-bottom));
     padding-left: env(safe-area-inset-left);
@@ -369,6 +362,25 @@
 #installBtn {
     display: none;
     margin: 0 auto;
+}
+/* Запрещаем горизонтальную прокрутку */
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+.app {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+/* Исправляем возможное вылезание текста "Активные" */
+.section-header {
+    width: 100%;
+    box-sizing: border-box;
+}
+/* Убираем лишнюю ширину у картинки логотипа на сплеш-экране */
+.splash-logo {
+    width: 100% !important;
 }
 
     </style>
