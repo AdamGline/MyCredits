@@ -212,6 +212,16 @@
         .empty-sub { font-size: 0.82rem; color: var(--text-3); text-align: center; }
 
         .fab { position: fixed; bottom: calc(28px + env(safe-area-inset-bottom)); right: 20px; width: 56px; height: 56px; border-radius: 50%; background: var(--text); color: var(--bg); border: none; cursor: pointer; z-index: 200; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md); transition: transform 0.3s cubic-bezier(0.175,0.885,0.32,1.275), background 0.2s; }
+       .install-fab {
+    left: 20px;
+    right: auto;
+    background: #FFDD2D;
+    color: #1A1A1A;
+    font-size: 1.5rem;
+}
+.install-fab:active {
+    transform: scale(0.92);
+}
         [data-theme="dark"] .fab { background: var(--accent); color: #1A1A1A; }
         .fab:active { transform: scale(0.92); }
         .fab svg { width: 22px; height: 22px; transition: transform 0.3s ease; }
@@ -446,6 +456,10 @@
 </div>
 
 <button class="fab" id="fab" onclick="fabClick(event)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+
+<button class="fab install-fab" id="installFab" style="left: 20px; right: auto; background: #FFDD2D; color: #1A1A1A;">
+  📲
+</button>
 
 <div class="overlay" id="formOverlay" onclick="if(event.target===this)closeForm()">
   <div class="sheet">
@@ -1176,6 +1190,7 @@ function showUpdateNotification() {
 }
 
 
+
 // Простая и надёжная кнопка установки
 const installBtn = document.getElementById('installBtn');
 let deferredPrompt = null;
@@ -1209,6 +1224,38 @@ if (!deferredPrompt && !/iPhone|iPad|iPod/.test(navigator.userAgent)) {
     alert('Установите приложение через меню браузера: ⋮ → «Установить приложение»');
   };
 }
+
+// Обработчик для плавающей кнопки установки
+const installFab = document.getElementById('installFab');
+if (installFab) {
+  // Если приложение уже установлено – скрываем кнопку
+  if (window.matchMedia('(display-mode: standalone)').matches) {
+    installFab.style.display = 'none';
+  }
+  // Для Android используем отложенное событие
+  let fabDeferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    fabDeferredPrompt = e;
+    installFab.onclick = () => {
+      fabDeferredPrompt.prompt();
+      fabDeferredPrompt.userChoice.then(() => { fabDeferredPrompt = null; });
+    };
+  });
+  // Для iOS – инструкция
+  if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+    installFab.onclick = () => {
+      alert('Нажмите «Поделиться» → «На экран «Домой»»');
+    };
+  }
+  // Если установка не поддерживается – подсказка
+  if (!fabDeferredPrompt && !/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+    installFab.onclick = () => {
+      alert('Установите через меню браузера: ⋮ → «Установить приложение»');
+    };
+  }
+}
+
 </script>
 </body>
 </html>
