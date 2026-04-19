@@ -367,7 +367,7 @@
     width: 100%;
 }
 #installBtn {
-    display: inline-block;
+    display: none;
     margin: 0 auto;
 }
 
@@ -1192,34 +1192,28 @@ function showUpdateNotification() {
 const installBtn = document.getElementById('installBtn');
 let deferredPrompt = null;
 
-// Если приложение уже установлено (работает как отдельное окно) – скрываем кнопку
-if (window.matchMedia('(display-mode: standalone)').matches) {
-  installBtn.style.display = 'none';
-}
-
-// Для Android: перехватываем событие установки
+// Для Android: перехватываем событие установки (оно приходит только если PWA не установлено)
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  // При клике на кнопку показываем диалог установки
+  installBtn.style.display = 'inline-block'; // показываем кнопку
   installBtn.onclick = () => {
     deferredPrompt.prompt();
     deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
   };
 });
 
-// Для iPhone и iPad: показываем инструкцию при клике
+// Для iPhone и iPad: показываем кнопку всегда (с инструкцией)
 if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+  installBtn.style.display = 'inline-block';
   installBtn.onclick = () => {
     alert('Нажмите «Поделиться» → «На экран «Домой»»');
   };
 }
 
-// Если ни одно из событий не сработало (старый браузер), покажем общую подсказку
-if (!deferredPrompt && !/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-  installBtn.onclick = () => {
-    alert('Установите приложение через меню браузера: ⋮ → «Установить приложение»');
-  };
+// Если приложение уже открыто в режиме standalone (PWA), скрываем кнопку
+if (window.matchMedia('(display-mode: standalone)').matches) {
+  installBtn.style.display = 'none';
 }
 
 
