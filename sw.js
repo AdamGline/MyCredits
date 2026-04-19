@@ -35,7 +35,7 @@ self.addEventListener('fetch', event => {
         })
     );
   } else {
-    // Для всех остальных ресурсов (icon.png, logo.png, manifest.json и др.) – сначала кэш, потом сеть
+    // Для всех остальных ресурсов – сначала кэш, потом сеть
     event.respondWith(
       caches.match(event.request).then(response => response || fetch(event.request))
     );
