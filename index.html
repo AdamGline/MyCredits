@@ -1192,28 +1192,28 @@ function showUpdateNotification() {
 const installBtn = document.getElementById('installBtn');
 let deferredPrompt = null;
 
-// Для Android: перехватываем событие установки (оно приходит только если PWA не установлено)
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  installBtn.style.display = 'inline-block'; // показываем кнопку
-  installBtn.onclick = () => {
-    deferredPrompt.prompt();
-    deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
-  };
-});
-
-// Для iPhone и iPad: показываем кнопку всегда (с инструкцией)
-if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-  installBtn.style.display = 'inline-block';
-  installBtn.onclick = () => {
-    alert('Нажмите «Поделиться» → «На экран «Домой»»');
-  };
-}
-
-// Если приложение уже открыто в режиме standalone (PWA), скрываем кнопку
+// Если приложение уже открыто в режиме standalone (PWA), скрываем кнопку и выходим
 if (window.matchMedia('(display-mode: standalone)').matches) {
   installBtn.style.display = 'none';
+} else {
+  // Для Android: перехватываем событие beforeinstallprompt (только если PWA не установлено)
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.style.display = 'inline-block';
+    installBtn.onclick = () => {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
+    };
+  });
+
+  // Для iOS: показываем кнопку с инструкцией (alert только на iOS)
+  if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+    installBtn.style.display = 'inline-block';
+    installBtn.onclick = () => {
+      alert('Нажмите «Поделиться» → «На экран «Домой»»');
+    };
+  }
 }
 
 
