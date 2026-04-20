@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Мои Кредиты / My Credits</title>
     <link rel="manifest" href="manifest.json">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Мои Кредиты">
-<link rel="apple-touch-icon" href="icon.png">
-<meta name="theme-color" content="#FFDD2D">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Мои Кредиты">
+    <link rel="apple-touch-icon" href="icon.png">
+    <meta name="theme-color" content="#FFDD2D">
     <script>
     window._fbLoaded = 0;
     function _onFbLoad() {
@@ -57,20 +57,20 @@
         }
 
         body {
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
-    background: var(--bg); color: var(--text);
-    -webkit-tap-highlight-color: transparent;
-    margin: 0;
-    padding: 0;
-    transition: background 0.3s, color 0.3s;
-}
-.app {
-    min-height: 100vh;
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: max(80px, env(safe-area-inset-bottom));
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
-}
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg); color: var(--text);
+            -webkit-tap-highlight-color: transparent;
+            margin: 0;
+            padding: 0;
+            transition: background 0.3s, color 0.3s;
+        }
+        .app {
+            min-height: 100vh;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: max(80px, env(safe-area-inset-bottom));
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+        }
         input, textarea, select { -webkit-user-select: text; user-select: text; }
 
         .splash { position: fixed; inset: 0; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000; transition: opacity 0.4s ease, visibility 0.4s ease; }
@@ -205,7 +205,6 @@
         .empty-sub { font-size: 0.82rem; color: var(--text-3); text-align: center; }
 
         .fab { position: fixed; bottom: calc(28px + env(safe-area-inset-bottom)); right: 20px; width: 56px; height: 56px; border-radius: 50%; background: var(--text); color: var(--bg); border: none; cursor: pointer; z-index: 200; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md); transition: transform 0.3s cubic-bezier(0.175,0.885,0.32,1.275), background 0.2s; }
-
         [data-theme="dark"] .fab { background: var(--accent); color: #1A1A1A; }
         .fab:active { transform: scale(0.92); }
         .fab svg { width: 22px; height: 22px; transition: transform 0.3s ease; }
@@ -319,6 +318,7 @@
         .pin-dots { display: flex; gap: 16px; margin-top: 10px; }
         .pin-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--text-3); background: transparent; transition: all 0.12s; }
         .pin-dot.filled { background: var(--text); border-color: var(--text); transform: scale(1.15); }
+        .pin-dot.error { background: var(--danger) !important; border-color: var(--danger) !important; }
         .pin-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; padding: 0 16px; }
         .pin-key { height: 72px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border); color: var(--text); font-family: inherit; font-size: 1.7rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .pin-key:active { transform: scale(0.9); background: var(--border); }
@@ -354,35 +354,76 @@
         .delete-acc-btn { width: 100%; padding: 15px; border: none; border-radius: var(--radius-sm); font-family: inherit; font-size: 0.95rem; font-weight: 700; cursor: pointer; margin-bottom: 10px; }
         .delete-acc-btn-confirm { background: var(--danger); color: #fff; }
         .delete-acc-btn-cancel { background: var(--surface-2); color: var(--text); border: 1.5px solid var(--border); }
-        
-       #installPwaContainer {
-    text-align: center;
-    width: 100%;
-}
-#installBtn {
-    display: none;
-    margin: 0 auto;
-}
-/* Запрещаем горизонтальную прокрутку */
-html, body {
-    max-width: 100%;
-    overflow-x: hidden;
-}
-.app {
-    width: 100%;
-    max-width: 100%;
-    overflow-x: hidden;
-}
-/* Исправляем возможное вылезание текста "Активные" */
-.section-header {
-    width: 100%;
-    box-sizing: border-box;
-}
-/* Убираем лишнюю ширину у картинки логотипа на сплеш-экране */
-.splash-logo {
-    width: 100% !important;
-}
 
+        #installPwaContainer { text-align: center; width: 100%; }
+        #installBtn { display: none; margin: 0 auto; }
+        html, body { max-width: 100%; overflow-x: hidden; }
+        .app { width: 100%; max-width: 100%; overflow-x: hidden; }
+        .section-header { width: 100%; box-sizing: border-box; }
+        .splash-logo { width: 100% !important; }
+
+        .global-loader {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--surface);
+            padding: 20px 30px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            z-index: 9000;
+            color: var(--text);
+        }
+        .loader-spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent-dark);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        .offline-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--danger);
+            color: white;
+            text-align: center;
+            padding: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            z-index: 9500;
+            transform: translateY(-100%);
+            transition: transform 0.3s ease;
+        }
+        .offline-banner.show { transform: translateY(0); }
+        .partial-quick-amounts { display: flex; gap: 8px; margin-bottom: 10px; }
+        .partial-quick-btn {
+            flex: 1;
+            padding: 8px 0;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .partial-quick-btn:active { background: var(--border); transform: scale(0.96); }
+        .shake { animation: shake 0.4s ease; }
+        @keyframes shake {
+            0%,100% { transform: translateX(0); }
+            20% { transform: translateX(-8px); }
+            40% { transform: translateX(8px); }
+            60% { transform: translateX(-4px); }
+            80% { transform: translateX(4px); }
+        }
     </style>
 </head>
 <body>
@@ -392,7 +433,14 @@ html, body {
         <img class="splash-logo" src="logo.png" alt="Logo" onerror="this.style.display='none'">
         <div class="splash-tagline">Думай о более важном!</div>
     </div>
-    <div class="splash-version">Версия 1.01</div>
+    <div class="splash-version">Версия 1.03</div>
+</div>
+
+<div class="offline-banner" id="offlineBanner">⚠️ Нет подключения к сети</div>
+
+<div class="global-loader" id="globalLoader" style="display: none;">
+    <div class="loader-spinner"></div>
+    <div>Загрузка данных...</div>
 </div>
 
 <div class="auth-screen" id="authScreen">
@@ -452,15 +500,14 @@ html, body {
         <div class="section-header"><span class="section-title">Активные</span><span class="section-count" id="activeCount"></span></div>
         <div class="credit-list" id="creditList"></div>
     </div>
-    <!-- Кнопка установки PWA (только Android) -->
-<div id="installPwaContainer" style="text-align: center; margin: 16px;">
-  <button id="installBtn" style="padding: 12px 24px; background: #FFDD2D; border: none; border-radius: 30px; font-weight: bold; font-size: 1rem; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-    📲 Установить приложение
-  </button>
-  <div id="iosInstruction" style="display: none; margin-top: 10px; font-size: 0.75rem; color: var(--text-2);">
-    На iPhone: нажмите «Поделиться» → «На экран «Домой»»
-  </div>
-</div>
+    <div id="installPwaContainer" style="text-align: center; margin: 16px;">
+        <button id="installBtn" style="padding: 12px 24px; background: #FFDD2D; border: none; border-radius: 30px; font-weight: bold; font-size: 1rem; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            📲 Установить приложение
+        </button>
+        <div id="iosInstruction" style="display: none; margin-top: 10px; font-size: 0.75rem; color: var(--text-2);">
+            На iPhone: нажмите «Поделиться» → «На экран «Домой»»
+        </div>
+    </div>
     <div class="completed-section" id="completedSection" style="display:none">
         <div class="completed-header-btn" onclick="toggleCompleted()"><span id="completedLabel">Завершённые</span><span class="completed-arrow" id="completedArrow">▼</span></div>
         <div class="credit-list completed-list" id="completedList"></div>
@@ -470,6 +517,7 @@ html, body {
 
 <button class="fab" id="fab" onclick="fabClick(event)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
 
+<!-- Оверлеи -->
 <div class="overlay" id="formOverlay" onclick="if(event.target===this)closeForm()">
   <div class="sheet">
     <div class="sheet-handle"></div>
@@ -515,6 +563,11 @@ html, body {
       <div class="partial-info">
         <div><div class="partial-info-label">Внесено</div><div class="partial-info-val credit-amount" id="partialPaidDisplay">0 ₽</div></div>
         <div style="text-align:right"><div class="partial-info-label">Остаток</div><div class="partial-info-val credit-amount" id="partialRemainDisplay">0 ₽</div></div>
+      </div>
+      <div class="partial-quick-amounts">
+        <button class="partial-quick-btn" onclick="addQuickAmount(1000)">+1 000 ₽</button>
+        <button class="partial-quick-btn" onclick="addQuickAmount(5000)">+5 000 ₽</button>
+        <button class="partial-quick-btn" onclick="addQuickAmount(10000)">+10 000 ₽</button>
       </div>
       <div class="partial-input-wrap"><input type="number" id="partialInput" placeholder="Сумма взноса, ₽" inputmode="decimal"><button class="btn btn-primary" onclick="savePartial()" style="flex:0 0 auto;min-width:90px;padding:13px 16px">Внести</button></div>
     </div>
@@ -589,21 +642,21 @@ html, body {
 </div>
 
 <div class="overlay" id="editAccountOverlay" onclick="if(event.target===this)closeEditAccount()">
-    <div class="sheet">
-        <div class="sheet-handle"></div>
-        <div class="sheet-title"><span>Редактировать аккаунт</span><button class="sheet-close" onclick="closeEditAccount()">✕</button></div>
-        <div class="form-body">
-            <div class="form-group"><label class="form-label">Логин (уникальный)</label><input type="text" id="editNickname" placeholder="Ваш логин"></div>
-            <div class="form-group"><label class="form-label">Смена пароля (оставьте пустым, чтобы не менять)</label><input type="password" id="editOldPass" placeholder="Текущий пароль"></div>
-            <div class="form-group"><input type="password" id="editNewPass" placeholder="Новый пароль (мин. 6 символов)"></div>
-            <div class="form-group"><input type="password" id="editConfirmPass" placeholder="Подтвердите новый пароль"></div>
-        </div>
-        <div class="form-actions" style="margin-top:8px;"><button class="btn btn-primary" onclick="saveAccountChanges()">Сохранить</button></div>
-        <div style="padding:8px 16px 4px">
-            <button class="btn" style="background:rgba(230,57,70,0.08);color:var(--danger);border:1.5px solid rgba(230,57,70,0.25);width:100%" onclick="closeEditAccount();setTimeout(openDeleteAccount,250)">🗑 Удалить аккаунт</button>
-        </div>
-        <div style="height:8px"></div>
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title"><span>Редактировать аккаунт</span><button class="sheet-close" onclick="closeEditAccount()">✕</button></div>
+    <div class="form-body">
+      <div class="form-group"><label class="form-label">Логин (уникальный)</label><input type="text" id="editNickname" placeholder="Ваш логин"></div>
+      <div class="form-group"><label class="form-label">Смена пароля (оставьте пустым, чтобы не менять)</label><input type="password" id="editOldPass" placeholder="Текущий пароль"></div>
+      <div class="form-group"><input type="password" id="editNewPass" placeholder="Новый пароль (мин. 6 символов)"></div>
+      <div class="form-group"><input type="password" id="editConfirmPass" placeholder="Подтвердите новый пароль"></div>
     </div>
+    <div class="form-actions" style="margin-top:8px;"><button class="btn btn-primary" onclick="saveAccountChanges()">Сохранить</button></div>
+    <div style="padding:8px 16px 4px">
+      <button class="btn" style="background:rgba(230,57,70,0.08);color:var(--danger);border:1.5px solid rgba(230,57,70,0.25);width:100%" onclick="closeEditAccount();setTimeout(openDeleteAccount,250)">🗑 Удалить аккаунт</button>
+    </div>
+    <div style="height:8px"></div>
+  </div>
 </div>
 
 <div class="all-paid-overlay" id="allPaidOverlay" onclick="if(event.target===this)closeAllPaid()">
@@ -621,19 +674,20 @@ html, body {
 </div>
 
 <div class="delete-account-overlay" id="deleteAccountOverlay" onclick="if(event.target===this)closeDeleteAccount()">
-    <div class="delete-account-sheet">
-        <div class="sheet-handle"></div>
-        <div class="sheet-title"><span>Удалить аккаунт</span><button class="sheet-close" onclick="closeDeleteAccount()">✕</button></div>
-        <div class="delete-acc-body">
-            <div class="delete-acc-warn">⚠️ Все ваши кредиты и данные будут удалены навсегда. Это действие невозможно отменить.</div>
-            <div class="form-group" style="margin-bottom:16px"><label class="form-label">Подтвердите пароль</label><input type="password" id="deleteAccPass" placeholder="Введите текущий пароль"></div>
-            <button class="delete-acc-btn delete-acc-btn-confirm" onclick="doDeleteAccount()">🗑 Удалить мой аккаунт</button>
-            <button class="delete-acc-btn delete-acc-btn-cancel" onclick="closeDeleteAccount()">Отмена</button>
-        </div>
+  <div class="delete-account-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title"><span>Удалить аккаунт</span><button class="sheet-close" onclick="closeDeleteAccount()">✕</button></div>
+    <div class="delete-acc-body">
+      <div class="delete-acc-warn">⚠️ Все ваши кредиты и данные будут удалены навсегда. Это действие невозможно отменить.</div>
+      <div class="form-group" style="margin-bottom:16px"><label class="form-label">Подтвердите пароль</label><input type="password" id="deleteAccPass" placeholder="Введите текущий пароль"></div>
+      <button class="delete-acc-btn delete-acc-btn-confirm" onclick="doDeleteAccount()">🗑 Удалить мой аккаунт</button>
+      <button class="delete-acc-btn delete-acc-btn-cancel" onclick="closeDeleteAccount()">Отмена</button>
     </div>
+  </div>
 </div>
 
 <script>
+// ========== ИНИЦИАЛИЗАЦИЯ FIREBASE ==========
 let auth, db;
 
 function _initFirebase() {
@@ -657,7 +711,6 @@ function _initFirebase() {
             const freshUser = auth.currentUser;
             if (freshUser) {
                 authUser = freshUser;
-                // Сохраняем в Firestore информацию о верификации email
                 try {
                     await db.collection('users').doc(freshUser.uid).set({
                         email: freshUser.email,
@@ -676,12 +729,14 @@ function _initFirebase() {
     });
 }
 
+// ========== КОНСТАНТЫ ==========
 const MONTH_K   = 'crt_month_v4';
 const THEME_K   = 'crt_theme_v4';
 const AMT_K     = 'crt_amounts_v4';
 const FONT_K    = 'crt_font_v4';
-const PIN_K     = 'crt_pin_v4';
+const PIN_K     = 'crt_pin_v5';
 const PIN_LEN_K = 'crt_pin_len_v4';
+const PIN_SALT  = 'mycredits_salt_2025';
 
 const CATS = { mortgage:{emoji:'🏠',label:'Ипотека'}, auto:{emoji:'🚗',label:'Автокредит'}, consumer:{emoji:'💳',label:'Потребительский'}, card:{emoji:'💰',label:'Карта'}, other:{emoji:'📄',label:'Прочее'} };
 
@@ -707,41 +762,314 @@ let authUser = null;
 let splashTimerDone = false;
 let creditsUnsubscribe = null;
 let monthResetDone = false;
+let isOffline = false;
 
 const ls = { get:k=>{try{return localStorage.getItem(k);}catch(e){return null;}}, set:(k,v)=>{try{localStorage.setItem(k,v);return true;}catch(e){return false;}}, rm:k=>{try{localStorage.removeItem(k);}catch(e){}} };
 
+// ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
 function formatPaymentDate(dayNumber){ const months=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря']; return `${dayNumber} ${months[new Date().getMonth()]}`; }
+function fmt(n){ return Math.round(n).toLocaleString('ru-RU'); }
+function esc(t){ const d=document.createElement('div'); d.textContent=t; return d.innerHTML; }
+function showToast(msg){ document.querySelectorAll('.toast').forEach(t=>t.remove()); const d=document.createElement('div'); d.className='toast'; d.textContent=msg; document.body.appendChild(d); setTimeout(()=>d.remove(),2200); }
+function showGlobalLoader(show) { document.getElementById('globalLoader').style.display = show ? 'flex' : 'none'; }
 
-function loadCredits(){ if(!authUser)return; if(creditsUnsubscribe){creditsUnsubscribe();creditsUnsubscribe=null;} creditsUnsubscribe = db.collection('credits').where('userId','==',authUser.uid).onSnapshot(snapshot=>{ credits=[]; snapshot.forEach(doc=>credits.push({id:doc.id,...doc.data()})); render(); if(!monthResetDone){monthResetDone=true;checkMonthReset();} }, e=>{console.error('Ошибка синхронизации:',e);showToast('Ошибка синхронизации данных');}); }
-async function deleteCredit(id){ await db.collection('credits').doc(id).delete(); }
-async function updateCreditField(id,data){ await db.collection('credits').doc(id).update(data); }
-async function checkMonthReset(){ if(!authUser)return; const n=new Date(); const currentMonthKey=`${n.getMonth()}-${n.getFullYear()}`; const toReset=credits.filter(c=>!c.completed&&c.lastResetMonth!==currentMonthKey); let updatedCount=0; for(const c of toReset){ let updates={lastResetMonth:currentMonthKey}; if(c.lastResetMonth){ updates.paid=false; updates.partial=0; updatedCount++; } await updateCreditField(c.id,updates); } if(updatedCount>0){ const m=document.getElementById('resetMsg'); m.style.display='block'; setTimeout(()=>m.style.display='none',5000); } ls.set(MONTH_K,currentMonthKey); }
+// ========== ОНЛАЙН/ОФЛАЙН ==========
+function updateOnlineStatus() {
+    const online = navigator.onLine;
+    const banner = document.getElementById('offlineBanner');
+    if (!online) {
+        banner.classList.add('show');
+        isOffline = true;
+        if (window._fbAppInited && db) db.disableNetwork().catch(()=>{});
+    } else {
+        banner.classList.remove('show');
+        if (isOffline && window._fbAppInited && db) {
+            db.enableNetwork().then(() => { if (authUser) loadCredits(); }).catch(()=>{});
+        }
+        isOffline = false;
+    }
+}
+window.addEventListener('online', updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+updateOnlineStatus();
 
-function render(){ const now=new Date(); const cm=now.getMonth(),cy=now.getFullYear(); const active=credits.filter(c=>!c.completed); const completed=credits.filter(c=>c.completed); active.sort((a,b)=>a.paid===b.paid?a.day-b.day:a.paid?1:-1); const list=document.getElementById('creditList'); list.innerHTML=''; if(!active.length){ list.innerHTML=`<div class="empty-state"><div class="empty-icon">💳</div><div class="empty-title">Нет активных кредитов</div><div class="empty-sub">Нажмите + чтобы добавить первый</div></div>`; }else{ const frag=document.createDocumentFragment(); active.forEach(c=>frag.appendChild(buildCreditItem(c,cm,cy))); list.appendChild(frag); } const compSec=document.getElementById('completedSection'); if(completed.length){ compSec.style.display=''; document.getElementById('completedLabel').textContent=`Завершённые (${completed.length})`; const compList=document.getElementById('completedList'); if(compList.classList.contains('open')){ compList.innerHTML=''; const cfrag=document.createDocumentFragment(); completed.forEach(c=>cfrag.appendChild(buildCreditItem(c,cm,cy))); compList.appendChild(cfrag); } }else compSec.style.display='none'; document.getElementById('activeCount').textContent=active.length?`${active.length}`:''; updateSummary(active); if(!amountsVisible) setTimeout(startSpoilers,30); }
-
-function buildCreditItem(c,cm,cy){ const partial=c.partial||0; const remain=Math.max(0,c.amount-partial); const percent=c.amount>0?(partial/c.amount)*100:0; let termHtml=''; if(c.endDate){ const ed=new Date(c.endDate); const ml=(ed.getFullYear()-cy)*12+(ed.getMonth()-cm); if(ml<=0) termHtml=`<span class="credit-term-tag ending">Завершается</span>`; else if(ml<=3) termHtml=`<span class="credit-term-tag soon">Ещё ${ml} мес.</span>`; else termHtml=`<span class="credit-term-tag ok">${ml} мес.</span>`; }else termHtml=`<span class="credit-term-tag infinite">Бессрочный</span>`; const cat=CATS[c.category]||CATS.other; const wrap=document.createElement('div'); wrap.style.background='var(--surface)'; const item=document.createElement('div'); item.className='credit-item'+(c.completed?' completed':c.paid?' paid':''); if(!c.paid&&!c.completed&&partial>0){ if(partial>=c.amount)item.classList.add('partial-complete'); else{ item.classList.add('partial-bg'); item.style.setProperty('--partial-width',percent+'%'); } } const displayAmount=c.paid?fmt(c.amount):(partial>0?fmt(remain):fmt(c.amount)); item.innerHTML=`<div class="credit-icon-wrap">${cat.emoji}</div><div class="credit-main"><div class="credit-name">${esc(c.name)}</div><div class="credit-meta"><span class="credit-date-tag">${formatPaymentDate(c.day)}</span>${termHtml}</div></div><div class="credit-right"><span class="credit-amount">${displayAmount} ₽</span>${c.paid?'<span class="credit-paid-badge">Оплачен</span>':(partial>0?`<span style="font-size:0.68rem;color:var(--text-2);font-weight:500">из ${fmt(c.amount)} ₽</span>`:'')}</div><div class="check-wrap ${c.paid||c.completed?'checked':''}" data-id="${c.id}"><svg viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="2.5"><polyline points="2,7 6,11 12,3"/></svg></div>`; item.addEventListener('click',e=>{if(!c.completed&&!e.target.closest('.check-wrap'))openAction(c.id);}); item.querySelector('.check-wrap').addEventListener('click',async e=>{e.stopPropagation();if(!c.completed){const newPaid=!c.paid;await updateCreditField(c.id,{paid:newPaid,partial:newPaid?c.amount:0});}}); wrap.appendChild(item); return wrap; }
-
-function updateSummary(active){ const total=active.reduce((s,c)=>s+c.amount,0); const paidTotalSum=active.reduce((s,c)=>s+(c.paid?c.amount:(c.partial||0)),0); const remain=total>0?Math.max(0,total-paidTotalSum):0; const pct=total>0?Math.floor((paidTotalSum/total)*100):0; document.getElementById('summaryAmount').textContent=fmt(remain)+' ₽'; document.getElementById('summaryPaid').textContent=`Внесено ${fmt(paidTotalSum)} ₽`; document.getElementById('summaryPercent').textContent=pct+'%'; document.getElementById('summaryBarFill').style.width=pct+'%'; document.getElementById('summaryCount').textContent=active.length; document.getElementById('summaryPaidCount').textContent=active.filter(c=>c.paid).length; document.getElementById('summaryTotal').textContent=fmt(total)+' ₽'; if(paidTotalSum>=total&&total>0&&active.length>0&&!allPaidShown){ allPaidShown=true; setTimeout(()=>document.getElementById('allPaidOverlay').classList.add('active'),400); } else if(pct<100) allPaidShown=false; 
+// ========== ЗАГРУЗКА КРЕДИТОВ ==========
+function loadCredits() {
+    if (!authUser) return;
+    showGlobalLoader(true);
+    if (creditsUnsubscribe) { creditsUnsubscribe(); creditsUnsubscribe = null; }
+    creditsUnsubscribe = db.collection('credits').where('userId', '==', authUser.uid)
+        .onSnapshot(snapshot => {
+            credits = [];
+            snapshot.forEach(doc => credits.push({ id: doc.id, ...doc.data() }));
+            render();
+            if (!monthResetDone) { monthResetDone = true; checkMonthReset(); }
+            showGlobalLoader(false);
+        }, e => {
+            console.error('Ошибка синхронизации:', e);
+            showToast('Ошибка синхронизации данных');
+            showGlobalLoader(false);
+        });
 }
 
-function openAction(id){ const c=credits.find(x=>x.id===id); if(!c)return; selectedCreditId=id; const cat=CATS[c.category]||CATS.other; document.getElementById('actionNameText').textContent=cat.emoji+' '+c.name; document.getElementById('actionSub').textContent=fmt(c.amount)+' ₽ · '+formatPaymentDate(c.day); const partial=c.partial||0; document.getElementById('partialPaidDisplay').textContent=fmt(partial)+' ₽'; document.getElementById('partialRemainDisplay').textContent=fmt(Math.max(0,c.amount-partial))+' ₽'; document.getElementById('partialInput').value=''; const ps=document.getElementById('partialSection'); const rb=document.getElementById('resetPartialBtn'); if(c.paid||c.completed){ps.style.display='none';rb.style.display='none';}else{ps.style.display='';rb.style.display=partial>0?'':'none';} document.getElementById('actionOverlay').classList.add('active'); }
-async function resetPartial(){ const c=credits.find(x=>x.id===selectedCreditId); if(c&&!c.paid&&!c.completed){ await updateCreditField(c.id,{partial:0}); closeAction(); showToast('Частичная оплата сброшена'); } }
-function closeAction(){ document.getElementById('actionOverlay').classList.remove('active'); }
-async function savePartial(){ const c=credits.find(x=>x.id===selectedCreditId); if(!c)return; const inp=parseFloat(document.getElementById('partialInput').value); if(!inp||inp<=0){showToast('Введите сумму');return;} const newPartial=Math.min(c.amount,(c.partial||0)+inp); const newPaid=newPartial>=c.amount; await updateCreditField(c.id,{partial:newPartial,paid:newPaid}); closeAction(); showToast(newPaid?'Кредит полностью оплачен':'Внесено '+fmt(inp)+' ₽'); }
-function openEdit(){ const c=credits.find(x=>x.id===selectedCreditId); if(!c)return; editMode=true; editId=selectedCreditId; document.getElementById('nameInput').value=c.name; document.getElementById('amountInput').value=c.amount; document.getElementById('dayInput').value=c.day; selectCat(c.category); if(c.endDate){setDateMode('cal');document.getElementById('endDateCal').value=c.endDate;} document.getElementById('formTitleText').innerText='Редактировать'; document.getElementById('formSaveBtn').innerText='Сохранить'; closeAction(); document.getElementById('formOverlay').classList.add('active'); updateFab(true); }
-function showDeleteConfirm(){ closeAction(); setTimeout(()=>document.getElementById('deleteOverlay').classList.add('active'),100); }
-function closeDelete(){ document.getElementById('deleteOverlay').classList.remove('active'); }
-async function doDelete(){ if(selectedCreditId){ await deleteCredit(selectedCreditId); showToast('Удалено'); } closeDelete(); selectedCreditId=null; }
-function toggleForm(){ const ov=document.getElementById('formOverlay'); if(!ov.classList.contains('active')){ov.classList.add('active');updateFab(true);}else closeForm(); }
-function closeForm(){ document.getElementById('formOverlay').classList.remove('active'); updateFab(false); resetForm(); _isSaving=false; }
-function resetForm(){ editMode=false; editId=null; document.getElementById('nameInput').value=''; document.getElementById('amountInput').value=''; document.getElementById('dayInput').value=''; document.getElementById('endDateCal').value=''; document.getElementById('formTitleText').innerText='Новый кредит'; document.getElementById('formSaveBtn').innerText='Добавить'; document.getElementById('formSaveBtn').disabled=false; selectCat('mortgage'); setDateMode('cal'); }
-async function handleSave(){ if(_isSaving)return; const name=document.getElementById('nameInput').value.trim(); const amount=parseFloat(document.getElementById('amountInput').value); const day=parseInt(document.getElementById('dayInput').value); if(!name){showToast('Введите название');return;} if(!amount||amount<=0){showToast('Введите сумму');return;} if(!day||day<1||day>31){showToast('День оплаты: 1–31');return;} const isEdit=editMode; const saveId=editId; const saveCat=selectedCat; const endDate=getEndDate(); _isSaving=true; const saveBtn=document.getElementById('formSaveBtn'); saveBtn.disabled=true; saveBtn.textContent='Сохранение...'; closeForm(); showToast('Сохранение...'); try{ const currentMonthKey=`${new Date().getMonth()}-${new Date().getFullYear()}`; const creditData={name,amount,day,category:saveCat,endDate}; if(isEdit&&saveId){ creditData.userId=authUser.uid; await db.collection('credits').doc(saveId).update(creditData); showToast('Кредит обновлён'); }else{ creditData.paid=false; creditData.completed=false; creditData.partial=0; creditData.lastResetMonth=currentMonthKey; creditData.createdAt=new Date().toISOString(); creditData.userId=authUser.uid; await db.collection('credits').add(creditData); showToast('Кредит добавлен'); } }catch(e){ console.error(e); showToast('Ошибка сохранения'); }finally{ _isSaving=false; } }
-function selectCat(cat){ selectedCat=cat; document.querySelectorAll('.cat-item').forEach(el=>el.classList.toggle('selected',el.dataset.cat===cat)); }
-function setDateMode(m){ dateMode=m; document.getElementById('dtBtnCal').classList.toggle('active',m==='cal'); document.getElementById('dtBtnMan').classList.toggle('active',m==='man'); document.getElementById('calInput').classList.toggle('active',m==='cal'); document.getElementById('manInput').classList.toggle('active',m==='man'); }
-function getEndDate(){ if(dateMode==='cal') return document.getElementById('endDateCal').value||null; const mo=document.getElementById('endMonth').value; const yr=document.getElementById('endYear').value; return (mo!==''&&yr)?`${yr}-${String(parseInt(mo)+1).padStart(2,'0')}-01`:null; }
-function fabClick(e){ e.stopPropagation(); const fab=document.getElementById('fab'); if(fab.classList.contains('active')){closeForm();return;} fab.style.transform='scale(0.88)'; setTimeout(()=>{fab.style.transform='';toggleForm();},120); }
-function updateFab(active){ document.getElementById('fab').classList.toggle('active',active); }
+async function deleteCredit(id){ await db.collection('credits').doc(id).delete(); }
+async function updateCreditField(id,data){ await db.collection('credits').doc(id).update(data); }
 
+async function checkMonthReset(){
+    if (!authUser) return;
+    const n = new Date();
+    const currentMonthKey = `${n.getMonth()}-${n.getFullYear()}`;
+    const toReset = credits.filter(c => !c.completed && c.lastResetMonth !== currentMonthKey);
+    let updatedCount = 0;
+    for (const c of toReset) {
+        let updates = { lastResetMonth: currentMonthKey };
+        if (c.lastResetMonth) { updates.paid = false; updates.partial = 0; updatedCount++; }
+        await updateCreditField(c.id, updates);
+    }
+    if (updatedCount > 0) {
+        const m = document.getElementById('resetMsg');
+        m.style.display = 'block';
+        setTimeout(() => m.style.display = 'none', 5000);
+    }
+    ls.set(MONTH_K, currentMonthKey);
+}
+
+// ========== РЕНДЕРИНГ ==========
+function render(){
+    const now = new Date();
+    const cm = now.getMonth(), cy = now.getFullYear();
+    const active = credits.filter(c => !c.completed);
+    const completed = credits.filter(c => c.completed);
+    active.sort((a,b) => a.paid === b.paid ? a.day - b.day : a.paid ? 1 : -1);
+    const list = document.getElementById('creditList');
+    list.innerHTML = '';
+    if (!active.length) {
+        list.innerHTML = `<div class="empty-state"><div class="empty-icon">💳</div><div class="empty-title">Нет активных кредитов</div><div class="empty-sub">Нажмите + чтобы добавить первый</div></div>`;
+    } else {
+        const frag = document.createDocumentFragment();
+        active.forEach(c => frag.appendChild(buildCreditItem(c, cm, cy)));
+        list.appendChild(frag);
+    }
+    const compSec = document.getElementById('completedSection');
+    if (completed.length) {
+        compSec.style.display = '';
+        document.getElementById('completedLabel').textContent = `Завершённые (${completed.length})`;
+        const compList = document.getElementById('completedList');
+        if (compList.classList.contains('open')) {
+            compList.innerHTML = '';
+            const cfrag = document.createDocumentFragment();
+            completed.forEach(c => cfrag.appendChild(buildCreditItem(c, cm, cy)));
+            compList.appendChild(cfrag);
+        }
+    } else compSec.style.display = 'none';
+    document.getElementById('activeCount').textContent = active.length ? `${active.length}` : '';
+    updateSummary(active);
+    if (!amountsVisible) setTimeout(startSpoilers, 30);
+}
+
+function buildCreditItem(c, cm, cy){
+    const partial = c.partial || 0;
+    const remain = Math.max(0, c.amount - partial);
+    const percent = c.amount > 0 ? (partial / c.amount) * 100 : 0;
+    let termHtml = '';
+    if (c.endDate) {
+        const ed = new Date(c.endDate);
+        const ml = (ed.getFullYear() - cy) * 12 + (ed.getMonth() - cm);
+        if (ml <= 0) termHtml = `<span class="credit-term-tag ending">Завершается</span>`;
+        else if (ml <= 3) termHtml = `<span class="credit-term-tag soon">Ещё ${ml} мес.</span>`;
+        else termHtml = `<span class="credit-term-tag ok">${ml} мес.</span>`;
+    } else termHtml = `<span class="credit-term-tag infinite">Бессрочный</span>`;
+    const cat = CATS[c.category] || CATS.other;
+    const wrap = document.createElement('div');
+    wrap.style.background = 'var(--surface)';
+    const item = document.createElement('div');
+    item.className = 'credit-item' + (c.completed ? ' completed' : c.paid ? ' paid' : '');
+    if (!c.paid && !c.completed && partial > 0) {
+        if (partial >= c.amount) item.classList.add('partial-complete');
+        else { item.classList.add('partial-bg'); item.style.setProperty('--partial-width', percent + '%'); }
+    }
+    const displayAmount = c.paid ? fmt(c.amount) : (partial > 0 ? fmt(remain) : fmt(c.amount));
+    item.innerHTML = `<div class="credit-icon-wrap">${cat.emoji}</div>
+        <div class="credit-main"><div class="credit-name">${esc(c.name)}</div>
+        <div class="credit-meta"><span class="credit-date-tag">${formatPaymentDate(c.day)}</span>${termHtml}</div></div>
+        <div class="credit-right"><span class="credit-amount">${displayAmount} ₽</span>
+        ${c.paid ? '<span class="credit-paid-badge">Оплачен</span>' : (partial > 0 ? `<span style="font-size:0.68rem;color:var(--text-2);font-weight:500">из ${fmt(c.amount)} ₽</span>` : '')}</div>
+        <div class="check-wrap ${c.paid || c.completed ? 'checked' : ''}" data-id="${c.id}">
+            <svg viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="2.5"><polyline points="2,7 6,11 12,3"/></svg>
+        </div>`;
+    item.addEventListener('click', e => { if (!c.completed && !e.target.closest('.check-wrap')) openAction(c.id); });
+    item.querySelector('.check-wrap').addEventListener('click', async e => {
+        e.stopPropagation();
+        if (!c.completed) {
+            const newPaid = !c.paid;
+            await updateCreditField(c.id, { paid: newPaid, partial: newPaid ? c.amount : 0 });
+        }
+    });
+    wrap.appendChild(item);
+    return wrap;
+}
+
+function updateSummary(active){
+    const total = active.reduce((s, c) => s + c.amount, 0);
+    const paidTotalSum = active.reduce((s, c) => s + (c.paid ? c.amount : (c.partial || 0)), 0);
+    const remain = total > 0 ? Math.max(0, total - paidTotalSum) : 0;
+    const pct = total > 0 ? Math.floor((paidTotalSum / total) * 100) : 0;
+    document.getElementById('summaryAmount').textContent = fmt(remain) + ' ₽';
+    document.getElementById('summaryPaid').textContent = `Внесено ${fmt(paidTotalSum)} ₽`;
+    document.getElementById('summaryPercent').textContent = pct + '%';
+    document.getElementById('summaryBarFill').style.width = pct + '%';
+    document.getElementById('summaryCount').textContent = active.length;
+    document.getElementById('summaryPaidCount').textContent = active.filter(c => c.paid).length;
+    document.getElementById('summaryTotal').textContent = fmt(total) + ' ₽';
+    if (paidTotalSum >= total && total > 0 && active.length > 0 && !allPaidShown) {
+        allPaidShown = true;
+        setTimeout(() => document.getElementById('allPaidOverlay').classList.add('active'), 400);
+    } else if (pct < 100) allPaidShown = false;
+}
+
+// ========== ДЕЙСТВИЯ С КРЕДИТОМ ==========
+function openAction(id){
+    const c = credits.find(x => x.id === id);
+    if (!c) return;
+    selectedCreditId = id;
+    const cat = CATS[c.category] || CATS.other;
+    document.getElementById('actionNameText').textContent = cat.emoji + ' ' + c.name;
+    document.getElementById('actionSub').textContent = fmt(c.amount) + ' ₽ · ' + formatPaymentDate(c.day);
+    const partial = c.partial || 0;
+    document.getElementById('partialPaidDisplay').textContent = fmt(partial) + ' ₽';
+    document.getElementById('partialRemainDisplay').textContent = fmt(Math.max(0, c.amount - partial)) + ' ₽';
+    document.getElementById('partialInput').value = '';
+    const ps = document.getElementById('partialSection');
+    const rb = document.getElementById('resetPartialBtn');
+    if (c.paid || c.completed) { ps.style.display = 'none'; rb.style.display = 'none'; }
+    else { ps.style.display = ''; rb.style.display = partial > 0 ? '' : 'none'; }
+    document.getElementById('actionOverlay').classList.add('active');
+}
+
+function addQuickAmount(amount) {
+    const input = document.getElementById('partialInput');
+    const current = parseFloat(input.value) || 0;
+    input.value = current + amount;
+}
+
+async function resetPartial(){
+    const c = credits.find(x => x.id === selectedCreditId);
+    if (c && !c.paid && !c.completed) {
+        await updateCreditField(c.id, { partial: 0 });
+        closeAction();
+        showToast('Частичная оплата сброшена');
+    }
+}
+function closeAction(){ document.getElementById('actionOverlay').classList.remove('active'); }
+
+async function savePartial(){
+    const c = credits.find(x => x.id === selectedCreditId);
+    if (!c) return;
+    const inp = parseFloat(document.getElementById('partialInput').value);
+    if (!inp || inp <= 0) { showToast('Введите сумму'); return; }
+    const newPartial = Math.min(c.amount, (c.partial || 0) + inp);
+    const newPaid = newPartial >= c.amount;
+    await updateCreditField(c.id, { partial: newPartial, paid: newPaid });
+    closeAction();
+    showToast(newPaid ? 'Кредит полностью оплачен' : 'Внесено ' + fmt(inp) + ' ₽');
+}
+
+function openEdit(){
+    const c = credits.find(x => x.id === selectedCreditId);
+    if (!c) return;
+    editMode = true; editId = selectedCreditId;
+    document.getElementById('nameInput').value = c.name;
+    document.getElementById('amountInput').value = c.amount;
+    document.getElementById('dayInput').value = c.day;
+    selectCat(c.category);
+    if (c.endDate) { setDateMode('cal'); document.getElementById('endDateCal').value = c.endDate; }
+    document.getElementById('formTitleText').innerText = 'Редактировать';
+    document.getElementById('formSaveBtn').innerText = 'Сохранить';
+    closeAction();
+    document.getElementById('formOverlay').classList.add('active');
+    updateFab(true);
+}
+
+function showDeleteConfirm(){ closeAction(); setTimeout(() => document.getElementById('deleteOverlay').classList.add('active'), 100); }
+function closeDelete(){ document.getElementById('deleteOverlay').classList.remove('active'); }
+async function doDelete(){ if(selectedCreditId){ await deleteCredit(selectedCreditId); showToast('Удалено'); } closeDelete(); selectedCreditId = null; }
+
+// ========== ФОРМА ДОБАВЛЕНИЯ ==========
+function toggleForm(){ const ov = document.getElementById('formOverlay'); if (!ov.classList.contains('active')) { ov.classList.add('active'); updateFab(true); } else closeForm(); }
+function closeForm(){ document.getElementById('formOverlay').classList.remove('active'); updateFab(false); resetForm(); _isSaving = false; }
+function resetForm(){
+    editMode = false; editId = null;
+    document.getElementById('nameInput').value = '';
+    document.getElementById('amountInput').value = '';
+    document.getElementById('dayInput').value = '';
+    document.getElementById('endDateCal').value = '';
+    document.getElementById('formTitleText').innerText = 'Новый кредит';
+    document.getElementById('formSaveBtn').innerText = 'Добавить';
+    document.getElementById('formSaveBtn').disabled = false;
+    selectCat('mortgage'); setDateMode('cal');
+}
+
+async function handleSave(){
+    if (_isSaving) return;
+    const name = document.getElementById('nameInput').value.trim();
+    const amount = parseFloat(document.getElementById('amountInput').value);
+    const day = parseInt(document.getElementById('dayInput').value);
+    if (!name) { showToast('Введите название'); return; }
+    if (!amount || amount <= 0) { showToast('Введите сумму'); return; }
+    if (!day || day < 1 || day > 31) { showToast('День оплаты: 1–31'); return; }
+
+    const isEdit = editMode;
+    const saveId = editId;
+    const saveCat = selectedCat;
+    const endDate = getEndDate();
+
+    _isSaving = true;
+    const saveBtn = document.getElementById('formSaveBtn');
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Сохранение...';
+
+    try {
+        const currentMonthKey = `${new Date().getMonth()}-${new Date().getFullYear()}`;
+        const creditData = { name, amount, day, category: saveCat, endDate };
+        if (isEdit && saveId) {
+            creditData.userId = authUser.uid;
+            await db.collection('credits').doc(saveId).update(creditData);
+            showToast('Кредит обновлён');
+        } else {
+            creditData.paid = false;
+            creditData.completed = false;
+            creditData.partial = 0;
+            creditData.lastResetMonth = currentMonthKey;
+            creditData.createdAt = new Date().toISOString();
+            creditData.userId = authUser.uid;
+            await db.collection('credits').add(creditData);
+            showToast('Кредит добавлен');
+        }
+        closeForm();
+        resetForm();
+    } catch (e) {
+        console.error(e);
+        showToast('Ошибка сохранения');
+    } finally {
+        _isSaving = false;
+        saveBtn.disabled = false;
+        saveBtn.textContent = isEdit ? 'Сохранить' : 'Добавить';
+    }
+}
+
+function selectCat(cat){ selectedCat = cat; document.querySelectorAll('.cat-item').forEach(el => el.classList.toggle('selected', el.dataset.cat === cat)); }
+function setDateMode(m){ dateMode = m; document.getElementById('dtBtnCal').classList.toggle('active', m === 'cal'); document.getElementById('dtBtnMan').classList.toggle('active', m === 'man'); document.getElementById('calInput').classList.toggle('active', m === 'cal'); document.getElementById('manInput').classList.toggle('active', m === 'man'); }
+function getEndDate(){
+    if (dateMode === 'cal') return document.getElementById('endDateCal').value || null;
+    const mo = document.getElementById('endMonth').value;
+    const yr = document.getElementById('endYear').value;
+    return (mo !== '' && yr) ? `${yr}-${String(parseInt(mo)+1).padStart(2, '0')}-01` : null;
+}
+
+function fabClick(e){ e.stopPropagation(); const fab = document.getElementById('fab'); if (fab.classList.contains('active')) { closeForm(); return; } fab.style.transform = 'scale(0.88)'; setTimeout(() => { fab.style.transform = ''; toggleForm(); }, 120); }
+function updateFab(active){ document.getElementById('fab').classList.toggle('active', active); }
+
+// ========== НАСТРОЙКИ ==========
 function gearClick(e) {
     e.stopPropagation();
     const btn = document.getElementById('settingsBtn');
@@ -750,72 +1078,78 @@ function gearClick(e) {
     svg.offsetHeight;
     svg.style.animation = '';
     btn.classList.add('spinning');
-    setTimeout(() => {
-        btn.classList.remove('spinning');
-        openSettings();
-    }, 520);
+    setTimeout(() => { btn.classList.remove('spinning'); openSettings(); }, 520);
+}
+function openSettings(){
+    if (authUser) {
+        const display = authUser.displayName || authUser.email.split('@')[0];
+        document.getElementById('settingsDisplayName').textContent = display;
+        document.getElementById('settingsEmail').textContent = authUser.email || '—';
+        updateEmailStatusUI();
+    }
+    updateSettingsUI();
+    document.getElementById('settingsOverlay').classList.add('active');
+}
+function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('active'); }
+
+function loadTheme(){ const t = ls.get(THEME_K); if (t) theme = t; applyTheme(); }
+function applyTheme(){ document.documentElement.setAttribute('data-theme', theme); if (!amountsVisible) { stopSpoilers(); startSpoilers(); } }
+function toggleThemeFromSettings(){ theme = theme === 'light' ? 'dark' : 'light'; applyTheme(); ls.set(THEME_K, theme); updateSettingsUI(); }
+
+function loadAmounts(){ const v = ls.get(AMT_K); if (v !== null) amountsVisible = v === 'true'; applyAmounts(); }
+function applyAmounts(){ document.body.classList.toggle('amounts-hidden', !amountsVisible); if (!amountsVisible) startSpoilers(); else stopSpoilers(); }
+function toggleAmountsFromSettings(){ amountsVisible = !amountsVisible; ls.set(AMT_K, amountsVisible); applyAmounts(); updateSettingsUI(); }
+
+const fontScales = { s:0.87, m:1, l:1.14 };
+function loadFontSize(){ const f = ls.get(FONT_K); if (f && fontScales[f]) fontSize = f; applyFont(); }
+function applyFont(){ document.documentElement.style.fontSize = (16 * fontScales[fontSize]) + 'px'; }
+function setFontSize(s){ fontSize = s; applyFont(); ls.set(FONT_K, s); if (!amountsVisible) { stopSpoilers(); startSpoilers(); } updateSettingsUI(); }
+
+function updateSettingsUI(){
+    const tt = document.getElementById('themeSwitchTrack');
+    if (theme === 'dark') tt.classList.add('dark-on'); else tt.classList.remove('dark-on');
+    const at = document.getElementById('amountsSwitchTrack');
+    if (!amountsVisible) at.classList.add('dark-on'); else at.classList.remove('dark-on');
+    document.querySelectorAll('.font-step').forEach(el => el.classList.toggle('active', el.getAttribute('data-size') === fontSize));
+    const hasPin = !!ls.get(PIN_K);
+    document.getElementById('lockStatusTitle').textContent = hasPin ? 'ПИН-код установлен' : 'Защита не установлена';
+    document.getElementById('lockStatusSub').textContent = hasPin ? 'Нажмите для изменения' : 'Нажмите для настройки';
+    document.getElementById('removeLockBtn').style.display = hasPin ? '' : 'none';
 }
 
-function openSettings(){ if(authUser){ const display=authUser.displayName||authUser.email.split('@')[0]; document.getElementById('settingsDisplayName').textContent=display; document.getElementById('settingsEmail').textContent=authUser.email||'—'; updateEmailStatusUI(); } updateSettingsUI(); document.getElementById('settingsOverlay').classList.add('active'); }
-function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('active'); }
-function loadTheme(){ const t=ls.get(THEME_K); if(t) theme=t; applyTheme(); }
-function applyTheme(){ document.documentElement.setAttribute('data-theme',theme); if(!amountsVisible){stopSpoilers();startSpoilers();} }
-function toggleThemeFromSettings(){ theme=theme==='light'?'dark':'light'; applyTheme(); ls.set(THEME_K,theme); updateSettingsUI(); }
-function loadAmounts(){ const v=ls.get(AMT_K); if(v!==null) amountsVisible=v==='true'; applyAmounts(); }
-function applyAmounts(){ document.body.classList.toggle('amounts-hidden',!amountsVisible); if(!amountsVisible) startSpoilers(); else stopSpoilers(); }
-function toggleAmountsFromSettings(){ amountsVisible=!amountsVisible; ls.set(AMT_K,amountsVisible); applyAmounts(); updateSettingsUI(); }
-const fontScales={s:0.87,m:1,l:1.14};
-function loadFontSize(){ const f=ls.get(FONT_K); if(f&&fontScales[f]) fontSize=f; applyFont(); }
-function applyFont(){ document.documentElement.style.fontSize=(16*fontScales[fontSize])+'px'; }
-function setFontSize(s){ fontSize=s; applyFont(); ls.set(FONT_K,s); if(!amountsVisible){stopSpoilers();startSpoilers();} updateSettingsUI(); }
-function updateSettingsUI(){ const tt=document.getElementById('themeSwitchTrack'); if(theme==='dark')tt.classList.add('dark-on'); else tt.classList.remove('dark-on'); const at=document.getElementById('amountsSwitchTrack'); if(!amountsVisible)at.classList.add('dark-on'); else at.classList.remove('dark-on'); document.querySelectorAll('.font-step').forEach(el=>el.classList.toggle('active',el.getAttribute('data-size')===fontSize)); const hasPin=!!ls.get(PIN_K); document.getElementById('lockStatusTitle').textContent=hasPin?'ПИН-код установлен':'Защита не установлена'; document.getElementById('lockStatusSub').textContent=hasPin?'Нажмите для изменения':'Нажмите для настройки'; document.getElementById('removeLockBtn').style.display=hasPin?'':'none'; }
-
 function updateEmailStatusUI() {
-    if(!authUser) return;
+    if (!authUser) return;
     const indicator = document.getElementById('emailStatusIndicator');
     const verifyBtn = document.getElementById('verifyEmailBtn');
-    if(authUser.emailVerified) {
+    if (authUser.emailVerified) {
         indicator.innerHTML = '<span>✓</span> Почта подтверждена';
         indicator.className = 'email-status verified';
-        if(verifyBtn) verifyBtn.style.display = 'none';
+        if (verifyBtn) verifyBtn.style.display = 'none';
     } else {
         indicator.innerHTML = '<span>⚠️</span> Почта не подтверждена';
         indicator.className = 'email-status unverified';
-        if(verifyBtn) verifyBtn.style.display = 'flex';
+        if (verifyBtn) verifyBtn.style.display = 'flex';
     }
 }
 
+// ========== АУТЕНТИФИКАЦИЯ (ИСПРАВЛЕННАЯ РЕГИСТРАЦИЯ) ==========
 async function resolveEmailFromNick(nick) {
     try {
         const doc = await db.collection('usernames').doc(nick.toLowerCase()).get();
         if (doc.exists && doc.data().email) return doc.data().email;
         return null;
-    } catch(e) {
-        console.error('resolveEmailFromNick error:', e);
-        return null;
-    }
+    } catch(e) { return null; }
 }
 
 async function sendVerificationEmail() {
-    if(!authUser) return;
-    if(authUser.emailVerified) {
-        showToast('Почта уже подтверждена');
-        updateEmailStatusUI();
-        return;
-    }
+    if (!authUser) return;
+    if (authUser.emailVerified) { showToast('Почта уже подтверждена'); updateEmailStatusUI(); return; }
     try {
-        await authUser.sendEmailVerification({
-            url: window.location.origin + window.location.pathname,
-            handleCodeInApp: false
-        });
+        await authUser.sendEmailVerification({ url: window.location.origin + window.location.pathname, handleCodeInApp: false });
         showToast('Письмо отправлено! Проверьте почту');
     } catch(e) {
-        console.error('sendVerificationEmail error:', e);
-        if(e.code === 'auth/too-many-requests') {
-            showToast('Слишком много запросов. Попробуйте позже');
-        } else {
-            showToast('Ошибка отправки письма');
-        }
+        if (e.code === 'auth/too-many-requests') showToast('Слишком много запросов. Попробуйте позже');
+        else showToast('Ошибка отправки письма');
     }
 }
 
@@ -826,102 +1160,87 @@ async function doAuth() {
 
     if (isLoginMode) {
         const loginOrEmail = document.getElementById('authEmailOrNick').value.trim();
-        if(!loginOrEmail || !pass) { showToast('Заполните все поля'); return; }
-
+        if (!loginOrEmail || !pass) { showToast('Заполните все поля'); return; }
         const btn = document.getElementById('authBtn');
-        btn.disabled = true;
-        btn.textContent = 'Подождите...';
-
+        btn.disabled = true; btn.textContent = 'Подождите...';
         try {
             let email = loginOrEmail;
             if (!loginOrEmail.includes('@')) {
                 const resolved = await resolveEmailFromNick(loginOrEmail);
-                if (!resolved) {
-                    showToast('Пользователь с таким логином не найден');
-                    btn.disabled = false; btn.textContent = 'Войти';
-                    return;
-                }
+                if (!resolved) { showToast('Пользователь с таким логином не найден'); btn.disabled = false; btn.textContent = 'Войти'; return; }
                 email = resolved;
             }
             const userCred = await auth.signInWithEmailAndPassword(email, pass);
             const user = userCred.user;
-            
-            // Сохраняем данные пользователя в Firestore
-            await db.collection('users').doc(user.uid).set({
-                email: user.email,
-                displayName: user.displayName,
-                emailVerified: user.emailVerified
-            }, { merge: true });
-            
-            if(user.displayName) {
-                await db.collection('usernames').doc(user.displayName.toLowerCase()).set({
-                    uid: user.uid,
-                    email: user.email
-                }, { merge: true });
+            await db.collection('users').doc(user.uid).set({ email: user.email, displayName: user.displayName, emailVerified: user.emailVerified }, { merge: true });
+            if (user.displayName) {
+                await db.collection('usernames').doc(user.displayName.toLowerCase()).set({ uid: user.uid, email: user.email }, { merge: true });
             }
-            
             const isNewDevice = !sessionStorage.getItem('session_started');
             if (isNewDevice) { ls.rm(PIN_K); ls.rm(PIN_LEN_K); }
         } catch(e) {
             let msg = 'Ошибка';
-            if (e.code==='auth/user-not-found' || e.code==='auth/wrong-password' || e.code==='auth/invalid-credential') msg = 'Неверный email/логин или пароль';
-            else if (e.code==='auth/invalid-email') msg = 'Некорректный email';
+            if (e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') msg = 'Неверный email/логин или пароль';
+            else if (e.code === 'auth/invalid-email') msg = 'Некорректный email';
             else msg = e.message;
             showToast(msg);
-            document.getElementById('authBtn').disabled = false;
-            document.getElementById('authBtn').textContent = 'Войти';
+            btn.disabled = false; btn.textContent = 'Войти';
         }
         return;
     }
 
-    // REGISTER MODE
+    // ===== РЕГИСТРАЦИЯ (ИСПРАВЛЕНО) =====
     const email = document.getElementById('authEmailOrNick').value.trim();
-
-    if(!email) { showToast('Введите email'); return; }
-    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast('Введите корректный email'); return; }
-    if(!login) { showToast('Введите логин'); return; }
-    if(!pass || !confirmPass) { showToast('Введите пароль и подтверждение'); return; }
-    if(pass !== confirmPass) { showToast('Пароли не совпадают'); return; }
-    if(pass.length < 6) { showToast('Пароль должен быть не менее 6 символов'); return; }
-    if(!login.match(/^[a-zA-Z0-9_]{3,20}$/)) { showToast('Логин: 3-20 символов (буквы, цифры, _)'); return; }
+    if (!email) { showToast('Введите email'); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast('Введите корректный email'); return; }
+    if (!login) { showToast('Введите логин'); return; }
+    if (!pass || !confirmPass) { showToast('Введите пароль и подтверждение'); return; }
+    if (pass !== confirmPass) { showToast('Пароли не совпадают'); return; }
+    if (pass.length < 6) { showToast('Пароль должен быть не менее 6 символов'); return; }
+    if (!login.match(/^[a-zA-Z0-9_]{3,20}$/)) { showToast('Логин: 3-20 символов (буквы, цифры, _)'); return; }
 
     const btn = document.getElementById('authBtn');
-    btn.disabled = true;
-    btn.textContent = 'Подождите...';
+    btn.disabled = true; btn.textContent = 'Создание аккаунта...';
 
+    let createdUser = null;
     try {
-        const loginLower = login.toLowerCase();
-        const existingLogin = await db.collection('usernames').doc(loginLower).get();
-        if (existingLogin.exists) { showToast('Логин уже занят'); btn.disabled=false; btn.textContent='Зарегистрироваться'; return; }
-
-        // Создаём аккаунт
+        // 1. Создаём аккаунт
         const userCred = await auth.createUserWithEmailAndPassword(email, pass);
-        const newUser = userCred.user;
-        
-        await newUser.updateProfile({ displayName: login });
-        
-        await db.collection('users').doc(newUser.uid).set({
-            email: email,
-            displayName: login,
-            emailVerified: false
+        createdUser = userCred.user;
+
+        // 2. Проверяем и резервируем ник (транзакция)
+        const loginLower = login.toLowerCase();
+        const usernameRef = db.collection('usernames').doc(loginLower);
+
+        try {
+            await db.runTransaction(async (transaction) => {
+                const doc = await transaction.get(usernameRef);
+                if (doc.exists) throw new Error('Логин уже занят');
+                transaction.set(usernameRef, { uid: createdUser.uid, email: email });
+            });
+        } catch (txError) {
+            // Ник занят — удаляем только что созданный аккаунт
+            await createdUser.delete();
+            throw txError;
+        }
+
+        // 3. Обновляем профиль и данные
+        await createdUser.updateProfile({ displayName: login });
+        await db.collection('users').doc(createdUser.uid).set({
+            email, displayName: login, emailVerified: false
         });
-        
-        await db.collection('usernames').doc(loginLower).set({
-            uid: newUser.uid,
-            email: email
-        });
-        
-        // Отправляем письмо для подтверждения email
-        await newUser.sendEmailVerification({
+
+        // 4. Отправляем письмо для подтверждения
+        await createdUser.sendEmailVerification({
             url: window.location.origin + window.location.pathname,
             handleCodeInApp: false
         });
-        
+
         showToast('✅ Аккаунт создан! На вашу почту отправлено письмо для подтверждения.');
-        
+
         // Выходим, чтобы пользователь подтвердил почту перед входом
         await auth.signOut();
-        
+
         // Переключаемся на форму входа
         isLoginMode = true;
         document.getElementById('authTitle').textContent = 'Войти в аккаунт';
@@ -930,17 +1249,17 @@ async function doAuth() {
         document.getElementById('authNameField').style.display = 'none';
         document.getElementById('authConfirmField').style.display = 'none';
         document.getElementById('authEmailOrNick').style.display = 'block';
-        document.getElementById('emailVerifyRow').style.display = 'none';
         document.querySelector('.auth-switch-link').innerHTML = 'Нет аккаунта? <span>Зарегистрироваться</span>';
         document.getElementById('emailFieldLabel').textContent = 'Email или Логин';
         document.getElementById('authEmailOrNick').placeholder = 'email@example.com или ваш логин';
         document.getElementById('authEmailOrNick').value = email;
-        
+
     } catch(e) {
         let msg = 'Ошибка';
-        if (e.code==='auth/email-already-in-use') msg = 'Этот email уже зарегистрирован';
-        else if (e.code==='auth/invalid-email') msg = 'Некорректный email';
-        else if (e.code==='auth/weak-password') msg = 'Пароль слишком простой (мин. 6 символов)';
+        if (e.message === 'Логин уже занят') msg = 'Логин уже занят';
+        else if (e.code === 'auth/email-already-in-use') msg = 'Этот email уже зарегистрирован';
+        else if (e.code === 'auth/invalid-email') msg = 'Некорректный email';
+        else if (e.code === 'auth/weak-password') msg = 'Пароль слишком простой (мин. 6 символов)';
         else msg = e.message;
         showToast(msg);
         btn.disabled = false;
@@ -949,57 +1268,64 @@ async function doAuth() {
 }
 
 async function doLogout(){
-    if(creditsUnsubscribe){creditsUnsubscribe();creditsUnsubscribe=null;}
+    if (creditsUnsubscribe) { creditsUnsubscribe(); creditsUnsubscribe = null; }
     await auth.signOut();
     closeSettings();
     sessionStorage.removeItem('pin_ok');
     sessionStorage.removeItem('session_started');
-    monthResetDone=false; credits=[];
+    monthResetDone = false; credits = [];
     render();
-    document.getElementById('authEmailOrNick').value='';
-    document.getElementById('authPassword').value='';
-    document.getElementById('authConfirmPassword').value='';
-    document.getElementById('authName').value='';
-    isLoginMode=true;
-    document.getElementById('authTitle').textContent='Войти в аккаунт';
-    document.getElementById('authBtn').textContent='Войти';
-    document.getElementById('authBtn').disabled=false;
-    document.getElementById('authNameField').style.display='none';
-    document.getElementById('authConfirmField').style.display='none';
-    document.getElementById('authEmailOrNick').style.display='block';
-    document.querySelector('.auth-switch-link').innerHTML='Нет аккаунта? <span>Зарегистрироваться</span>';
-    document.getElementById('emailFieldLabel').textContent='Email или Логин';
-    document.getElementById('authEmailOrNick').placeholder='email@example.com или ваш логин';
+    document.getElementById('authEmailOrNick').value = '';
+    document.getElementById('authPassword').value = '';
+    document.getElementById('authConfirmPassword').value = '';
+    document.getElementById('authName').value = '';
+    isLoginMode = true;
+    document.getElementById('authTitle').textContent = 'Войти в аккаунт';
+    document.getElementById('authBtn').textContent = 'Войти';
+    document.getElementById('authBtn').disabled = false;
+    document.getElementById('authNameField').style.display = 'none';
+    document.getElementById('authConfirmField').style.display = 'none';
+    document.getElementById('authEmailOrNick').style.display = 'block';
+    document.querySelector('.auth-switch-link').innerHTML = 'Нет аккаунта? <span>Зарегистрироваться</span>';
+    document.getElementById('emailFieldLabel').textContent = 'Email или Логин';
+    document.getElementById('authEmailOrNick').placeholder = 'email@example.com или ваш логин';
     document.getElementById('app').classList.remove('visible');
-    document.getElementById('authScreen').style.display='flex';
+    document.getElementById('authScreen').style.display = 'flex';
     showToast('Вы вышли из аккаунта');
 }
 
 function toggleAuthMode(){
-    isLoginMode=!isLoginMode;
-    document.getElementById('authTitle').textContent=isLoginMode?'Войти в аккаунт':'Создать аккаунт';
-    document.getElementById('authBtn').textContent=isLoginMode?'Войти':'Зарегистрироваться';
-    document.getElementById('authBtn').disabled=false;
-    document.getElementById('authNameField').style.display=isLoginMode?'none':'flex';
-    document.getElementById('authConfirmField').style.display=isLoginMode?'none':'flex';
-    document.getElementById('authEmailOrNick').style.display='block';
-    document.getElementById('emailFieldLabel').textContent=isLoginMode?'Email или Логин':'Email';
-    document.getElementById('authEmailOrNick').placeholder=isLoginMode?'email@example.com или ваш логин':'email@example.com';
-    const sw=document.querySelector('.auth-switch-link');
-    sw.innerHTML=isLoginMode?'Нет аккаунта? <span>Зарегистрироваться</span>':'Уже есть аккаунт? <span>Войти</span>';
-    
-    if(!isLoginMode) {
-        document.getElementById('authEmailOrNick').value='';
+    isLoginMode = !isLoginMode;
+    document.getElementById('authTitle').textContent = isLoginMode ? 'Войти в аккаунт' : 'Создать аккаунт';
+    document.getElementById('authBtn').textContent = isLoginMode ? 'Войти' : 'Зарегистрироваться';
+    document.getElementById('authBtn').disabled = false;
+    document.getElementById('authNameField').style.display = isLoginMode ? 'none' : 'flex';
+    document.getElementById('authConfirmField').style.display = isLoginMode ? 'none' : 'flex';
+    document.getElementById('authEmailOrNick').style.display = 'block';
+    const emailInput = document.getElementById('authEmailOrNick');
+    const emailLabel = document.getElementById('emailFieldLabel');
+    if (isLoginMode) {
+        emailInput.type = 'text';
+        emailInput.placeholder = 'email@example.com или ваш логин';
+        emailLabel.textContent = 'Email или Логин';
+    } else {
+        emailInput.type = 'email';
+        emailInput.placeholder = 'email@example.com';
+        emailLabel.textContent = 'Email';
     }
-    document.getElementById('authPassword').value='';
-    document.getElementById('authConfirmPassword').value='';
-    document.getElementById('authName').value='';
+    const sw = document.querySelector('.auth-switch-link');
+    sw.innerHTML = isLoginMode ? 'Нет аккаунта? <span>Зарегистрироваться</span>' : 'Уже есть аккаунт? <span>Войти</span>';
+    document.getElementById('authPassword').value = '';
+    document.getElementById('authConfirmPassword').value = '';
+    document.getElementById('authName').value = '';
+    if (!isLoginMode) emailInput.value = '';
 }
 
+// ========== РЕДАКТИРОВАНИЕ АККАУНТА ==========
 function openEditAccount() {
     closeSettings();
     setTimeout(() => {
-        if(authUser) {
+        if (authUser) {
             document.getElementById('editNickname').value = authUser.displayName || '';
             document.getElementById('editOldPass').value = '';
             document.getElementById('editNewPass').value = '';
@@ -1015,22 +1341,22 @@ async function saveAccountChanges() {
     const oldPass = document.getElementById('editOldPass').value;
     const newPass = document.getElementById('editNewPass').value;
     const confirmPass = document.getElementById('editConfirmPass').value;
-    if(!authUser) return;
+    if (!authUser) return;
     let updates = [];
-    if(newNick && newNick !== authUser.displayName) {
+    if (newNick && newNick !== authUser.displayName) {
         const newNickLower = newNick.toLowerCase();
-        if(!newNick.match(/^[a-zA-Z0-9_]{3,20}$/)) { showToast('Логин должен быть 3-20 символов (буквы, цифры, _)'); return; }
+        if (!newNick.match(/^[a-zA-Z0-9_]{3,20}$/)) { showToast('Логин должен быть 3-20 символов (буквы, цифры, _)'); return; }
         const existing = await db.collection('usernames').doc(newNickLower).get();
-        if(existing.exists && existing.data().uid !== authUser.uid) { showToast('Логин уже занят'); return; }
-        if(authUser.displayName) await db.collection('usernames').doc(authUser.displayName.toLowerCase()).delete();
+        if (existing.exists && existing.data().uid !== authUser.uid) { showToast('Логин уже занят'); return; }
+        if (authUser.displayName) await db.collection('usernames').doc(authUser.displayName.toLowerCase()).delete();
         await db.collection('usernames').doc(newNickLower).set({ uid: authUser.uid, email: authUser.email });
         updates.push(authUser.updateProfile({ displayName: newNick }));
         updates.push(db.collection('users').doc(authUser.uid).update({ displayName: newNick }));
     }
-    if(newPass) {
-        if(newPass.length < 6) { showToast('Новый пароль должен быть не менее 6 символов'); return; }
-        if(newPass !== confirmPass) { showToast('Новый пароль и подтверждение не совпадают'); return; }
-        if(!oldPass) { showToast('Для смены пароля введите текущий пароль'); return; }
+    if (newPass) {
+        if (newPass.length < 6) { showToast('Новый пароль должен быть не менее 6 символов'); return; }
+        if (newPass !== confirmPass) { showToast('Новый пароль и подтверждение не совпадают'); return; }
+        if (!oldPass) { showToast('Для смены пароля введите текущий пароль'); return; }
         const credential = firebase.auth.EmailAuthProvider.credential(authUser.email, oldPass);
         try { await authUser.reauthenticateWithCredential(credential); updates.push(authUser.updatePassword(newPass)); }
         catch(e) { showToast('Неверный текущий пароль'); return; }
@@ -1039,196 +1365,247 @@ async function saveAccountChanges() {
         await Promise.all(updates);
         showToast('Профиль обновлён');
         closeEditAccount();
-        if(authUser.displayName) document.getElementById('settingsDisplayName').textContent = authUser.displayName;
+        if (authUser.displayName) document.getElementById('settingsDisplayName').textContent = authUser.displayName;
         else document.getElementById('settingsDisplayName').textContent = authUser.email.split('@')[0];
         updateEmailStatusUI();
-    } catch(e) { showToast('Ошибка: '+e.message); }
+    } catch(e) { showToast('Ошибка: ' + e.message); }
 }
 
-function openDeleteAccount() {
-    closeSettings();
-    setTimeout(() => {
-        document.getElementById('deleteAccPass').value = '';
-        document.getElementById('deleteAccountOverlay').classList.add('active');
-    }, 200);
-}
+function openDeleteAccount() { closeSettings(); setTimeout(() => { document.getElementById('deleteAccPass').value = ''; document.getElementById('deleteAccountOverlay').classList.add('active'); }, 200); }
 function closeDeleteAccount() { document.getElementById('deleteAccountOverlay').classList.remove('active'); }
 
 async function doDeleteAccount() {
     const pass = document.getElementById('deleteAccPass').value;
-    if(!pass) { showToast('Введите пароль для подтверждения'); return; }
-    if(!authUser) return;
+    if (!pass) { showToast('Введите пароль для подтверждения'); return; }
+    if (!authUser) return;
     try {
         const credential = firebase.auth.EmailAuthProvider.credential(authUser.email, pass);
         await authUser.reauthenticateWithCredential(credential);
         const uid = authUser.uid;
         const displayName = authUser.displayName;
-        const creditsSnap = await db.collection('credits').where('userId','==',uid).get();
+        const creditsSnap = await db.collection('credits').where('userId', '==', uid).get();
         const batch = db.batch();
         creditsSnap.forEach(doc => batch.delete(doc.ref));
-        if(displayName) batch.delete(db.collection('usernames').doc(displayName.toLowerCase()));
+        if (displayName) batch.delete(db.collection('usernames').doc(displayName.toLowerCase()));
         batch.delete(db.collection('users').doc(uid));
         await batch.commit();
         await authUser.delete();
-        if(creditsUnsubscribe){creditsUnsubscribe();creditsUnsubscribe=null;}
-        sessionStorage.removeItem('pin_ok');
-        sessionStorage.removeItem('session_started');
+        if (creditsUnsubscribe) { creditsUnsubscribe(); creditsUnsubscribe = null; }
+        sessionStorage.removeItem('pin_ok'); sessionStorage.removeItem('session_started');
         ls.rm(PIN_K); ls.rm(PIN_LEN_K);
-        monthResetDone=false; credits=[]; authUser=null;
+        monthResetDone = false; credits = []; authUser = null;
         closeDeleteAccount();
         document.getElementById('app').classList.remove('visible');
-        document.getElementById('authScreen').style.display='flex';
+        document.getElementById('authScreen').style.display = 'flex';
         showToast('Аккаунт удалён');
     } catch(e) {
-        if(e.code==='auth/wrong-password'||e.code==='auth/invalid-credential') showToast('Неверный пароль');
-        else showToast('Ошибка: '+e.message);
+        if (e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') showToast('Неверный пароль');
+        else showToast('Ошибка: ' + e.message);
     }
 }
 
-function buildPinDots(cId,count,pfx){ const el=document.getElementById(cId); el.innerHTML=''; for(let i=0;i<count;i++){const d=document.createElement('div');d.className='pin-dot';d.id=pfx+i;el.appendChild(d);} }
-function fillPinDots(cId,pfx,filled,count){ for(let i=0;i<count;i++){const d=document.getElementById(pfx+i);if(d){d.classList.toggle('filled',i<filled);d.classList.remove('error');}} }
-function shakePinDots(cId,pfx,count){ for(let i=0;i<count;i++){const d=document.getElementById(pfx+i);if(d)d.classList.add('error');} const el=document.getElementById(cId);el.classList.add('shake');setTimeout(()=>el.classList.remove('shake'),400); }
-function hashPin(s){let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=(h*0x01000193)>>>0;}return h.toString(16);}
-function selectPinLen(n){ pinSetLen=n; document.querySelectorAll('.pin-len-btn').forEach(b=>b.classList.toggle('active',parseInt(b.textContent)===n)); pinSetBuf=''; buildPinDots('pinSetDots',n,'sd'); fillPinDots('pinSetDots','sd',0,n); }
-function pinSetKey(v){ if(pinSetBuf.length>=pinSetLen)return; pinSetBuf+=v; fillPinDots('pinSetDots','sd',pinSetBuf.length,pinSetLen); if(pinSetBuf.length===pinSetLen){ setTimeout(()=>{ if(pinSetStep===2){ if(hashPin(pinSetBuf)===ls.get(PIN_K)){ if(pinSetVerifyMode==='remove'){document.getElementById('pinSetOverlay').classList.remove('active');_removeLock();} else{pinSetBuf='';pinSetStep=0;pinSetVerifyMode=null;document.getElementById('pinSetTitle').textContent='Создайте новый ПИН-код';document.getElementById('pinSetSub').textContent='Выберите длину и введите цифры';document.getElementById('pinLenRow').style.display='';pinSetLen=4;selectPinLen(4);} } else{ document.getElementById('pinSetSub').textContent='Неверный ПИН-код';shakePinDots('pinSetDots','sd',pinSetLen);pinSetBuf='';setTimeout(()=>fillPinDots('pinSetDots','sd',0,pinSetLen),400); } } else if(pinSetStep===0){ pinSetFirst=pinSetBuf;pinSetBuf='';pinSetStep=1; document.getElementById('pinLenRow').style.display='none';document.getElementById('pinSetTitle').textContent='Повторите ПИН-код';document.getElementById('pinSetSub').textContent=`Введите ${pinSetLen} цифр ещё раз`;fillPinDots('pinSetDots','sd',0,pinSetLen); } else { if(pinSetBuf===pinSetFirst){ls.set(PIN_K,hashPin(pinSetBuf));ls.set(PIN_LEN_K,String(pinSetLen));document.getElementById('pinSetOverlay').classList.remove('active');updateSettingsUI();showToast('ПИН-код установлен');lockPanelOpen=false;document.getElementById('lockButtons').style.display='none';document.getElementById('lockStatusRow').classList.remove('open');} else{document.getElementById('pinSetSub').textContent='Коды не совпадают';shakePinDots('pinSetDots','sd',pinSetLen);pinSetBuf='';pinSetStep=0;pinSetFirst='';document.getElementById('pinLenRow').style.display='';buildPinDots('pinSetDots',pinSetLen,'sd');setTimeout(()=>fillPinDots('pinSetDots','sd',0,pinSetLen),400);} } },100); } }
-function pinSetDel(){pinSetBuf=pinSetBuf.slice(0,-1);fillPinDots('pinSetDots','sd',pinSetBuf.length,pinSetLen);}
-function openNewPin(){pinSetBuf='';pinSetStep=0;pinSetFirst='';pinSetLen=4;pinSetVerifyMode=null;document.getElementById('pinSetTitle').textContent='Создайте ПИН-код';document.getElementById('pinSetSub').textContent='Выберите длину и введите цифры';document.getElementById('pinLenRow').style.display='';buildPinDots('pinSetDots',pinSetLen,'sd');document.getElementById('pinSetOverlay').classList.add('active');}
-function openPinVerify(title,sub){pinSetBuf='';pinSetStep=2;const len=parseInt(ls.get(PIN_LEN_K))||4;pinSetLen=len;document.getElementById('pinSetTitle').textContent=title;document.getElementById('pinSetSub').textContent=sub;document.getElementById('pinLenRow').style.display='none';buildPinDots('pinSetDots',len,'sd');document.getElementById('pinSetOverlay').classList.add('active');}
-function cancelPinSet(){document.getElementById('pinSetOverlay').classList.remove('active');pinSetBuf='';pinSetStep=0;pinSetVerifyMode=null;}
-function openPinLock(){pinLockLen=parseInt(ls.get(PIN_LEN_K))||4;pinLockBuf='';document.getElementById('pinLockSub').textContent='Для входа в приложение';buildPinDots('pinLockDots',pinLockLen,'ld');fillPinDots('pinLockDots','ld',0,pinLockLen);document.getElementById('pinLockOverlay').classList.add('active');}
-function pinLockKey(v){ if(pinLockBuf.length>=pinLockLen)return; pinLockBuf+=v; fillPinDots('pinLockDots','ld',pinLockBuf.length,pinLockLen); if(pinLockBuf.length===pinLockLen){ setTimeout(()=>{ if(hashPin(pinLockBuf)===ls.get(PIN_K)){ sessionStorage.setItem('pin_ok','1');sessionStorage.setItem('session_started','1'); document.getElementById('pinLockOverlay').classList.remove('active'); document.getElementById('app').classList.add('visible'); loadCredits(); } else { document.getElementById('pinLockSub').textContent='Неверный ПИН-код';shakePinDots('pinLockDots','ld',pinLockLen);pinLockBuf=''; setTimeout(()=>{document.getElementById('pinLockSub').textContent='Для входа в приложение';fillPinDots('pinLockDots','ld',0,pinLockLen);},500); } },100); } }
-function pinLockDel(){pinLockBuf=pinLockBuf.slice(0,-1);fillPinDots('pinLockDots','ld',pinLockBuf.length,pinLockLen);}
-function startSetPin(){const s=ls.get(PIN_K);if(s){pinSetVerifyMode='change';openPinVerify('Введите текущий ПИН','Для смены защиты');}else openNewPin();}
-function doRemoveLock(){const s=ls.get(PIN_K);if(s){pinSetVerifyMode='remove';openPinVerify('Подтвердите удаление','Введите текущий ПИН-код');}else _removeLock();}
-function _removeLock(){ls.rm(PIN_K);ls.rm(PIN_LEN_K);lockPanelOpen=false;document.getElementById('lockButtons').style.display='none';document.getElementById('lockStatusRow').classList.remove('open');updateSettingsUI();showToast('Защита снята');}
-function toggleLockPanel(){lockPanelOpen=!lockPanelOpen;document.getElementById('lockButtons').style.display=lockPanelOpen?'':'none';document.getElementById('lockStatusRow').classList.toggle('open',lockPanelOpen);}
+// ========== ПИН-КОД С КРИПТОГРАФИЕЙ ==========
+async function hashPin(pin) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(pin + PIN_SALT);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
 
-let spoilerRAF=null; const spoilerMap=new Map();
-function makeDotColor(){const dark=theme==='dark';const v=dark?(160+Math.random()*90)|0:(50+Math.random()*80)|0;return `rgba(${v},${v},${v},${(0.08+Math.random()*0.22).toFixed(2)})`;}
-function initSpoilerCanvas(el){if(el.querySelector('.spoiler-canvas'))return;const cv=document.createElement('canvas');cv.className='spoiler-canvas';el.appendChild(cv);const r=el.getBoundingClientRect();cv.width=r.width+8;cv.height=r.height+4;const count=Math.ceil((cv.width*cv.height)/6);const pts=[];for(let i=0;i<count;i++)pts.push({x:Math.random()*cv.width,y:Math.random()*cv.height,r:0.5+Math.random()*1.1,vx:(Math.random()-0.5)*0.35,vy:(Math.random()-0.5)*0.35,color:makeDotColor()});spoilerMap.set(cv,pts);}
-function animateSpoilers(){document.querySelectorAll('.spoiler-canvas').forEach(cv=>{const pts=spoilerMap.get(cv);if(!pts)return;const ctx=cv.getContext('2d');ctx.clearRect(0,0,cv.width,cv.height);pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=cv.width;else if(p.x>cv.width)p.x=0;if(p.y<0)p.y=cv.height;else if(p.y>cv.height)p.y=0;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=p.color;ctx.fill();});});spoilerRAF=requestAnimationFrame(animateSpoilers);}
-function startSpoilers(){document.querySelectorAll('.credit-amount,.total-val,.s-amount,.s-paid-val,.s-remain-val').forEach(initSpoilerCanvas);if(!spoilerRAF)spoilerRAF=requestAnimationFrame(animateSpoilers);}
-function stopSpoilers(){if(spoilerRAF){cancelAnimationFrame(spoilerRAF);spoilerRAF=null;}document.querySelectorAll('.spoiler-canvas').forEach(cv=>{spoilerMap.delete(cv);cv.remove();});}
+function buildPinDots(cId, count, pfx){ const el = document.getElementById(cId); el.innerHTML = ''; for (let i = 0; i < count; i++) { const d = document.createElement('div'); d.className = 'pin-dot'; d.id = pfx + i; el.appendChild(d); } }
+function fillPinDots(cId, pfx, filled, count){ for (let i = 0; i < count; i++) { const d = document.getElementById(pfx + i); if (d) { d.classList.toggle('filled', i < filled); d.classList.remove('error'); } } }
+function shakePinDots(cId, pfx, count){ for (let i = 0; i < count; i++) { const d = document.getElementById(pfx + i); if (d) d.classList.add('error'); } const el = document.getElementById(cId); el.classList.add('shake'); setTimeout(() => el.classList.remove('shake'), 400); }
 
-function toggleCompleted(){ const list=document.getElementById('completedList'); const arrow=document.getElementById('completedArrow'); const open=!list.classList.contains('open'); list.classList.toggle('open',open); arrow.classList.toggle('open',open); if(open){ const cm=new Date().getMonth(),cy=new Date().getFullYear(); list.innerHTML=''; const frag=document.createDocumentFragment(); credits.filter(c=>c.completed).forEach(c=>frag.appendChild(buildCreditItem(c,cm,cy))); list.appendChild(frag); } }
-function showToast(msg){document.querySelectorAll('.toast').forEach(t=>t.remove());const d=document.createElement('div');d.className='toast';d.textContent=msg;document.body.appendChild(d);setTimeout(()=>d.remove(),2200);}
-function closeAllPaid(){document.getElementById('allPaidOverlay').classList.remove('active');}
-function fmt(n){return Math.round(n).toLocaleString('ru-RU');}
-function esc(t){const d=document.createElement('div');d.textContent=t;return d.innerHTML;}
+function selectPinLen(n){ pinSetLen = n; document.querySelectorAll('.pin-len-btn').forEach(b => b.classList.toggle('active', parseInt(b.textContent) === n)); pinSetBuf = ''; buildPinDots('pinSetDots', n, 'sd'); fillPinDots('pinSetDots', 'sd', 0, n); }
 
-function setupBackBtn(){ document.addEventListener('backbutton',()=>{ if(document.getElementById('editAccountOverlay').classList.contains('active')){closeEditAccount();return;} if(document.getElementById('deleteAccountOverlay').classList.contains('active')){closeDeleteAccount();return;} if(document.getElementById('deleteOverlay').classList.contains('active')){closeDelete();return;} if(document.getElementById('actionOverlay').classList.contains('active')){closeAction();return;} if(document.getElementById('formOverlay').classList.contains('active')){closeForm();return;} if(document.getElementById('settingsOverlay').classList.contains('active')){closeSettings();return;} if(backPressedOnce){navigator.app&&navigator.app.exitApp();return;} backPressedOnce=true;showToast('Нажмите ещё раз для выхода');setTimeout(()=>backPressedOnce=false,2000);}); }
+async function pinSetKey(v) {
+    if (pinSetBuf.length >= pinSetLen) return;
+    pinSetBuf += v;
+    fillPinDots('pinSetDots', 'sd', pinSetBuf.length, pinSetLen);
+    if (pinSetBuf.length === pinSetLen) {
+        setTimeout(async () => {
+            if (pinSetStep === 2) {
+                const hashed = await hashPin(pinSetBuf);
+                if (hashed === ls.get(PIN_K)) {
+                    if (pinSetVerifyMode === 'remove') { document.getElementById('pinSetOverlay').classList.remove('active'); _removeLock(); }
+                    else { pinSetBuf = ''; pinSetStep = 0; pinSetVerifyMode = null; document.getElementById('pinSetTitle').textContent = 'Создайте новый ПИН-код'; document.getElementById('pinSetSub').textContent = 'Выберите длину и введите цифры'; document.getElementById('pinLenRow').style.display = ''; pinSetLen = 4; selectPinLen(4); }
+                } else {
+                    document.getElementById('pinSetSub').textContent = 'Неверный ПИН-код';
+                    shakePinDots('pinSetDots', 'sd', pinSetLen);
+                    pinSetBuf = '';
+                    setTimeout(() => fillPinDots('pinSetDots', 'sd', 0, pinSetLen), 400);
+                }
+            } else if (pinSetStep === 0) {
+                pinSetFirst = pinSetBuf; pinSetBuf = ''; pinSetStep = 1;
+                document.getElementById('pinLenRow').style.display = 'none';
+                document.getElementById('pinSetTitle').textContent = 'Повторите ПИН-код';
+                document.getElementById('pinSetSub').textContent = `Введите ${pinSetLen} цифр ещё раз`;
+                fillPinDots('pinSetDots', 'sd', 0, pinSetLen);
+            } else {
+                if (pinSetBuf === pinSetFirst) {
+                    const hashed = await hashPin(pinSetBuf);
+                    ls.set(PIN_K, hashed);
+                    ls.set(PIN_LEN_K, String(pinSetLen));
+                    document.getElementById('pinSetOverlay').classList.remove('active');
+                    updateSettingsUI();
+                    showToast('ПИН-код установлен');
+                    lockPanelOpen = false;
+                    document.getElementById('lockButtons').style.display = 'none';
+                    document.getElementById('lockStatusRow').classList.remove('open');
+                } else {
+                    document.getElementById('pinSetSub').textContent = 'Коды не совпадают';
+                    shakePinDots('pinSetDots', 'sd', pinSetLen);
+                    pinSetBuf = ''; pinSetStep = 0; pinSetFirst = '';
+                    document.getElementById('pinLenRow').style.display = '';
+                    buildPinDots('pinSetDots', pinSetLen, 'sd');
+                    setTimeout(() => fillPinDots('pinSetDots', 'sd', 0, pinSetLen), 400);
+                }
+            }
+        }, 100);
+    }
+}
 
-function evaluateLaunch(){ if(!authResolved||!splashTimerDone)return; document.getElementById('splash').classList.add('hidden'); if(authUser){ document.getElementById('authScreen').style.display='none'; const hasPin=ls.get(PIN_K); if(hasPin&&!sessionStorage.getItem('pin_ok')){openPinLock();} else{sessionStorage.setItem('pin_ok','1');sessionStorage.setItem('session_started','1');document.getElementById('app').classList.add('visible');loadCredits();} } else { document.getElementById('app').classList.remove('visible'); document.getElementById('authScreen').style.display='flex'; } }
+function pinSetDel(){ pinSetBuf = pinSetBuf.slice(0, -1); fillPinDots('pinSetDots', 'sd', pinSetBuf.length, pinSetLen); }
+function openNewPin(){ pinSetBuf = ''; pinSetStep = 0; pinSetFirst = ''; pinSetLen = 4; pinSetVerifyMode = null; document.getElementById('pinSetTitle').textContent = 'Создайте ПИН-код'; document.getElementById('pinSetSub').textContent = 'Выберите длину и введите цифры'; document.getElementById('pinLenRow').style.display = ''; buildPinDots('pinSetDots', pinSetLen, 'sd'); document.getElementById('pinSetOverlay').classList.add('active'); }
+function openPinVerify(title, sub){ pinSetBuf = ''; pinSetStep = 2; const len = parseInt(ls.get(PIN_LEN_K)) || 4; pinSetLen = len; document.getElementById('pinSetTitle').textContent = title; document.getElementById('pinSetSub').textContent = sub; document.getElementById('pinLenRow').style.display = 'none'; buildPinDots('pinSetDots', len, 'sd'); document.getElementById('pinSetOverlay').classList.add('active'); }
+function cancelPinSet(){ document.getElementById('pinSetOverlay').classList.remove('active'); pinSetBuf = ''; pinSetStep = 0; pinSetVerifyMode = null; }
 
-(function setupResume(){ let _hidden=false; window.addEventListener('beforeunload',e=>{e.preventDefault();e.returnValue='';return '';},true); function _resume(){ if(!window._fbAppInited||!auth||!db)return; db.enableNetwork().then(()=>{ const u=auth.currentUser; if(u){ authUser=u; if(creditsUnsubscribe){creditsUnsubscribe();creditsUnsubscribe=null;} loadCredits(); } }).catch(()=>{}); } document.addEventListener('visibilitychange',()=>{ if(document.hidden){ if(window._fbAppInited&&db) db.disableNetwork().catch(()=>{}); _hidden=true; return; } if(!_hidden)return; _hidden=false; setTimeout(_resume,800); }); document.addEventListener('resume',()=>setTimeout(_resume,800),false); })();
+function openPinLock(){
+    pinLockLen = parseInt(ls.get(PIN_LEN_K)) || 4; pinLockBuf = '';
+    document.getElementById('pinLockSub').textContent = 'Для входа в приложение';
+    buildPinDots('pinLockDots', pinLockLen, 'ld');
+    fillPinDots('pinLockDots', 'ld', 0, pinLockLen);
+    document.getElementById('pinLockOverlay').classList.add('active');
+}
 
-window.onload=()=>{
+async function pinLockKey(v){
+    if (pinLockBuf.length >= pinLockLen) return;
+    pinLockBuf += v;
+    fillPinDots('pinLockDots', 'ld', pinLockBuf.length, pinLockLen);
+    if (pinLockBuf.length === pinLockLen) {
+        setTimeout(async () => {
+            const hashed = await hashPin(pinLockBuf);
+            if (hashed === ls.get(PIN_K)) {
+                sessionStorage.setItem('pin_ok', '1'); sessionStorage.setItem('session_started', '1');
+                document.getElementById('pinLockOverlay').classList.remove('active');
+                document.getElementById('app').classList.add('visible');
+                loadCredits();
+            } else {
+                document.getElementById('pinLockSub').textContent = 'Неверный ПИН-код';
+                shakePinDots('pinLockDots', 'ld', pinLockLen);
+                pinLockBuf = '';
+                setTimeout(() => { document.getElementById('pinLockSub').textContent = 'Для входа в приложение'; fillPinDots('pinLockDots', 'ld', 0, pinLockLen); }, 500);
+            }
+        }, 100);
+    }
+}
+function pinLockDel(){ pinLockBuf = pinLockBuf.slice(0, -1); fillPinDots('pinLockDots', 'ld', pinLockBuf.length, pinLockLen); }
+
+function startSetPin(){ const s = ls.get(PIN_K); if (s) { pinSetVerifyMode = 'change'; openPinVerify('Введите текущий ПИН', 'Для смены защиты'); } else openNewPin(); }
+function doRemoveLock(){ const s = ls.get(PIN_K); if (s) { pinSetVerifyMode = 'remove'; openPinVerify('Подтвердите удаление', 'Введите текущий ПИН-код'); } else _removeLock(); }
+function _removeLock(){ ls.rm(PIN_K); ls.rm(PIN_LEN_K); lockPanelOpen = false; document.getElementById('lockButtons').style.display = 'none'; document.getElementById('lockStatusRow').classList.remove('open'); updateSettingsUI(); showToast('Защита снята'); }
+function toggleLockPanel(){ lockPanelOpen = !lockPanelOpen; document.getElementById('lockButtons').style.display = lockPanelOpen ? '' : 'none'; document.getElementById('lockStatusRow').classList.toggle('open', lockPanelOpen); }
+
+// ========== СПОЙЛЕРЫ ==========
+let spoilerRAF = null; const spoilerMap = new Map();
+function makeDotColor(){ const dark = theme === 'dark'; const v = dark ? (160 + Math.random() * 90) | 0 : (50 + Math.random() * 80) | 0; return `rgba(${v},${v},${v},${(0.08 + Math.random() * 0.22).toFixed(2)})`; }
+function initSpoilerCanvas(el){ if (el.querySelector('.spoiler-canvas')) return; const cv = document.createElement('canvas'); cv.className = 'spoiler-canvas'; el.appendChild(cv); const r = el.getBoundingClientRect(); cv.width = r.width + 8; cv.height = r.height + 4; const count = Math.ceil((cv.width * cv.height) / 6); const pts = []; for (let i = 0; i < count; i++) pts.push({ x: Math.random() * cv.width, y: Math.random() * cv.height, r: 0.5 + Math.random() * 1.1, vx: (Math.random() - 0.5) * 0.35, vy: (Math.random() - 0.5) * 0.35, color: makeDotColor() }); spoilerMap.set(cv, pts); }
+function animateSpoilers(){ document.querySelectorAll('.spoiler-canvas').forEach(cv => { const pts = spoilerMap.get(cv); if (!pts) return; const ctx = cv.getContext('2d'); ctx.clearRect(0, 0, cv.width, cv.height); pts.forEach(p => { p.x += p.vx; p.y += p.vy; if (p.x < 0) p.x = cv.width; else if (p.x > cv.width) p.x = 0; if (p.y < 0) p.y = cv.height; else if (p.y > cv.height) p.y = 0; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fillStyle = p.color; ctx.fill(); }); }); spoilerRAF = requestAnimationFrame(animateSpoilers); }
+function startSpoilers(){ document.querySelectorAll('.credit-amount,.total-val,.s-amount,.s-paid-val,.s-remain-val').forEach(initSpoilerCanvas); if (!spoilerRAF) spoilerRAF = requestAnimationFrame(animateSpoilers); }
+function stopSpoilers(){ if (spoilerRAF) { cancelAnimationFrame(spoilerRAF); spoilerRAF = null; } document.querySelectorAll('.spoiler-canvas').forEach(cv => { spoilerMap.delete(cv); cv.remove(); }); }
+
+// ========== ЗАВЕРШЁННЫЕ КРЕДИТЫ ==========
+function toggleCompleted(){ const list = document.getElementById('completedList'); const arrow = document.getElementById('completedArrow'); const open = !list.classList.contains('open'); list.classList.toggle('open', open); arrow.classList.toggle('open', open); if (open) { const cm = new Date().getMonth(), cy = new Date().getFullYear(); list.innerHTML = ''; const frag = document.createDocumentFragment(); credits.filter(c => c.completed).forEach(c => frag.appendChild(buildCreditItem(c, cm, cy))); list.appendChild(frag); } }
+function closeAllPaid(){ document.getElementById('allPaidOverlay').classList.remove('active'); }
+
+// ========== ЗАПУСК ==========
+function evaluateLaunch(){
+    if (!authResolved || !splashTimerDone) return;
+    document.getElementById('splash').classList.add('hidden');
+    if (authUser) {
+        document.getElementById('authScreen').style.display = 'none';
+        const hasPin = ls.get(PIN_K);
+        if (hasPin && !sessionStorage.getItem('pin_ok')) { openPinLock(); }
+        else { sessionStorage.setItem('pin_ok', '1'); sessionStorage.setItem('session_started', '1'); document.getElementById('app').classList.add('visible'); loadCredits(); }
+    } else {
+        document.getElementById('app').classList.remove('visible');
+        document.getElementById('authScreen').style.display = 'flex';
+    }
+}
+
+function setupBackBtn(){
+    document.addEventListener('backbutton', () => {
+        if (document.getElementById('editAccountOverlay').classList.contains('active')) { closeEditAccount(); return; }
+        if (document.getElementById('deleteAccountOverlay').classList.contains('active')) { closeDeleteAccount(); return; }
+        if (document.getElementById('deleteOverlay').classList.contains('active')) { closeDelete(); return; }
+        if (document.getElementById('actionOverlay').classList.contains('active')) { closeAction(); return; }
+        if (document.getElementById('formOverlay').classList.contains('active')) { closeForm(); return; }
+        if (document.getElementById('settingsOverlay').classList.contains('active')) { closeSettings(); return; }
+        if (backPressedOnce) { navigator.app && navigator.app.exitApp(); return; }
+        backPressedOnce = true; showToast('Нажмите ещё раз для выхода'); setTimeout(() => backPressedOnce = false, 2000);
+    });
+}
+
+window.onload = () => {
     loadTheme(); loadFontSize(); loadAmounts(); setupBackBtn();
     selectCat('mortgage'); setDateMode('cal');
-    document.getElementById('endMonth').value=new Date().getMonth();
-    document.getElementById('endYear').value=new Date().getFullYear()+1;
-    buildPinDots('pinSetDots',4,'sd');
-    const noSplash=document.documentElement.classList.contains('no-splash');
-    if(noSplash){splashTimerDone=true;evaluateLaunch();}
-    else setTimeout(()=>{splashTimerDone=true;evaluateLaunch();},1000);
-    setTimeout(()=>{if(!authResolved){authResolved=true;authUser=null;evaluateLaunch();}},6000);
+    document.getElementById('endMonth').value = new Date().getMonth();
+    document.getElementById('endYear').value = new Date().getFullYear() + 1;
+    buildPinDots('pinSetDots', 4, 'sd');
+    const noSplash = document.documentElement.classList.contains('no-splash');
+    if (noSplash) { splashTimerDone = true; evaluateLaunch(); }
+    else setTimeout(() => { splashTimerDone = true; evaluateLaunch(); }, 1000);
+    setTimeout(() => { if (!authResolved) { authResolved = true; authUser = null; evaluateLaunch(); } }, 6000);
 };
 
-document.getElementById('lockStatusRow').onclick=e=>{toggleLockPanel();e.stopPropagation();};
+document.getElementById('lockStatusRow').onclick = e => { toggleLockPanel(); e.stopPropagation(); };
 
-document.addEventListener('DOMContentLoaded',()=>{
-    function bindPad(padId,keyFn,delId,delFn){
-        const pad=document.getElementById(padId); if(!pad)return;
-        const handle=(btn,e)=>{e.preventDefault();btn.classList.add('pressed');setTimeout(()=>btn.classList.remove('pressed'),100);const v=btn.getAttribute('data-v');if(v!==null)keyFn(v);else if(btn.id===delId)delFn();};
-        pad.addEventListener('touchstart',e=>{const btn=e.target.closest('.pin-key');if(!btn||btn.classList.contains('empty'))return;handle(btn,e);},{passive:false});
-        pad.addEventListener('mousedown',e=>{const btn=e.target.closest('.pin-key');if(!btn||btn.classList.contains('empty'))return;handle(btn,e);});
+document.addEventListener('DOMContentLoaded', () => {
+    function bindPad(padId, keyFn, delId, delFn) {
+        const pad = document.getElementById(padId); if (!pad) return;
+        const handle = (btn, e) => { e.preventDefault(); btn.classList.add('pressed'); setTimeout(() => btn.classList.remove('pressed'), 100); const v = btn.getAttribute('data-v'); if (v !== null) keyFn(v); else if (btn.id === delId) delFn(); };
+        pad.addEventListener('touchstart', e => { const btn = e.target.closest('.pin-key'); if (!btn || btn.classList.contains('empty')) return; handle(btn, e); }, { passive: false });
+        pad.addEventListener('mousedown', e => { const btn = e.target.closest('.pin-key'); if (!btn || btn.classList.contains('empty')) return; handle(btn, e); });
     }
-    bindPad('pinSetPad',pinSetKey,'pinSetDel',pinSetDel);
-    bindPad('pinLockPad',pinLockKey,'pinLockDel',pinLockDel);
+    bindPad('pinSetPad', pinSetKey, 'pinSetDel', pinSetDel);
+    bindPad('pinLockPad', pinLockKey, 'pinLockDel', pinLockDel);
 });
 
-if(typeof firebase!=='undefined') _initFirebase();
+if (typeof firebase !== 'undefined') _initFirebase();
+setTimeout(() => { if (!window._fbAppInited) { const splash = document.getElementById('splash'); if (splash) { splash.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;padding:32px;text-align:center"><div style="font-size:3rem">📶</div><div style="color:#fff;font-size:1.1rem;font-weight:700">Нет подключения к сети</div><div style="color:rgba(255,255,255,0.6);font-size:0.85rem">Для работы приложения необходим интернет. Проверьте соединение и попробуйте снова.</div></div>`; splash.style.opacity = '1'; splash.style.visibility = 'visible'; } } }, 8000);
 
-setTimeout(()=>{ if(!window._fbAppInited){ const splash=document.getElementById('splash'); if(splash){splash.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;padding:32px;text-align:center"><div style="font-size:3rem">📶</div><div style="color:#fff;font-size:1.1rem;font-weight:700">Нет подключения к сети</div><div style="color:rgba(255,255,255,0.6);font-size:0.85rem">Для работы приложения необходим интернет. Проверьте соединение и попробуйте снова.</div></div>`;splash.style.opacity='1';splash.style.visibility='visible';} } },8000);
-
+// ========== PWA ==========
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function() {
-    navigator.serviceWorker.register('./sw.js').then(function(registration) {
-      console.log('ServiceWorker registration successful');
-
-      // Проверяем обновления при каждом возвращении на страницу (вкладка становится активной)
-      document.addEventListener('visibilitychange', () => {
-        if (!document.hidden) {
-          console.log('Проверка обновлений...');
-          registration.update();
-        }
-      });
-
-      // Также проверяем при первом запуске (уже есть)
-      registration.update();
-
-      let newWorker = null;
-      registration.addEventListener('updatefound', () => {
-        newWorker = registration.installing;
-        newWorker.addEventListener('statechange', () => {
-          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            showUpdateNotification();
-          }
-        });
-      });
-    }).catch(function(err) {
-      console.log('ServiceWorker registration failed: ', err);
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('./sw.js').then(function(registration) {
+            console.log('ServiceWorker registration successful');
+            document.addEventListener('visibilitychange', () => { if (!document.hidden) registration.update(); });
+            registration.update();
+            let newWorker = null;
+            registration.addEventListener('updatefound', () => {
+                newWorker = registration.installing;
+                newWorker.addEventListener('statechange', () => { if (newWorker.state === 'installed' && navigator.serviceWorker.controller) showUpdateNotification(); });
+            });
+        }).catch(function(err) { console.log('ServiceWorker registration failed: ', err); });
     });
-  });
 }
 
 function showUpdateNotification() {
-  const toast = document.createElement('div');
-  toast.className = 'toast';
-  toast.style.bottom = '120px';
-  toast.style.background = '#FFDD2D';
-  toast.style.color = '#1A1A1A';
-  toast.style.cursor = 'pointer';
-  toast.style.zIndex = '10001';
-  toast.innerHTML = '🔄 Доступна новая версия. Нажмите для обновления';
-  toast.onclick = () => {
-    window.location.reload();
-  };
-  document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 10000);
+    const toast = document.createElement('div');
+    toast.className = 'toast'; toast.style.bottom = '120px'; toast.style.background = '#FFDD2D'; toast.style.color = '#1A1A1A'; toast.style.cursor = 'pointer'; toast.style.zIndex = '10001';
+    toast.innerHTML = '🔄 Доступна новая версия. Нажмите для обновления';
+    toast.onclick = () => { window.location.reload(); };
+    document.body.appendChild(toast); setTimeout(() => toast.remove(), 10000);
 }
 
-
-
-// Простая и надёжная кнопка установки
 const installBtn = document.getElementById('installBtn');
 let deferredPrompt = null;
-
-// Если приложение уже открыто в режиме standalone (PWA), скрываем кнопку и выходим
-if (window.matchMedia('(display-mode: standalone)').matches) {
-  installBtn.style.display = 'none';
-} else {
-  // Для Android: перехватываем событие beforeinstallprompt (только если PWA не установлено)
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    installBtn.style.display = 'inline-block';
-    installBtn.onclick = () => {
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
-    };
-  });
-
-  // Для iOS: показываем кнопку с инструкцией (alert только на iOS)
-  if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-    installBtn.style.display = 'inline-block';
-    installBtn.onclick = () => {
-      alert('Нажмите «Поделиться» → «На экран «Домой»»');
-    };
-  }
+if (window.matchMedia('(display-mode: standalone)').matches) { installBtn.style.display = 'none'; }
+else {
+    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; installBtn.style.display = 'inline-block'; installBtn.onclick = () => { deferredPrompt.prompt(); deferredPrompt.userChoice.then(() => { deferredPrompt = null; }); }; });
+    if (/iPhone|iPad|iPod/.test(navigator.userAgent)) { installBtn.style.display = 'inline-block'; installBtn.onclick = () => { alert('Нажмите «Поделиться» → «На экран «Домой»»'); }; }
 }
-
-
 </script>
 </body>
 </html>
