@@ -460,16 +460,13 @@
         <div id="splashStatus">Загрузка...</div>
         <button class="splash-reload-btn" id="splashReloadBtn" onclick="location.reload()">🔄 Перезагрузить</button>
     </div>
-    <div class="splash-version">Версия 1.04</div>
+    <div class="splash-version">Версия 1.05</div>
 </div>
 
 <div class="offline-banner" id="offlineBanner">⚠️ Нет подключения к сети</div>
+<div class="global-loader" id="globalLoader" style="display: none;"><div class="loader-spinner"></div><div>Загрузка данных...</div></div>
 
-<div class="global-loader" id="globalLoader" style="display: none;">
-    <div class="loader-spinner"></div>
-    <div>Загрузка данных...</div>
-</div>
-
+<!-- Auth screen -->
 <div class="auth-screen" id="authScreen">
     <div class="auth-logo-area">
         <img class="auth-logo-img" src="logo.png" alt="Logo" onerror="this.style.display='none'">
@@ -479,22 +476,10 @@
         <div class="auth-sheet-handle"></div>
         <div class="auth-sheet-title" id="authTitle">Войти в аккаунт</div>
         <div class="auth-input-group">
-            <div class="auth-field" id="authNameField" style="display:none;">
-                <div class="auth-field-label">Логин (уникальный)</div>
-                <input type="text" id="authName" placeholder="Введите логин" autocomplete="off">
-            </div>
-            <div class="auth-field">
-                <div class="auth-field-label" id="emailFieldLabel">Email или Логин</div>
-                <input type="text" id="authEmailOrNick" placeholder="email@example.com или ваш логин" autocomplete="off">
-            </div>
-            <div class="auth-field">
-                <div class="auth-field-label">Пароль</div>
-                <input type="password" id="authPassword" placeholder="Введите пароль" autocomplete="current-password">
-            </div>
-            <div class="auth-field" id="authConfirmField" style="display:none;">
-                <div class="auth-field-label">Подтвердите пароль</div>
-                <input type="password" id="authConfirmPassword" placeholder="Повторите пароль" autocomplete="new-password">
-            </div>
+            <div class="auth-field" id="authNameField" style="display:none;"><div class="auth-field-label">Логин (уникальный)</div><input type="text" id="authName" placeholder="Введите логин" autocomplete="off"></div>
+            <div class="auth-field"><div class="auth-field-label" id="emailFieldLabel">Email или Логин</div><input type="text" id="authEmailOrNick" placeholder="email@example.com или ваш логин" autocomplete="off"></div>
+            <div class="auth-field"><div class="auth-field-label">Пароль</div><input type="password" id="authPassword" placeholder="Введите пароль" autocomplete="current-password"></div>
+            <div class="auth-field" id="authConfirmField" style="display:none;"><div class="auth-field-label">Подтвердите пароль</div><input type="password" id="authConfirmPassword" placeholder="Повторите пароль" autocomplete="new-password"></div>
         </div>
         <button class="auth-submit-btn" id="authBtn" onclick="doAuth()">Войти</button>
         <div class="auth-switch-link" onclick="toggleAuthMode()">Нет аккаунта? <span>Зарегистрироваться</span></div>
@@ -502,15 +487,13 @@
     </div>
 </div>
 
+<!-- Main app -->
 <div class="app" id="app">
     <div class="summary-card">
         <div class="summary-header">
             <div class="summary-header-left"><div class="summary-label">К оплате в этом месяце</div></div>
             <button class="summary-settings-btn" id="settingsBtn" onclick="gearClick(event)">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="3"/>
-                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-                </svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
             </button>
         </div>
         <div class="summary-amount s-amount" id="summaryAmount">0 ₽</div>
@@ -528,12 +511,8 @@
         <div class="credit-list" id="creditList"></div>
     </div>
     <div id="installPwaContainer" style="text-align: center; margin: 16px;">
-        <button id="installBtn" style="padding: 12px 24px; background: #FFDD2D; border: none; border-radius: 30px; font-weight: bold; font-size: 1rem; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-            📲 Установить приложение
-        </button>
-        <div id="iosInstruction" style="display: none; margin-top: 10px; font-size: 0.75rem; color: var(--text-2);">
-            На iPhone: нажмите «Поделиться» → «На экран «Домой»»
-        </div>
+        <button id="installBtn" style="padding: 12px 24px; background: #FFDD2D; border: none; border-radius: 30px; font-weight: bold; font-size: 1rem; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">📲 Установить приложение</button>
+        <div id="iosInstruction" style="display: none; margin-top: 10px; font-size: 0.75rem; color: var(--text-2);">На iPhone: нажмите «Поделиться» → «На экран «Домой»»</div>
     </div>
     <div class="completed-section" id="completedSection" style="display:none">
         <div class="completed-header-btn" onclick="toggleCompleted()"><span id="completedLabel">Завершённые</span><span class="completed-arrow" id="completedArrow">▼</span></div>
@@ -544,7 +523,7 @@
 
 <button class="fab" id="fab" onclick="fabClick(event)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
 
-<!-- Оверлеи -->
+<!-- Overlays -->
 <div class="overlay" id="formOverlay" onclick="if(event.target===this)closeForm()">
   <div class="sheet">
     <div class="sheet-handle"></div>
@@ -728,11 +707,21 @@ if (typeof firebase !== 'undefined' && firebase.apps && !firebase.apps.length) {
 
 // ========== ИНИЦИАЛИЗАЦИЯ FIREBASE ==========
 let auth, db;
+let authResolveTimer = null;
 
 function _initFirebase() {
-    setSplashStatus('Инициализация Firebase...');
+    setSplashStatus('Подключение...');
     if (window._fbAppInited) return;
     window._fbAppInited = true;
+    
+    if (typeof firebase === 'undefined') {
+        setSplashStatus('Ошибка загрузки модуля');
+        authResolved = true;
+        authUser = null;
+        evaluateLaunch();
+        return;
+    }
+
     const firebaseConfig = {
         apiKey: "AIzaSyB15_LES6x8ZO6FvfkZ-uLdn6ytKO6ZTaM",
         authDomain: "my-credits-804ab.firebaseapp.com",
@@ -741,14 +730,31 @@ function _initFirebase() {
         messagingSenderId: "602702013620",
         appId: "1:602702013620:web:1babc849f5ed8bcdaee3e1"
     };
-    firebase.initializeApp(firebaseConfig);
-    auth = firebase.auth();
-    db   = firebase.firestore();
-    db.enablePersistence({synchronizeTabs:false}).catch(()=>{});
+    
+    try {
+        firebase.initializeApp(firebaseConfig);
+        auth = firebase.auth();
+        db   = firebase.firestore();
+        db.enablePersistence({synchronizeTabs:false}).catch(()=>{});
+    } catch(e) {
+        setSplashStatus('Ошибка подключения');
+        authResolved = true;
+        authUser = null;
+        evaluateLaunch();
+        return;
+    }
+
+    authResolveTimer = setTimeout(() => {
+        setSplashStatus('Превышено время ожидания');
+        authResolved = true;
+        authUser = null;
+        evaluateLaunch();
+    }, 10000);
+
     auth.onAuthStateChanged(async user => {
-        setSplashStatus('Проверка авторизации...');
+        clearTimeout(authResolveTimer);
+        setSplashStatus('Проверка...');
         if (user) {
-            setSplashStatus('Пользователь авторизован');
             await user.reload().catch(() => {});
             const freshUser = auth.currentUser;
             if (freshUser) {
@@ -764,7 +770,6 @@ function _initFirebase() {
                 authUser = null;
             }
         } else {
-            setSplashStatus('Пользователь не авторизован');
             authUser = null;
         }
         authResolved = true;
@@ -1233,7 +1238,7 @@ async function doAuth() {
         return;
     }
 
-    // Регистрация (исправлено)
+    // Регистрация
     const email = document.getElementById('authEmailOrNick').value.trim();
     if (!email) { showToast('Введите email'); return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast('Введите корректный email'); return; }
@@ -1248,11 +1253,9 @@ async function doAuth() {
 
     let createdUser = null;
     try {
-        // 1. Создаём аккаунт
         const userCred = await auth.createUserWithEmailAndPassword(email, pass);
         createdUser = userCred.user;
 
-        // 2. Проверяем и резервируем ник (транзакция)
         const loginLower = login.toLowerCase();
         const usernameRef = db.collection('usernames').doc(loginLower);
 
@@ -1263,18 +1266,15 @@ async function doAuth() {
                 transaction.set(usernameRef, { uid: createdUser.uid, email: email });
             });
         } catch (txError) {
-            // Ник занят — удаляем только что созданный аккаунт
             await createdUser.delete();
             throw txError;
         }
 
-        // 3. Обновляем профиль и данные
         await createdUser.updateProfile({ displayName: login });
         await db.collection('users').doc(createdUser.uid).set({
             email, displayName: login, emailVerified: false
         });
 
-        // 4. Отправляем письмо для подтверждения
         await createdUser.sendEmailVerification({
             url: window.location.origin + window.location.pathname,
             handleCodeInApp: false
@@ -1282,10 +1282,8 @@ async function doAuth() {
 
         showToast('✅ Аккаунт создан! На вашу почту отправлено письмо для подтверждения.');
 
-        // Выходим, чтобы пользователь подтвердил почту перед входом
         await auth.signOut();
 
-        // Переключаемся на форму входа
         isLoginMode = true;
         document.getElementById('authTitle').textContent = 'Войти в аккаунт';
         document.getElementById('authBtn').textContent = 'Войти';
@@ -1448,7 +1446,7 @@ async function doDeleteAccount() {
     }
 }
 
-// ========== ПИН-КОД С КРИПТОГРАФИЕЙ ==========
+// ========== ПИН-КОД ==========
 async function hashPin(pin) {
     const encoder = new TextEncoder();
     const data = encoder.encode(pin + PIN_SALT);
@@ -1565,18 +1563,16 @@ function closeAllPaid(){ document.getElementById('allPaidOverlay').classList.rem
 
 // ========== ЗАПУСК ==========
 function evaluateLaunch(){
-    setSplashStatus('Запуск приложения...');
+    setSplashStatus('Запуск...');
     if (!authResolved || !splashTimerDone) return;
     setSplashStatus('Готово');
     document.getElementById('splash').classList.add('hidden');
     if (authUser) {
-        setSplashStatus('Вход выполнен, загружаем данные...');
         document.getElementById('authScreen').style.display = 'none';
         const hasPin = ls.get(PIN_K);
         if (hasPin && !sessionStorage.getItem('pin_ok')) { openPinLock(); }
         else { sessionStorage.setItem('pin_ok', '1'); sessionStorage.setItem('session_started', '1'); document.getElementById('app').classList.add('visible'); loadCredits(); }
     } else {
-        setSplashStatus('Открываем экран входа...');
         document.getElementById('app').classList.remove('visible');
         document.getElementById('authScreen').style.display = 'flex';
     }
@@ -1602,20 +1598,20 @@ window.onload = () => {
     document.getElementById('endYear').value = new Date().getFullYear() + 1;
     buildPinDots('pinSetDots', 4, 'sd');
 
+    if (!window._fbAppInited) { _initFirebase(); }
+
     const noSplash = document.documentElement.classList.contains('no-splash');
     if (noSplash) {
         splashTimerDone = true;
         evaluateLaunch();
     } else {
         setTimeout(() => {
-            setSplashStatus('Таймаут сплэша (1 сек)');
             splashTimerDone = true;
             evaluateLaunch();
         }, 1000);
 
         setTimeout(() => {
             if (!splashTimerDone) {
-                setSplashStatus('Принудительное завершение сплэша');
                 splashTimerDone = true;
                 evaluateLaunch();
             }
@@ -1624,7 +1620,6 @@ window.onload = () => {
 
     setTimeout(() => {
         if (!authResolved) {
-            setSplashStatus('Таймаут авторизации');
             authResolved = true;
             authUser = null;
             evaluateLaunch();
@@ -1646,7 +1641,7 @@ window.onload = () => {
     }, 15000);
 };
 
-window.onerror = function(msg, url, line, col, error) {
+window.onerror = function(msg) {
     setSplashStatus('Ошибка: ' + msg);
     return false;
 };
