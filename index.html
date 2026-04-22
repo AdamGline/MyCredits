@@ -400,22 +400,6 @@
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
-        .offline-banner {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background: var(--danger);
-            color: white;
-            text-align: center;
-            padding: 8px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            z-index: 9500;
-            transform: translateY(-100%);
-            transition: transform 0.3s ease;
-        }
-        .offline-banner.show { transform: translateY(0); }
         .partial-quick-amounts { display: flex; gap: 8px; margin-bottom: 10px; }
         .partial-quick-btn {
             flex: 1;
@@ -438,16 +422,6 @@
             60% { transform: translateX(-4px); }
             80% { transform: translateX(4px); }
         }
-
-        #splashStatus {
-            margin-top: 16px;
-            color: rgba(255,255,255,0.8);
-            font-size: 0.8rem;
-            font-weight: 400;
-            text-align: center;
-            max-width: 80%;
-            min-height: 2.4em;
-        }
     </style>
 </head>
 <body>
@@ -458,7 +432,6 @@
     <div class="splash-version">Версия 1.05</div>
 </div>
 
-<div class="offline-banner" id="offlineBanner">⚠️ Нет подключения к сети</div>
 <div class="global-loader" id="globalLoader" style="display: none;"><div class="loader-spinner"></div><div>Загрузка данных...</div></div>
 
 <!-- Auth screen -->
@@ -786,7 +759,7 @@ let authUser = null;
 let splashTimerDone = false;
 let creditsUnsubscribe = null;
 let monthResetDone = false;
-let isOffline = false;
+
 
 const ls = { get:k=>{try{return localStorage.getItem(k);}catch(e){return null;}}, set:(k,v)=>{try{localStorage.setItem(k,v);return true;}catch(e){return false;}}, rm:k=>{try{localStorage.removeItem(k);}catch(e){}} };
 
@@ -797,25 +770,7 @@ function esc(t){ const d=document.createElement('div'); d.textContent=t; return 
 function showToast(msg){ document.querySelectorAll('.toast').forEach(t=>t.remove()); const d=document.createElement('div'); d.className='toast'; d.textContent=msg; document.body.appendChild(d); setTimeout(()=>d.remove(),2200); }
 function showGlobalLoader(show) { document.getElementById('globalLoader').style.display = show ? 'flex' : 'none'; }
 
-// ========== ОНЛАЙН/ОФЛАЙН ==========
-function updateOnlineStatus() {
-    const online = navigator.onLine;
-    const banner = document.getElementById('offlineBanner');
-    if (!online) {
-        banner.classList.add('show');
-        isOffline = true;
-        if (window._fbAppInited && db) db.disableNetwork().catch(()=>{});
-    } else {
-        banner.classList.remove('show');
-        if (isOffline && window._fbAppInited && db) {
-            db.enableNetwork().then(() => { if (authUser) loadCredits(); }).catch(()=>{});
-        }
-        isOffline = false;
-    }
-}
-window.addEventListener('online', updateOnlineStatus);
-window.addEventListener('offline', updateOnlineStatus);
-updateOnlineStatus();
+// Офлайн-режим отключён — только онлайн
 
 // ========== ЗАГРУЗКА КРЕДИТОВ ==========
 function loadCredits() {
@@ -1609,38 +1564,11 @@ document.addEventListener('DOMContentLoaded', () => {
     bindPad('pinLockPad', pinLockKey, 'pinLockDel', pinLockDel);
 });
 
-setTimeout(() => {
-    if (!window._fbAppInited) {
-        const splash = document.getElementById('splash');
-        if (splash && !splash.classList.contains('hidden')) {
-            splash.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;padding:32px;text-align:center"><div style="font-size:3rem">📶</div><div style="color:#fff;font-size:1.1rem;font-weight:700">Нет подключения к сети</div><div style="color:rgba(255,255,255,0.6);font-size:0.85rem">Для работы приложения необходим интернет. Проверьте соединение и попробуйте снова.</div></div>`;
-            splash.style.opacity = '1'; splash.style.visibility = 'visible';
-        }
-    }
-}, 8000);
 
-// ========== PWA ==========
+
+// ========== PWA — минимальная регистрация SW (только для установки) ==========
 if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function() {
-        navigator.serviceWorker.register('./sw.js').then(function(registration) {
-            console.log('ServiceWorker registration successful');
-            document.addEventListener('visibilitychange', () => { if (!document.hidden) registration.update(); });
-            registration.update();
-            let newWorker = null;
-            registration.addEventListener('updatefound', () => {
-                newWorker = registration.installing;
-                newWorker.addEventListener('statechange', () => { if (newWorker.state === 'installed' && navigator.serviceWorker.controller) showUpdateNotification(); });
-            });
-        }).catch(function(err) { console.log('ServiceWorker registration failed: ', err); });
-    });
-}
-
-function showUpdateNotification() {
-    const toast = document.createElement('div');
-    toast.className = 'toast'; toast.style.bottom = '120px'; toast.style.background = '#FFDD2D'; toast.style.color = '#1A1A1A'; toast.style.cursor = 'pointer'; toast.style.zIndex = '10001';
-    toast.innerHTML = '🔄 Доступна новая версия. Нажмите для обновления';
-    toast.onclick = () => { navigator.serviceWorker.getRegistration().then(r => { if (r) r.waiting && r.waiting.postMessage({type:'SKIP_WAITING'}); }); };
-    document.body.appendChild(toast); setTimeout(() => toast.remove(), 10000);
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
 }
 
 const installBtn = document.getElementById('installBtn');
