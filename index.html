@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="screen-orientation" content="portrait">
+    <meta name="x5-orientation" content="portrait">
+    <meta name="full-screen" content="yes">
     <title>Мои Кредиты / My Credits</title>
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -30,6 +33,10 @@
     <script>if(sessionStorage.getItem('session_started')==='1'){document.documentElement.classList.add('no-splash');}</script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        @media screen and (orientation: landscape) {
+            body { display: none !important; }
+        }
 
         :root {
             --accent: #FFDD2D;
@@ -725,32 +732,28 @@ function _initFirebase() {
     }
 
     authResolveTimer = setTimeout(() => {
-        setSplashStatus('Превышено время ожидания');
         if (!authResolved) {
             authResolved = true;
             authUser = null;
             evaluateLaunch();
         }
-    }, 7000);
+    }, 4000);
 
-    auth.onAuthStateChanged(async user => {
+    auth.onAuthStateChanged(user => {
         clearTimeout(authResolveTimer);
-        setSplashStatus('Проверка...');
         if (user) {
-            await user.reload().catch(() => {});
-            const freshUser = auth.currentUser;
-            if (freshUser) {
-                authUser = freshUser;
-                try {
-                    await db.collection('users').doc(freshUser.uid).set({
-                        email: freshUser.email,
-                        displayName: freshUser.displayName,
-                        emailVerified: freshUser.emailVerified
-                    }, { merge: true });
-                } catch(e) {}
-            } else {
-                authUser = null;
-            }
+            authUser = user;
+            // Обновление профиля и запись в Firestore — в фоне, не блокируем запуск
+            user.reload().catch(() => {}).finally(() => {
+                const u = auth.currentUser;
+                if (u) {
+                    db.collection('users').doc(u.uid).set({
+                        email: u.email,
+                        displayName: u.displayName,
+                        emailVerified: u.emailVerified
+                    }, { merge: true }).catch(() => {});
+                }
+            });
         } else {
             authUser = null;
         }
@@ -1574,6 +1577,10 @@ function setupBackBtn(){
 }
 
 window.onload = () => {
+    // Блокировка поворота экрана
+    if (screen.orientation && screen.orientation.lock) {
+        screen.orientation.lock('portrait').catch(() => {});
+    }
     loadTheme(); loadFontSize(); loadAmounts(); setupBackBtn();
     selectCat('mortgage'); setDateMode('cal');
     document.getElementById('endMonth').value = new Date().getMonth();
@@ -1583,15 +1590,15 @@ window.onload = () => {
     const noSplash = document.documentElement.classList.contains('no-splash');
     if (noSplash) {
         splashTimerDone = true;
-        // Firebase уже инициализируется через _onFbLoad; ждём authResolved
+        evaluateLaunch();
     } else {
         setTimeout(() => {
             splashTimerDone = true;
             evaluateLaunch();
-        }, 1200);
+        }, 800);
     }
 
-    // Аварийный таймаут: если Firebase так и не ответил за 8 сек — показываем приложение
+    // Аварийный таймаут: если Firebase так и не ответил за 5 сек — показываем приложение
     setTimeout(() => {
         if (!authResolved) {
             authResolved = true;
@@ -1599,7 +1606,7 @@ window.onload = () => {
             splashTimerDone = true;
             evaluateLaunch();
         }
-    }, 8000);
+    }, 5000);
 };
 
 window.onerror = function(msg) {
