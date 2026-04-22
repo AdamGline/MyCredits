@@ -424,24 +424,30 @@
             60% { transform: translateX(-4px); }
             80% { transform: translateX(4px); }
         }
-        
-        .splash-reload-btn {
-    margin-top: 20px;
-    padding: 12px 24px;
-    background: rgba(255,255,255,0.15);
-    border: 1px solid rgba(255,255,255,0.3);
-    border-radius: 30px;
-    color: white;
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s;
-    display: none; /* изначально скрыта */
-}
-.splash-reload-btn:active {
-    background: rgba(255,255,255,0.25);
-}
 
+        .splash-reload-btn {
+            margin-top: 20px;
+            padding: 12px 24px;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 30px;
+            color: white;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: none;
+        }
+        .splash-reload-btn:active { background: rgba(255,255,255,0.25); }
+        #splashStatus {
+            margin-top: 16px;
+            color: rgba(255,255,255,0.8);
+            font-size: 0.8rem;
+            font-weight: 400;
+            text-align: center;
+            max-width: 80%;
+            min-height: 2.4em;
+        }
     </style>
 </head>
 <body>
@@ -449,10 +455,9 @@
 <div class="splash" id="splash">
     <div class="splash-content">
         <img class="splash-logo" src="logo.png" alt="Logo" onerror="this.style.display='none'">
-        <!-- Добавлен спиннер для индикации загрузки -->
         <div class="loader-spinner" style="margin: 20px 0;"></div>
         <div class="splash-tagline">Думай о более важном!</div>
-        <!-- Кнопка перезагрузки, показывается при длительном зависании -->
+        <div id="splashStatus">Загрузка...</div>
         <button class="splash-reload-btn" id="splashReloadBtn" onclick="location.reload()">🔄 Перезагрузить</button>
     </div>
     <div class="splash-version">Версия 1.04</div>
@@ -709,14 +714,23 @@
 </div>
 
 <script>
-    // Принудительная инициализация Firebase, если объект уже доступен
+// ========== ОТЛАДКА СПЛЭША ==========
+function setSplashStatus(msg) {
+    const el = document.getElementById('splashStatus');
+    if (el) el.textContent = msg;
+    console.log('[Splash]', msg);
+}
+
+// Принудительная инициализация Firebase
 if (typeof firebase !== 'undefined' && firebase.apps && !firebase.apps.length) {
     _initFirebase();
 }
+
 // ========== ИНИЦИАЛИЗАЦИЯ FIREBASE ==========
 let auth, db;
 
 function _initFirebase() {
+    setSplashStatus('Инициализация Firebase...');
     if (window._fbAppInited) return;
     window._fbAppInited = true;
     const firebaseConfig = {
@@ -732,7 +746,9 @@ function _initFirebase() {
     db   = firebase.firestore();
     db.enablePersistence({synchronizeTabs:false}).catch(()=>{});
     auth.onAuthStateChanged(async user => {
+        setSplashStatus('Проверка авторизации...');
         if (user) {
+            setSplashStatus('Пользователь авторизован');
             await user.reload().catch(() => {});
             const freshUser = auth.currentUser;
             if (freshUser) {
@@ -748,6 +764,7 @@ function _initFirebase() {
                 authUser = null;
             }
         } else {
+            setSplashStatus('Пользователь не авторизован');
             authUser = null;
         }
         authResolved = true;
@@ -822,6 +839,7 @@ updateOnlineStatus();
 // ========== ЗАГРУЗКА КРЕДИТОВ ==========
 function loadCredits() {
     if (!authUser) return;
+    setSplashStatus('Загрузка кредитов...');
     showGlobalLoader(true);
     if (creditsUnsubscribe) { creditsUnsubscribe(); creditsUnsubscribe = null; }
     creditsUnsubscribe = db.collection('credits').where('userId', '==', authUser.uid)
@@ -1158,7 +1176,7 @@ function updateEmailStatusUI() {
     }
 }
 
-// ========== АУТЕНТИФИКАЦИЯ (ИСПРАВЛЕННАЯ РЕГИСТРАЦИЯ) ==========
+// ========== АУТЕНТИФИКАЦИЯ ==========
 async function resolveEmailFromNick(nick) {
     try {
         const doc = await db.collection('usernames').doc(nick.toLowerCase()).get();
@@ -1215,7 +1233,7 @@ async function doAuth() {
         return;
     }
 
-    // ===== РЕГИСТРАЦИЯ (ИСПРАВЛЕНО) =====
+    // Регистрация (исправлено)
     const email = document.getElementById('authEmailOrNick').value.trim();
     if (!email) { showToast('Введите email'); return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast('Введите корректный email'); return; }
@@ -1547,14 +1565,18 @@ function closeAllPaid(){ document.getElementById('allPaidOverlay').classList.rem
 
 // ========== ЗАПУСК ==========
 function evaluateLaunch(){
+    setSplashStatus('Запуск приложения...');
     if (!authResolved || !splashTimerDone) return;
+    setSplashStatus('Готово');
     document.getElementById('splash').classList.add('hidden');
     if (authUser) {
+        setSplashStatus('Вход выполнен, загружаем данные...');
         document.getElementById('authScreen').style.display = 'none';
         const hasPin = ls.get(PIN_K);
         if (hasPin && !sessionStorage.getItem('pin_ok')) { openPinLock(); }
         else { sessionStorage.setItem('pin_ok', '1'); sessionStorage.setItem('session_started', '1'); document.getElementById('app').classList.add('visible'); loadCredits(); }
     } else {
+        setSplashStatus('Открываем экран входа...');
         document.getElementById('app').classList.remove('visible');
         document.getElementById('authScreen').style.display = 'flex';
     }
@@ -1585,33 +1607,30 @@ window.onload = () => {
         splashTimerDone = true;
         evaluateLaunch();
     } else {
-        // Основной таймер сплэша (1 секунда)
         setTimeout(() => {
+            setSplashStatus('Таймаут сплэша (1 сек)');
             splashTimerDone = true;
             evaluateLaunch();
         }, 1000);
 
-        // Таймаут на принудительное завершение сплэша через 5 секунд
         setTimeout(() => {
             if (!splashTimerDone) {
-                console.warn('Splash timeout forced');
+                setSplashStatus('Принудительное завершение сплэша');
                 splashTimerDone = true;
                 evaluateLaunch();
             }
         }, 5000);
     }
 
-    // Если через 6 секунд authResolved всё ещё false, принудительно считаем пользователя неавторизованным
     setTimeout(() => {
         if (!authResolved) {
-            console.warn('Auth resolution timeout');
+            setSplashStatus('Таймаут авторизации');
             authResolved = true;
             authUser = null;
             evaluateLaunch();
         }
     }, 6000);
 
-    // Если через 12 секунд сплэш всё ещё виден, показываем кнопку перезагрузки
     setTimeout(() => {
         const splash = document.getElementById('splash');
         if (splash && !splash.classList.contains('hidden')) {
@@ -1619,13 +1638,17 @@ window.onload = () => {
         }
     }, 12000);
 
-    // Автоматическая перезагрузка через 15 секунд, если сплэш не скрыт
     setTimeout(() => {
         const splash = document.getElementById('splash');
         if (splash && !splash.classList.contains('hidden')) {
             location.reload();
         }
     }, 15000);
+};
+
+window.onerror = function(msg, url, line, col, error) {
+    setSplashStatus('Ошибка: ' + msg);
+    return false;
 };
 
 document.getElementById('lockStatusRow').onclick = e => { toggleLockPanel(); e.stopPropagation(); };

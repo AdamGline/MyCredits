@@ -14,7 +14,7 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('fetch', event => {
-  // Для HTML используем Stale-While-Revalidate, чтобы всегда показывать актуальную версию
+  // HTML: Stale-While-Revalidate
   if (event.request.mode === 'navigate') {
     event.respondWith(
       caches.open(CACHE_NAME).then(cache => {
@@ -30,7 +30,7 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Для остальных ресурсов: Stale-While-Revalidate
+  // Остальное: Stale-While-Revalidate
   event.respondWith(
     caches.open(CACHE_NAME).then(cache => {
       return cache.match(event.request).then(cachedResponse => {
