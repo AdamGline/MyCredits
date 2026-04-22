@@ -1,9 +1,8 @@
-const CACHE_NAME = 'mycredits-v8';
+const CACHE_NAME = 'mycredits-v9';
 const urlsToCache = [
   './index.html',
   './icon.png',
-  './logo.png',
-  './manifest.json'
+  './logo.png'
 ];
 
 self.addEventListener('install', event => {
@@ -14,7 +13,15 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('fetch', event => {
-  // HTML: Network-First — сначала сеть, кэш только при офлайне
+  const url = new URL(event.request.url);
+
+  // manifest.json — всегда из сети (чтобы orientation применялся актуальный)
+  if (url.pathname.endsWith('manifest.json')) {
+    event.respondWith(fetch(event.request).catch(() => caches.match(event.request)));
+    return;
+  }
+
+  // HTML: Network-First
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request).then(networkResponse => {
@@ -25,7 +32,7 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Остальное: Cache-First — быстрая отдача из кэша
+  // Остальное: Cache-First
   event.respondWith(
     caches.match(event.request).then(cached => {
       if (cached) return cached;
