@@ -12,11 +12,16 @@
     <meta name="theme-color" content="#FFDD2D">
     <script>
     window._fbLoaded = 0;
+    window._fbAppInited = false;
     function _onFbLoad() {
         window._fbLoaded++;
-        if (window._fbLoaded >= 3 && typeof _initFirebase === 'function') _initFirebase();
+        if (window._fbLoaded >= 3 && !window._fbAppInited && typeof _initFirebase === 'function') _initFirebase();
     }
-    function _onFbError(s) { console.error('Firebase SDK load error:', s.src); }
+    function _onFbError(s) {
+        console.error('Firebase SDK load error:', s.src);
+        window._fbLoaded++;
+        if (window._fbLoaded >= 3 && !window._fbAppInited && typeof _initFirebase === 'function') _initFirebase();
+    }
     </script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js" onload="_onFbLoad()" onerror="_onFbError(this)"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js" onload="_onFbLoad()" onerror="_onFbError(this)"></script>
@@ -76,10 +81,8 @@
         .splash { position: fixed; inset: 0; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000; transition: opacity 0.4s ease, visibility 0.4s ease; }
         .splash.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
         .no-splash .splash { display: none !important; }
-        .splash-content { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; width: 100%; }
-        .splash-logo { width: 100vw; max-width: none; height: auto; object-fit: contain; display: block; margin-bottom: 20px; }
-        .splash-tagline { color: rgba(255,255,255,0.7); font-size: 1rem; font-weight: 500; letter-spacing: 0.5px; text-align: center; white-space: nowrap; }
-        .splash-version { position: absolute; bottom: 30px; left: 0; right: 0; text-align: center; color: rgba(255,255,255,0.4); font-size: 0.75rem; font-weight: 500; }
+        .splash-tagline { color: rgba(255,255,255,0.75); font-size: 1.05rem; font-weight: 500; letter-spacing: 0.3px; text-align: center; }
+        .splash-version { position: absolute; bottom: 30px; left: 0; right: 0; text-align: center; color: rgba(255,255,255,0.35); font-size: 0.75rem; font-weight: 500; }
 
         .auth-screen {
             position: fixed; inset: 0; background: #000000;
@@ -425,20 +428,6 @@
             80% { transform: translateX(4px); }
         }
 
-        .splash-reload-btn {
-            margin-top: 20px;
-            padding: 12px 24px;
-            background: rgba(255,255,255,0.15);
-            border: 1px solid rgba(255,255,255,0.3);
-            border-radius: 30px;
-            color: white;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-            display: none;
-        }
-        .splash-reload-btn:active { background: rgba(255,255,255,0.25); }
         #splashStatus {
             margin-top: 16px;
             color: rgba(255,255,255,0.8);
@@ -453,13 +442,7 @@
 <body>
 
 <div class="splash" id="splash">
-    <div class="splash-content">
-        <img class="splash-logo" src="logo.png" alt="Logo" onerror="this.style.display='none'">
-        <div class="loader-spinner" style="margin: 20px 0;"></div>
-        <div class="splash-tagline">Думай о более важном!</div>
-        <div id="splashStatus">Загрузка...</div>
-        <button class="splash-reload-btn" id="splashReloadBtn" onclick="location.reload()">🔄 Перезагрузить</button>
-    </div>
+    <div class="splash-tagline">Думай о более важном!</div>
     <div class="splash-version">Версия 1.05</div>
 </div>
 
@@ -695,15 +678,10 @@
 <script>
 // ========== ОТЛАДКА СПЛЭША ==========
 function setSplashStatus(msg) {
-    const el = document.getElementById('splashStatus');
-    if (el) el.textContent = msg;
     console.log('[Splash]', msg);
 }
 
-// Принудительная инициализация Firebase
-if (typeof firebase !== 'undefined' && firebase.apps && !firebase.apps.length) {
-    _initFirebase();
-}
+// Принудительная инициализация Firebase выполняется через _onFbLoad
 
 // ========== ИНИЦИАЛИЗАЦИЯ FIREBASE ==========
 let auth, db;
@@ -746,10 +724,12 @@ function _initFirebase() {
 
     authResolveTimer = setTimeout(() => {
         setSplashStatus('Превышено время ожидания');
-        authResolved = true;
-        authUser = null;
-        evaluateLaunch();
-    }, 10000);
+        if (!authResolved) {
+            authResolved = true;
+            authUser = null;
+            evaluateLaunch();
+        }
+    }, 7000);
 
     auth.onAuthStateChanged(async user => {
         clearTimeout(authResolveTimer);
@@ -1598,47 +1578,26 @@ window.onload = () => {
     document.getElementById('endYear').value = new Date().getFullYear() + 1;
     buildPinDots('pinSetDots', 4, 'sd');
 
-    if (!window._fbAppInited) { _initFirebase(); }
-
     const noSplash = document.documentElement.classList.contains('no-splash');
     if (noSplash) {
         splashTimerDone = true;
-        evaluateLaunch();
+        // Firebase уже инициализируется через _onFbLoad; ждём authResolved
     } else {
         setTimeout(() => {
             splashTimerDone = true;
             evaluateLaunch();
-        }, 1000);
-
-        setTimeout(() => {
-            if (!splashTimerDone) {
-                splashTimerDone = true;
-                evaluateLaunch();
-            }
-        }, 5000);
+        }, 1200);
     }
 
+    // Аварийный таймаут: если Firebase так и не ответил за 8 сек — показываем приложение
     setTimeout(() => {
         if (!authResolved) {
             authResolved = true;
             authUser = null;
+            splashTimerDone = true;
             evaluateLaunch();
         }
-    }, 6000);
-
-    setTimeout(() => {
-        const splash = document.getElementById('splash');
-        if (splash && !splash.classList.contains('hidden')) {
-            document.getElementById('splashReloadBtn').style.display = 'block';
-        }
-    }, 12000);
-
-    setTimeout(() => {
-        const splash = document.getElementById('splash');
-        if (splash && !splash.classList.contains('hidden')) {
-            location.reload();
-        }
-    }, 15000);
+    }, 8000);
 };
 
 window.onerror = function(msg) {
@@ -1659,8 +1618,16 @@ document.addEventListener('DOMContentLoaded', () => {
     bindPad('pinLockPad', pinLockKey, 'pinLockDel', pinLockDel);
 });
 
-if (typeof firebase !== 'undefined') _initFirebase();
-setTimeout(() => { if (!window._fbAppInited) { const splash = document.getElementById('splash'); if (splash) { splash.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;padding:32px;text-align:center"><div style="font-size:3rem">📶</div><div style="color:#fff;font-size:1.1rem;font-weight:700">Нет подключения к сети</div><div style="color:rgba(255,255,255,0.6);font-size:0.85rem">Для работы приложения необходим интернет. Проверьте соединение и попробуйте снова.</div></div>`; splash.style.opacity = '1'; splash.style.visibility = 'visible'; } } }, 8000);
+if (typeof firebase !== 'undefined' && !window._fbAppInited) _initFirebase();
+setTimeout(() => {
+    if (!window._fbAppInited) {
+        const splash = document.getElementById('splash');
+        if (splash && !splash.classList.contains('hidden')) {
+            splash.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;padding:32px;text-align:center"><div style="font-size:3rem">📶</div><div style="color:#fff;font-size:1.1rem;font-weight:700">Нет подключения к сети</div><div style="color:rgba(255,255,255,0.6);font-size:0.85rem">Для работы приложения необходим интернет. Проверьте соединение и попробуйте снова.</div></div>`;
+            splash.style.opacity = '1'; splash.style.visibility = 'visible';
+        }
+    }
+}, 8000);
 
 // ========== PWA ==========
 if ('serviceWorker' in navigator) {
@@ -1682,7 +1649,7 @@ function showUpdateNotification() {
     const toast = document.createElement('div');
     toast.className = 'toast'; toast.style.bottom = '120px'; toast.style.background = '#FFDD2D'; toast.style.color = '#1A1A1A'; toast.style.cursor = 'pointer'; toast.style.zIndex = '10001';
     toast.innerHTML = '🔄 Доступна новая версия. Нажмите для обновления';
-    toast.onclick = () => { window.location.reload(); };
+    toast.onclick = () => { navigator.serviceWorker.getRegistration().then(r => { if (r) r.waiting && r.waiting.postMessage({type:'SKIP_WAITING'}); }); };
     document.body.appendChild(toast); setTimeout(() => toast.remove(), 10000);
 }
 
