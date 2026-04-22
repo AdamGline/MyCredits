@@ -424,6 +424,24 @@
             60% { transform: translateX(-4px); }
             80% { transform: translateX(4px); }
         }
+        
+        .splash-reload-btn {
+    margin-top: 20px;
+    padding: 12px 24px;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 30px;
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: none; /* изначально скрыта */
+}
+.splash-reload-btn:active {
+    background: rgba(255,255,255,0.25);
+}
+
     </style>
 </head>
 <body>
@@ -431,9 +449,13 @@
 <div class="splash" id="splash">
     <div class="splash-content">
         <img class="splash-logo" src="logo.png" alt="Logo" onerror="this.style.display='none'">
+        <!-- Добавлен спиннер для индикации загрузки -->
+        <div class="loader-spinner" style="margin: 20px 0;"></div>
         <div class="splash-tagline">Думай о более важном!</div>
+        <!-- Кнопка перезагрузки, показывается при длительном зависании -->
+        <button class="splash-reload-btn" id="splashReloadBtn" onclick="location.reload()">🔄 Перезагрузить</button>
     </div>
-    <div class="splash-version">Версия 1.03</div>
+    <div class="splash-version">Версия 1.04</div>
 </div>
 
 <div class="offline-banner" id="offlineBanner">⚠️ Нет подключения к сети</div>
@@ -687,6 +709,10 @@
 </div>
 
 <script>
+    // Принудительная инициализация Firebase, если объект уже доступен
+if (typeof firebase !== 'undefined' && firebase.apps && !firebase.apps.length) {
+    _initFirebase();
+}
 // ========== ИНИЦИАЛИЗАЦИЯ FIREBASE ==========
 let auth, db;
 
@@ -1553,10 +1579,53 @@ window.onload = () => {
     document.getElementById('endMonth').value = new Date().getMonth();
     document.getElementById('endYear').value = new Date().getFullYear() + 1;
     buildPinDots('pinSetDots', 4, 'sd');
+
     const noSplash = document.documentElement.classList.contains('no-splash');
-    if (noSplash) { splashTimerDone = true; evaluateLaunch(); }
-    else setTimeout(() => { splashTimerDone = true; evaluateLaunch(); }, 1000);
-    setTimeout(() => { if (!authResolved) { authResolved = true; authUser = null; evaluateLaunch(); } }, 6000);
+    if (noSplash) {
+        splashTimerDone = true;
+        evaluateLaunch();
+    } else {
+        // Основной таймер сплэша (1 секунда)
+        setTimeout(() => {
+            splashTimerDone = true;
+            evaluateLaunch();
+        }, 1000);
+
+        // Таймаут на принудительное завершение сплэша через 5 секунд
+        setTimeout(() => {
+            if (!splashTimerDone) {
+                console.warn('Splash timeout forced');
+                splashTimerDone = true;
+                evaluateLaunch();
+            }
+        }, 5000);
+    }
+
+    // Если через 6 секунд authResolved всё ещё false, принудительно считаем пользователя неавторизованным
+    setTimeout(() => {
+        if (!authResolved) {
+            console.warn('Auth resolution timeout');
+            authResolved = true;
+            authUser = null;
+            evaluateLaunch();
+        }
+    }, 6000);
+
+    // Если через 12 секунд сплэш всё ещё виден, показываем кнопку перезагрузки
+    setTimeout(() => {
+        const splash = document.getElementById('splash');
+        if (splash && !splash.classList.contains('hidden')) {
+            document.getElementById('splashReloadBtn').style.display = 'block';
+        }
+    }, 12000);
+
+    // Автоматическая перезагрузка через 15 секунд, если сплэш не скрыт
+    setTimeout(() => {
+        const splash = document.getElementById('splash');
+        if (splash && !splash.classList.contains('hidden')) {
+            location.reload();
+        }
+    }, 15000);
 };
 
 document.getElementById('lockStatusRow').onclick = e => { toggleLockPanel(); e.stopPropagation(); };

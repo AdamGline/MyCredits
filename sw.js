@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mycredits-v6';
+const CACHE_NAME = 'mycredits-v7';
 const urlsToCache = [
   './index.html',
   './icon.png',
@@ -14,11 +14,18 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('fetch', event => {
-  // Для навигационных запросов (HTML) используем Network First, затем кеш
+  // Для HTML используем Stale-While-Revalidate, чтобы всегда показывать актуальную версию
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      fetch(event.request)
-        .catch(() => caches.match('./index.html'))
+      caches.open(CACHE_NAME).then(cache => {
+        return cache.match(event.request).then(cachedResponse => {
+          const fetchPromise = fetch(event.request).then(networkResponse => {
+            cache.put(event.request, networkResponse.clone());
+            return networkResponse;
+          }).catch(() => cachedResponse);
+          return cachedResponse || fetchPromise;
+        });
+      })
     );
     return;
   }
