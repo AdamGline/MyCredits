@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mycredits-v7';
+const CACHE_NAME = 'mycredits-v8';
 const urlsToCache = [
   './index.html',
   './icon.png',
@@ -14,31 +14,24 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('fetch', event => {
-  // HTML: Stale-While-Revalidate
+  // HTML: Network-First — сначала сеть, кэш только при офлайне
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      caches.open(CACHE_NAME).then(cache => {
-        return cache.match(event.request).then(cachedResponse => {
-          const fetchPromise = fetch(event.request).then(networkResponse => {
-            cache.put(event.request, networkResponse.clone());
-            return networkResponse;
-          }).catch(() => cachedResponse);
-          return cachedResponse || fetchPromise;
-        });
-      })
+      fetch(event.request).then(networkResponse => {
+        caches.open(CACHE_NAME).then(cache => cache.put(event.request, networkResponse.clone()));
+        return networkResponse;
+      }).catch(() => caches.match(event.request))
     );
     return;
   }
 
-  // Остальное: Stale-While-Revalidate
+  // Остальное: Cache-First — быстрая отдача из кэша
   event.respondWith(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.match(event.request).then(cachedResponse => {
-        const fetchPromise = fetch(event.request).then(networkResponse => {
-          cache.put(event.request, networkResponse.clone());
-          return networkResponse;
-        }).catch(() => cachedResponse);
-        return cachedResponse || fetchPromise;
+    caches.match(event.request).then(cached => {
+      if (cached) return cached;
+      return fetch(event.request).then(networkResponse => {
+        caches.open(CACHE_NAME).then(cache => cache.put(event.request, networkResponse.clone()));
+        return networkResponse;
       });
     })
   );
