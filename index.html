@@ -14,39 +14,52 @@
     <link rel="apple-touch-icon" href="icon.png">
     <meta name="theme-color" content="#FFDD2D">
     <script>
-    // Firebase SDK загружается динамически — НЕ блокирует window.onload.
+    // Firebase SDK загружается динамически — НЕ блокирует парсинг и window.onload.
     window._fbAppInited = false;
-    window._fbAllReady = false;
+    window._firebaseReadyCallbacks = [];
+    window._firebaseReady = false;
 
-    function _loadFirebaseSDKs(callback) {
+    function onFirebaseReady(cb) {
+        if (window._firebaseReady) { cb(); return; }
+        window._firebaseReadyCallbacks.push(cb);
+    }
+    function _firebaseDidLoad() {
+        window._firebaseReady = true;
+        window._firebaseReadyCallbacks.forEach(cb => { try { cb(); } catch(e) {} });
+        window._firebaseReadyCallbacks = [];
+    }
+
+    function _loadFirebaseSDKs() {
         const SDKs = [
             'https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js',
             'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js',
             'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js'
         ];
         let loaded = 0;
-        const total = SDKs.length;
-        // Таймаут на весь процесс загрузки SDK — 6 сек
+        // Жёсткий таймаут 8 сек — если CDN недоступен, работаем без Firebase
         const sdkTimeout = setTimeout(() => {
-            window._fbAllReady = true;
-            callback();
-        }, 6000);
+            console.warn('Firebase SDK timeout — работаем без Firebase');
+            _firebaseDidLoad();
+        }, 8000);
         function onOne() {
             loaded++;
-            if (loaded >= total) {
+            if (loaded >= SDKs.length) {
                 clearTimeout(sdkTimeout);
-                window._fbAllReady = true;
-                callback();
+                _firebaseDidLoad();
             }
         }
         SDKs.forEach(src => {
             const s = document.createElement('script');
             s.src = src;
+            s.async = true;
             s.onload = onOne;
-            s.onerror = () => { console.error('Firebase SDK load error:', src); onOne(); };
+            s.onerror = () => { console.error('Firebase SDK не загружен:', src); onOne(); };
             document.head.appendChild(s);
         });
     }
+
+    // Запускаем загрузку SDK немедленно, не дожидаясь ничего
+    _loadFirebaseSDKs();
     </script>
 
     <script>if(sessionStorage.getItem('session_started')==='1'){document.documentElement.classList.add('no-splash');}</script>
@@ -691,6 +704,7 @@ function _initFirebase() {
     window._fbAppInited = true;
 
     if (typeof firebase === 'undefined') {
+        // Firebase SDK не загрузился — показываем экран авторизации без Firebase
         authResolved = true; authUser = null;
         splashTimerDone = true; evaluateLaunch();
         return;
@@ -709,20 +723,19 @@ function _initFirebase() {
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         auth = firebase.auth();
         db   = firebase.firestore();
-        // enablePersistence убрана — она задерживает первый onAuthStateChanged
     } catch(e) {
         authResolved = true; authUser = null;
         splashTimerDone = true; evaluateLaunch();
         return;
     }
 
-    // Аварийный таймаут 4 сек
+    // Аварийный таймаут 5 сек на onAuthStateChanged
     authResolveTimer = setTimeout(() => {
         if (!authResolved) {
             authResolved = true; authUser = null;
             splashTimerDone = true; evaluateLaunch();
         }
-    }, 4000);
+    }, 5000);
 
     auth.onAuthStateChanged(user => {
         clearTimeout(authResolveTimer);
@@ -730,7 +743,6 @@ function _initFirebase() {
         authResolved = true;
         splashTimerDone = true;
         evaluateLaunch();
-        // Фоновые операции — не блокируют запуск
         if (user) {
             user.reload().catch(() => {});
             db.collection('users').doc(user.uid).set({
@@ -1539,7 +1551,6 @@ function setupBackBtn(){
 }
 
 window.onload = () => {
-    // Блокировка поворота экрана
     if (screen.orientation && screen.orientation.lock) {
         screen.orientation.lock('portrait').catch(() => {});
     }
@@ -1549,19 +1560,28 @@ window.onload = () => {
     document.getElementById('endYear').value = new Date().getFullYear() + 1;
     buildPinDots('pinSetDots', 4, 'sd');
 
-    // Загружаем Firebase SDK динамически — НЕ блокирует window.onload
-    _loadFirebaseSDKs(() => {
+    // РАДИКАЛЬНОЕ РЕШЕНИЕ: сплэш скрывается через 1.5 сек МАКСИМУМ,
+    // не зависит от Firebase вообще. Показываем экран авторизации сразу.
+    // Firebase подключается в фоне и обновляет UI когда готов.
+    const SPLASH_MAX_MS = 1500;
+    setTimeout(() => {
+        if (!splashTimerDone) {
+            splashTimerDone = true;
+            // Если Firebase ещё не готов — показываем authScreen сразу
+            if (!authResolved) {
+                document.getElementById('splash').classList.add('hidden');
+                document.getElementById('app').classList.remove('visible');
+                document.getElementById('authScreen').style.display = 'flex';
+            } else {
+                evaluateLaunch();
+            }
+        }
+    }, SPLASH_MAX_MS);
+
+    // Firebase инициализируется когда SDK загрузится (параллельно)
+    onFirebaseReady(() => {
         _initFirebase();
     });
-
-    // Страховой таймаут: если Firebase завис (нет сети) — скрываем сплэш через 7 сек
-    setTimeout(() => {
-        if (!authResolved || !splashTimerDone) {
-            authResolved = true; authUser = null;
-            splashTimerDone = true;
-            evaluateLaunch();
-        }
-    }, 7000);
 };
 
 window.onerror = function(msg) {
