@@ -14,24 +14,40 @@
     <link rel="apple-touch-icon" href="icon.png">
     <meta name="theme-color" content="#FFDD2D">
     <script>
-    // Firebase SDK загружается асинхронно; _onFbLoad вызывается после каждого скрипта.
-    // Когда все 3 загружены — ставим флаг. _initFirebase вызовется из window.onload.
-    window._fbLoaded = 0;
+    // Firebase SDK загружается динамически — НЕ блокирует window.onload.
     window._fbAppInited = false;
     window._fbAllReady = false;
-    function _onFbLoad() {
-        window._fbLoaded++;
-        if (window._fbLoaded >= 3) window._fbAllReady = true;
-    }
-    function _onFbError(s) {
-        console.error('Firebase SDK load error:', s.src);
-        window._fbLoaded++;
-        if (window._fbLoaded >= 3) window._fbAllReady = true;
+
+    function _loadFirebaseSDKs(callback) {
+        const SDKs = [
+            'https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js',
+            'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js',
+            'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js'
+        ];
+        let loaded = 0;
+        const total = SDKs.length;
+        // Таймаут на весь процесс загрузки SDK — 6 сек
+        const sdkTimeout = setTimeout(() => {
+            window._fbAllReady = true;
+            callback();
+        }, 6000);
+        function onOne() {
+            loaded++;
+            if (loaded >= total) {
+                clearTimeout(sdkTimeout);
+                window._fbAllReady = true;
+                callback();
+            }
+        }
+        SDKs.forEach(src => {
+            const s = document.createElement('script');
+            s.src = src;
+            s.onload = onOne;
+            s.onerror = () => { console.error('Firebase SDK load error:', src); onOne(); };
+            document.head.appendChild(s);
+        });
     }
     </script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js" onload="_onFbLoad()" onerror="_onFbError(this)"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js" onload="_onFbLoad()" onerror="_onFbError(this)"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js" onload="_onFbLoad()" onerror="_onFbError(this)"></script>
 
     <script>if(sessionStorage.getItem('session_started')==='1'){document.documentElement.classList.add('no-splash');}</script>
     <style>
@@ -1533,17 +1549,19 @@ window.onload = () => {
     document.getElementById('endYear').value = new Date().getFullYear() + 1;
     buildPinDots('pinSetDots', 4, 'sd');
 
-    // Запускаем Firebase — к этому моменту все SDK уже загружены (window.onload гарантирует это)
-    _initFirebase();
+    // Загружаем Firebase SDK динамически — НЕ блокирует window.onload
+    _loadFirebaseSDKs(() => {
+        _initFirebase();
+    });
 
-    // Страховой таймаут: если Firebase завис — скрываем сплэш через 5 сек
+    // Страховой таймаут: если Firebase завис (нет сети) — скрываем сплэш через 7 сек
     setTimeout(() => {
         if (!authResolved || !splashTimerDone) {
             authResolved = true; authUser = null;
             splashTimerDone = true;
             evaluateLaunch();
         }
-    }, 5000);
+    }, 7000);
 };
 
 window.onerror = function(msg) {
