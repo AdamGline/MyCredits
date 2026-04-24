@@ -20,52 +20,9 @@
     <link rel="preconnect" href="https://www.gstatic.com">
     <link rel="dns-prefetch" href="https://www.gstatic.com">
 
-    <script>
-    // Firebase SDK загружается динамически
-    window._fbAppInited = false;
-    window._firebaseReadyCallbacks = [];
-    window._firebaseReady = false;
-
-    function onFirebaseReady(cb) {
-        if (window._firebaseReady) { cb(); return; }
-        window._firebaseReadyCallbacks.push(cb);
-    }
-    function _firebaseDidLoad() {
-        window._firebaseReady = true;
-        window._firebaseReadyCallbacks.forEach(cb => { try { cb(); } catch(e) {} });
-        window._firebaseReadyCallbacks = [];
-    }
-
-    function _loadFirebaseSDKs() {
-        const SDKs = [
-            'https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js',
-            'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js',
-            'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js'
-        ];
-        let loaded = 0;
-        const sdkTimeout = setTimeout(() => {
-            console.warn('Firebase SDK timeout — работаем без Firebase');
-            _firebaseDidLoad();
-        }, 8000);
-        function onOne() {
-            loaded++;
-            if (loaded >= SDKs.length) {
-                clearTimeout(sdkTimeout);
-                _firebaseDidLoad();
-            }
-        }
-        SDKs.forEach(src => {
-            const s = document.createElement('script');
-            s.src = src;
-            s.async = true;
-            s.onload = onOne;
-            s.onerror = () => { console.error('Firebase SDK не загружен:', src); onOne(); };
-            document.head.appendChild(s);
-        });
-    }
-
-    _loadFirebaseSDKs();
-    </script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
 
     <script>if(sessionStorage.getItem('session_started')==='1'){document.documentElement.classList.add('no-splash');}</script>
     <style>
@@ -127,7 +84,7 @@
         .no-splash .splash { display: none !important; }
         
         .splash-tagline { color: #000; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.3px; text-align: center; padding: 0 24px; }
-        .splash-version { position: absolute; bottom: 30px; left: 0; right: 0; text-align: center; color: rgba(0,0,0,0.35); font-size: 0.75rem; font-weight: 500; }
+        .splash-version { position: absolute; bottom: 30px; left: 0; right: 0; text-align: center; color: rgba(0,0,0,0.75); font-size: 0.75rem; font-weight: 500; }
 
         .auth-screen {
             position: fixed; inset: 0; background: #FFDD2D;
@@ -461,18 +418,15 @@
 
 <div class="splash" id="splash">
     <div class="splash-tagline">Думай о более важном!</div>
-    <div class="splash-version">Версия 1.05</div>
+    <div class="splash-version">Версия 1.1</div>
 </div>
 
 <script>
-  // Усиленный предохранитель! Скрывает логотип через 4 секунды, если что-то зависло при холодном старте.
+  // Аварийный сброс HTML сплэш-экрана
   setTimeout(function() {
     var splash = document.getElementById('splash');
     if (splash && !splash.classList.contains('hidden')) {
-      console.warn('Предохранитель: принудительное скрытие экрана загрузки');
       splash.classList.add('hidden');
-      
-      // Если пользователь не авторизован (или данные не успели загрузиться), показываем экран авторизации
       if (!window.authUser) {
           var app = document.getElementById('app');
           var auth = document.getElementById('authScreen');
@@ -718,6 +672,7 @@ function _initFirebase() {
     window._fbAppInited = true;
 
     if (typeof firebase === 'undefined') {
+        console.error('Firebase не загружен');
         authResolved = true; authUser = null;
         splashTimerDone = true; evaluateLaunch();
         return;
@@ -737,7 +692,6 @@ function _initFirebase() {
         auth = firebase.auth();
         db   = firebase.firestore();
 
-        // ВАЖНО: Включаем офлайн-базу данных!
         db.enablePersistence({synchronizeTabs:true}).catch(function(err) {
             console.log('Ошибка запуска офлайн-режима:', err);
         });
@@ -807,7 +761,7 @@ let pinLockBuf = '', pinLockLen = 4;
 
 let isLoginMode = true;
 let authResolved = false;
-window.authUser = null; // Делаем глобальной для страховки
+window.authUser = null; 
 let splashTimerDone = false;
 let creditsUnsubscribe = null;
 let monthResetDone = false;
@@ -1552,7 +1506,6 @@ function evaluateLaunch(){
     if (!authResolved || !splashTimerDone) return;
     document.getElementById('splash').classList.add('hidden');
     
-    // Используем window.authUser для страховки области видимости
     if (window.authUser) {
         document.getElementById('authScreen').style.display = 'none';
         const hasPin = ls.get(PIN_K);
@@ -1630,9 +1583,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, 1500);
 
-    onFirebaseReady(() => {
-        _initFirebase();
-    });
+    // Вызываем инициализацию напрямую, так как скрипты загружаются через defer
+    _initFirebase();
 });
 
 window.onerror = function(msg) {
@@ -1642,10 +1594,10 @@ window.onerror = function(msg) {
 
 document.getElementById('lockStatusRow').onclick = e => { toggleLockPanel(); e.stopPropagation(); };
 
-// ========== PWA – РЕГИСТРАЦИЯ SERVICE WORKER (v4) ==========
+// ========== PWA – РЕГИСТРАЦИЯ SERVICE WORKER (v7) ==========
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=4').then(reg => {
+        navigator.serviceWorker.register('./sw.js?v=7').then(reg => {
             reg.update();
         }).catch(() => {});
     });
