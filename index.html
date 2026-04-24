@@ -62,7 +62,7 @@
     _loadFirebaseSDKs();
     </script>
 
-    <script>if(sessionStorage.getItem('session_started')==='1'){document.documentElement.classList.add('no-splash');}</script>
+    <script>/* splash управляется через JS — не через sessionStorage */</script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -1550,7 +1550,11 @@ function setupBackBtn(){
     });
 }
 
-window.onload = () => {
+let _appInitDone = false;
+function _runAppInit() {
+    if (_appInitDone) return;
+    _appInitDone = true;
+
     if (screen.orientation && screen.orientation.lock) {
         screen.orientation.lock('portrait').catch(() => {});
     }
@@ -1560,14 +1564,10 @@ window.onload = () => {
     document.getElementById('endYear').value = new Date().getFullYear() + 1;
     buildPinDots('pinSetDots', 4, 'sd');
 
-    // РАДИКАЛЬНОЕ РЕШЕНИЕ: сплэш скрывается через 1.5 сек МАКСИМУМ,
-    // не зависит от Firebase вообще. Показываем экран авторизации сразу.
-    // Firebase подключается в фоне и обновляет UI когда готов.
-    const SPLASH_MAX_MS = 1500;
+    // Сплэш скрывается через 1.5 сек максимум — не зависит от Firebase
     setTimeout(() => {
         if (!splashTimerDone) {
             splashTimerDone = true;
-            // Если Firebase ещё не готов — показываем authScreen сразу
             if (!authResolved) {
                 document.getElementById('splash').classList.add('hidden');
                 document.getElementById('app').classList.remove('visible');
@@ -1576,13 +1576,35 @@ window.onload = () => {
                 evaluateLaunch();
             }
         }
-    }, SPLASH_MAX_MS);
+    }, 1500);
 
     // Firebase инициализируется когда SDK загрузится (параллельно)
     onFirebaseReady(() => {
         _initFirebase();
     });
-};
+}
+
+// DOMContentLoaded — срабатывает раньше window.onload, работает надёжнее в WebView
+document.addEventListener('DOMContentLoaded', _runAppInit);
+
+// pageshow — срабатывает при восстановлении из bfcache (повторное открытие в WebView)
+window.addEventListener('pageshow', (e) => {
+    if (e.persisted) {
+        // Страница восстановлена из кеша — сбрасываем флаги и запускаем заново
+        _appInitDone = false;
+        authResolved = false;
+        authUser = null;
+        splashTimerDone = false;
+        window._fbAppInited = false;
+        window._firebaseReady = false;
+        window._firebaseReadyCallbacks = [];
+        document.getElementById('splash').classList.remove('hidden');
+        _loadFirebaseSDKs();
+        _runAppInit();
+    }
+});
+
+window.onload = _runAppInit;
 
 window.onerror = function(msg) {
     setSplashStatus('Ошибка: ' + msg);
