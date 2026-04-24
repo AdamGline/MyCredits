@@ -21,7 +21,7 @@
     <link rel="dns-prefetch" href="https://www.gstatic.com">
 
     <script>
-    // Firebase SDK загружается динамически — НЕ блокирует парсинг и window.onload.
+    // Firebase SDK загружается динамически
     window._fbAppInited = false;
     window._firebaseReadyCallbacks = [];
     window._firebaseReady = false;
@@ -43,7 +43,6 @@
             'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js'
         ];
         let loaded = 0;
-        // Жёсткий таймаут 8 сек — если CDN недоступен, работаем без Firebase
         const sdkTimeout = setTimeout(() => {
             console.warn('Firebase SDK timeout — работаем без Firebase');
             _firebaseDidLoad();
@@ -65,7 +64,6 @@
         });
     }
 
-    // Запускаем загрузку SDK немедленно, не дожидаясь ничего
     _loadFirebaseSDKs();
     </script>
 
@@ -465,22 +463,24 @@
     <div class="splash-tagline">Думай о более важном!</div>
     <div class="splash-version">Версия 1.05</div>
 </div>
+
 <script>
-  // Предохранитель: принудительно скрываем сплэш через 5 секунд,
-  // если основная логика не смогла этого сделать (например, проблемы с Firebase)
+  // Усиленный предохранитель! Скрывает логотип через 4 секунды, если что-то зависло при холодном старте.
   setTimeout(function() {
     var splash = document.getElementById('splash');
     if (splash && !splash.classList.contains('hidden')) {
-      console.warn('Сработал предохранитель: скрываем сплэш принудительно');
+      console.warn('Предохранитель: принудительное скрытие экрана загрузки');
       splash.classList.add('hidden');
-      var app = document.getElementById('app');
-      var auth = document.getElementById('authScreen');
-      // Если приложение так и не показалось, открываем экран входа
-      if (app && !app.classList.contains('visible')) {
-        if (auth) auth.style.display = 'flex';
+      
+      // Если пользователь не авторизован (или данные не успели загрузиться), показываем экран авторизации
+      if (!window.authUser) {
+          var app = document.getElementById('app');
+          var auth = document.getElementById('authScreen');
+          if (app) app.classList.remove('visible');
+          if (auth) auth.style.display = 'flex';
       }
     }
-  }, 5000);
+  }, 4000);
 </script>
 
 <div class="global-loader" id="globalLoader" style="display: none;"><div class="loader-spinner"></div><div>Загрузка данных...</div></div>
@@ -709,12 +709,7 @@
 </div>
 
 <script>
-// ========== ОТЛАДКА СПЛЭША ==========
-function setSplashStatus(msg) {
-    console.log('[Splash]', msg);
-}
-
-// ========== ИНИЦИАЛИЗАЦИЯ FIREBASE ==========
+// ========== ИНИЦИАЛИЗАЦИЯ FIREBASE С ПОДДЕРЖКОЙ ОФЛАЙНА ==========
 let auth, db;
 let authResolveTimer = null;
 
@@ -741,6 +736,12 @@ function _initFirebase() {
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         auth = firebase.auth();
         db   = firebase.firestore();
+
+        // ВАЖНО: Включаем офлайн-базу данных!
+        db.enablePersistence({synchronizeTabs:true}).catch(function(err) {
+            console.log('Ошибка запуска офлайн-режима:', err);
+        });
+        
     } catch(e) {
         authResolved = true; authUser = null;
         splashTimerDone = true; evaluateLaunch();
@@ -760,7 +761,6 @@ function _initFirebase() {
         authResolved = true;
         splashTimerDone = true;
         
-        // Исправлена утечка подписки:
         if (!user && creditsUnsubscribe) {
             creditsUnsubscribe();
             creditsUnsubscribe = null;
@@ -807,11 +807,10 @@ let pinLockBuf = '', pinLockLen = 4;
 
 let isLoginMode = true;
 let authResolved = false;
-let authUser = null;
+window.authUser = null; // Делаем глобальной для страховки
 let splashTimerDone = false;
 let creditsUnsubscribe = null;
 let monthResetDone = false;
-
 
 const ls = { get:k=>{try{return localStorage.getItem(k);}catch(e){return null;}}, set:(k,v)=>{try{localStorage.setItem(k,v);return true;}catch(e){return false;}}, rm:k=>{try{localStorage.removeItem(k);}catch(e){}} };
 
@@ -824,12 +823,11 @@ function showGlobalLoader(show) { document.getElementById('globalLoader').style.
 
 // ========== ЗАГРУЗКА КРЕДИТОВ ==========
 function loadCredits() {
-    if (!authUser) return;
-    if (!db) { showToast('База данных недоступна'); return; }
+    if (!authUser || !db) return;
     
-    setSplashStatus('Загрузка кредитов...');
     showGlobalLoader(true);
     if (creditsUnsubscribe) { creditsUnsubscribe(); creditsUnsubscribe = null; }
+    
     creditsUnsubscribe = db.collection('credits').where('userId', '==', authUser.uid)
         .onSnapshot(snapshot => {
             credits = [];
@@ -839,7 +837,6 @@ function loadCredits() {
             showGlobalLoader(false);
         }, e => {
             console.error('Ошибка синхронизации:', e);
-            showToast('Ошибка синхронизации данных');
             showGlobalLoader(false);
         });
 }
@@ -1424,7 +1421,7 @@ async function doDeleteAccount() {
         if (creditsUnsubscribe) { creditsUnsubscribe(); creditsUnsubscribe = null; }
         sessionStorage.removeItem('pin_ok'); sessionStorage.removeItem('session_started');
         ls.rm(PIN_K); ls.rm(PIN_LEN_K);
-        monthResetDone = false; credits = []; authUser = null;
+        monthResetDone = false; credits = []; window.authUser = null;
         closeDeleteAccount();
         document.getElementById('app').classList.remove('visible');
         document.getElementById('authScreen').style.display = 'flex';
@@ -1550,13 +1547,13 @@ function stopSpoilers(){ if (spoilerRAF) { cancelAnimationFrame(spoilerRAF); spo
 function toggleCompleted(){ const list = document.getElementById('completedList'); const arrow = document.getElementById('completedArrow'); const open = !list.classList.contains('open'); list.classList.toggle('open', open); arrow.classList.toggle('open', open); if (open) { const cm = new Date().getMonth(), cy = new Date().getFullYear(); list.innerHTML = ''; const frag = document.createDocumentFragment(); credits.filter(c => c.completed).forEach(c => frag.appendChild(buildCreditItem(c, cm, cy))); list.appendChild(frag); } }
 function closeAllPaid(){ document.getElementById('allPaidOverlay').classList.remove('active'); }
 
-// ========== ЗАПУСК И ОБРАБОТЧИК DOM (Единый!) ==========
+// ========== ЗАПУСК И ОБРАБОТЧИК DOM ==========
 function evaluateLaunch(){
-    setSplashStatus('Запуск...');
     if (!authResolved || !splashTimerDone) return;
-    setSplashStatus('Готово');
     document.getElementById('splash').classList.add('hidden');
-    if (authUser) {
+    
+    // Используем window.authUser для страховки области видимости
+    if (window.authUser) {
         document.getElementById('authScreen').style.display = 'none';
         const hasPin = ls.get(PIN_K);
         if (hasPin && !sessionStorage.getItem('pin_ok')) { openPinLock(); }
@@ -1585,7 +1582,6 @@ function setupBackBtn(){
     });
 }
 
-// ЕДИНСТВЕННЫЙ ДОМ ОБРАБОТЧИК
 document.addEventListener('DOMContentLoaded', () => {
     if (screen.orientation && screen.orientation.lock) {
         screen.orientation.lock('portrait').catch(() => {});
@@ -1640,7 +1636,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 window.onerror = function(msg) {
-    setSplashStatus('Ошибка: ' + msg);
+    console.log('Ошибка: ' + msg);
     return false;
 };
 
