@@ -459,8 +459,7 @@
 <body>
 
 <div class="splash" id="splash">
-    <img class="splash-logo" src="logo.png" alt="Logo" onerror="this.style.display='none'">
-    <div class="splash-tagline">Думай о более важном!</div>
+    <div class="splash-tagline">Мои Кредиты</div>
     <div class="splash-version">Версия 1.05</div>
 </div>
 
@@ -1553,7 +1552,8 @@ function setupBackBtn(){
     });
 }
 
-window.onload = () => {
+// Запуск через DOMContentLoaded — НЕ ждёт загрузки картинок и внешних ресурсов
+document.addEventListener('DOMContentLoaded', () => {
     if (screen.orientation && screen.orientation.lock) {
         screen.orientation.lock('portrait').catch(() => {});
     }
@@ -1563,38 +1563,7 @@ window.onload = () => {
     document.getElementById('endYear').value = new Date().getFullYear() + 1;
     buildPinDots('pinSetDots', 4, 'sd');
 
-    // РАДИКАЛЬНОЕ РЕШЕНИЕ: сплэш скрывается через 1.5 сек МАКСИМУМ,
-    // не зависит от Firebase вообще. Показываем экран авторизации сразу.
-    // Firebase подключается в фоне и обновляет UI когда готов.
-    const SPLASH_MAX_MS = 1500;
-    setTimeout(() => {
-        if (!splashTimerDone) {
-            splashTimerDone = true;
-            // Если Firebase ещё не готов — показываем authScreen сразу
-            if (!authResolved) {
-                document.getElementById('splash').classList.add('hidden');
-                document.getElementById('app').classList.remove('visible');
-                document.getElementById('authScreen').style.display = 'flex';
-            } else {
-                evaluateLaunch();
-            }
-        }
-    }, SPLASH_MAX_MS);
-
-    // Firebase инициализируется когда SDK загрузится (параллельно)
-    onFirebaseReady(() => {
-        _initFirebase();
-    });
-};
-
-window.onerror = function(msg) {
-    setSplashStatus('Ошибка: ' + msg);
-    return false;
-};
-
-document.getElementById('lockStatusRow').onclick = e => { toggleLockPanel(); e.stopPropagation(); };
-
-document.addEventListener('DOMContentLoaded', () => {
+    // PIN pad
     function bindPad(padId, keyFn, delId, delFn) {
         const pad = document.getElementById(padId); if (!pad) return;
         const handle = (btn, e) => { e.preventDefault(); btn.classList.add('pressed'); setTimeout(() => btn.classList.remove('pressed'), 100); const v = btn.getAttribute('data-v'); if (v !== null) keyFn(v); else if (btn.id === delId) delFn(); };
@@ -1603,6 +1572,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     bindPad('pinSetPad', pinSetKey, 'pinSetDel', pinSetDel);
     bindPad('pinLockPad', pinLockKey, 'pinLockDel', pinLockDel);
+
+    // Сплэш скрывается через 1.5 сек максимум — не зависит от Firebase
+    setTimeout(() => {
+        if (!splashTimerDone) {
+            splashTimerDone = true;
+            if (!authResolved) {
+                document.getElementById('splash').classList.add('hidden');
+                document.getElementById('app').classList.remove('visible');
+                document.getElementById('authScreen').style.display = 'flex';
+            } else {
+                evaluateLaunch();
+            }
+        }
+    }, 1500);
+
+    // Firebase инициализируется когда SDK загрузится (параллельно)
+    onFirebaseReady(() => {
+        _initFirebase();
+    });
 });
 
 
