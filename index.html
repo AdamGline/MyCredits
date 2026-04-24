@@ -123,8 +123,9 @@
         .splash { position: fixed; inset: 0; background: #FFDD2D; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000; transition: opacity 0.4s ease, visibility 0.4s ease; }
         .splash.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
         .no-splash .splash { display: none !important; }
-        .splash-tagline { color: #000; font-size: 1.2rem; font-weight: 700; letter-spacing: 0.2px; text-align: center; }
         .splash-version { position: absolute; bottom: 30px; left: 0; right: 0; text-align: center; color: rgba(0,0,0,0.35); font-size: 0.75rem; font-weight: 500; }
+        .splash-tagline { color: #000; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.3px; text-align: center; padding: 0 24px; }
+        .splash-version { position: absolute; bottom: 30px; left: 0; right: 0; text-align: center; color: rgba(255,255,255,0.35); font-size: 0.75rem; font-weight: 500; }
 
         .auth-screen {
             position: fixed; inset: 0; background: #FFDD2D;
@@ -138,8 +139,8 @@
             padding-top: max(60px, env(safe-area-inset-top));
             bottom: 420px;
         }
-        .auth-logo-img { width: 80px; height: 80px; object-fit: contain; border-radius: 18px; margin-bottom: 16px; }
-        .auth-logo-sub { font-size: 1rem; font-weight: 700; letter-spacing: 0.2px; text-align: center; white-space: nowrap; color: #000; }
+        .auth-logo-img { width: 120px; height: 120px; object-fit: contain; border-radius: 26px; margin-bottom: 20px; }
+        .auth-logo-sub { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.3px; text-align: center; white-space: nowrap; color: #000; }
         .auth-sheet {
             position: relative; width: 100%; background: var(--surface);
             border-radius: 24px 24px 0 0;
@@ -405,7 +406,7 @@
         html, body { max-width: 100%; overflow-x: hidden; }
         .app { width: 100%; max-width: 100%; overflow-x: hidden; }
         .section-header { width: 100%; box-sizing: border-box; }
-        .splash-logo { width: 100% !important; }
+
 
         .global-loader {
             position: fixed;
