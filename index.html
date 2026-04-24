@@ -16,6 +16,11 @@
     <meta name="apple-mobile-web-app-title" content="Мои Кредиты">
     <link rel="apple-touch-icon" href="icon.png">
     <meta name="theme-color" content="#FFDD2D">
+
+    <!-- Ускоряем подключение к CDN Firebase -->
+    <link rel="preconnect" href="https://www.gstatic.com">
+    <link rel="dns-prefetch" href="https://www.gstatic.com">
+
     <script>
     // Firebase SDK загружается динамически — НЕ блокирует парсинг и window.onload.
     window._fbAppInited = false;
@@ -407,7 +412,6 @@
         .app { width: 100%; max-width: 100%; overflow-x: hidden; }
         .section-header { width: 100%; box-sizing: border-box; }
         
-
         .global-loader {
             position: fixed;
             top: 50%;
@@ -1612,12 +1616,9 @@ document.addEventListener('DOMContentLoaded', () => {
     bindPad('pinLockPad', pinLockKey, 'pinLockDel', pinLockDel);
 });
 
-
-
-// ========== PWA — минимальная регистрация SW (только для установки) ==========
+// ========== PWA – РЕГИСТРАЦИЯ SERVICE WORKER (v3) ==========
 if ('serviceWorker' in navigator) {
-    // ?v= сбрасывает старый SW при каждом обновлении
-    navigator.serviceWorker.register('./sw.js?v=2').then(reg => {
+    navigator.serviceWorker.register('./sw.js?v=3').then(reg => {
         reg.update(); // принудительно проверяем обновление
     }).catch(() => {});
 }
