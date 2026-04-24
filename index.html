@@ -125,6 +125,7 @@
         .no-splash .splash { display: none !important; }
         .splash-version { position: absolute; bottom: 30px; left: 0; right: 0; text-align: center; color: rgba(0,0,0,0.35); font-size: 0.75rem; font-weight: 500; }
         .splash-tagline { color: #000; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.3px; text-align: center; padding: 0 24px; }
+        .splash-tagline { color: rgba(255,255,255,0.75); font-size: 1.05rem; font-weight: 500; letter-spacing: 0.3px; text-align: center; }
         .splash-version { position: absolute; bottom: 30px; left: 0; right: 0; text-align: center; color: rgba(255,255,255,0.35); font-size: 0.75rem; font-weight: 500; }
 
         .auth-screen {
@@ -406,7 +407,7 @@
         html, body { max-width: 100%; overflow-x: hidden; }
         .app { width: 100%; max-width: 100%; overflow-x: hidden; }
         .section-header { width: 100%; box-sizing: border-box; }
-
+        
 
         .global-loader {
             position: fixed;
@@ -462,6 +463,20 @@
     <div class="splash-tagline">Думай о более важном!</div>
     <div class="splash-version">Версия 1.05</div>
 </div>
+<script>
+  // Аварийный таймер — скрывает сплэш при любых проблемах с onload/Firebase
+  setTimeout(function() {
+    var splash = document.getElementById('splash');
+    if (splash && !splash.classList.contains('hidden')) {
+      splash.classList.add('hidden');
+      var app = document.getElementById('app');
+      var auth = document.getElementById('authScreen');
+      if (app && !app.classList.contains('visible')) {
+        if (auth) auth.style.display = 'flex';
+      }
+    }
+  }, 3000);
+</script>
 
 <div class="global-loader" id="globalLoader" style="display: none;"><div class="loader-spinner"></div><div>Загрузка данных...</div></div>
 
@@ -1552,7 +1567,7 @@ function setupBackBtn(){
     });
 }
 
-window.onload = () => {
+document.addEventListener('DOMContentLoaded', () => {
     if (screen.orientation && screen.orientation.lock) {
         screen.orientation.lock('portrait').catch(() => {});
     }
@@ -1562,14 +1577,9 @@ window.onload = () => {
     document.getElementById('endYear').value = new Date().getFullYear() + 1;
     buildPinDots('pinSetDots', 4, 'sd');
 
-    // РАДИКАЛЬНОЕ РЕШЕНИЕ: сплэш скрывается через 1.5 сек МАКСИМУМ,
-    // не зависит от Firebase вообще. Показываем экран авторизации сразу.
-    // Firebase подключается в фоне и обновляет UI когда готов.
-    const SPLASH_MAX_MS = 1500;
     setTimeout(() => {
         if (!splashTimerDone) {
             splashTimerDone = true;
-            // Если Firebase ещё не готов — показываем authScreen сразу
             if (!authResolved) {
                 document.getElementById('splash').classList.add('hidden');
                 document.getElementById('app').classList.remove('visible');
@@ -1578,13 +1588,12 @@ window.onload = () => {
                 evaluateLaunch();
             }
         }
-    }, SPLASH_MAX_MS);
+    }, 1500);
 
-    // Firebase инициализируется когда SDK загрузится (параллельно)
     onFirebaseReady(() => {
         _initFirebase();
     });
-};
+});
 
 window.onerror = function(msg) {
     setSplashStatus('Ошибка: ' + msg);
