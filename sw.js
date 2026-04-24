@@ -1,5 +1,5 @@
-// Service Worker v3 – кешируем SDK и статику, обеспечиваем мгновенный холодный старт
-const CACHE_STATIC = 'credits-static-v3';
+// Service Worker v4 – улучшенный кэш для холодного старта
+const CACHE_STATIC = 'credits-static-v4';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -31,14 +31,24 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-  // Для запросов к статике и SDK – сразу из кеша, для остальных – сеть
+  // Пропускаем не-HTTP запросы (например, chrome-extension://)
+  if (!event.request.url.startsWith('http')) return;
+
   event.respondWith(
-    caches.match(event.request).then(cached => {
-      return cached || fetch(event.request).catch(() => {
-        // Если сеть полностью недоступна, для навигации возвращаем index.html
+    // ignoreSearch: true — игнорируем query-параметры (?v=...), чтобы находить ресурсы в кэше
+    caches.match(event.request, { ignoreSearch: true }).then(cached => {
+      if (cached) {
+        return cached; // Мгновенная отдача из кэша
+      }
+      
+      // Если нет в кэше – идём в сеть
+      return fetch(event.request).catch(() => {
+        // Для navigations (переходов по страницам) отдаём index.html из кэша
         if (event.request.mode === 'navigate') {
           return caches.match('./index.html');
         }
+        // Иначе просто логируем ошибку
+        console.warn('Офлайн: ресурс недоступен', event.request.url);
       });
     })
   );
