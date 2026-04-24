@@ -1616,7 +1616,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ========== PWA — минимальная регистрация SW (только для установки) ==========
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
+    // ?v= сбрасывает старый SW при каждом обновлении
+    navigator.serviceWorker.register('./sw.js?v=2').then(reg => {
+        reg.update(); // принудительно проверяем обновление
+    }).catch(() => {});
 }
 
 const installBtn = document.getElementById('installBtn');
