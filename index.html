@@ -120,12 +120,12 @@
         }
         input, textarea, select { -webkit-user-select: text; user-select: text; }
 
-        .splash { position: fixed; inset: 0; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000; transition: opacity 0.4s ease, visibility 0.4s ease; }
+        .splash { position: fixed; inset: 0; background: #FFDD2D; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000; transition: opacity 0.4s ease, visibility 0.4s ease; }
         .splash.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
         .no-splash .splash { display: none !important; }
-        .splash-logo { width: 80vw; max-width: 320px; height: auto; object-fit: contain; display: block; margin-bottom: 32px; }
-        .splash-tagline { color: rgba(255,255,255,0.75); font-size: 1.05rem; font-weight: 500; letter-spacing: 0.3px; text-align: center; }
-        .splash-version { position: absolute; bottom: 30px; left: 0; right: 0; text-align: center; color: rgba(255,255,255,0.35); font-size: 0.75rem; font-weight: 500; }
+        .splash-logo { width: 72px; height: 72px; object-fit: contain; display: block; border-radius: 16px; margin-bottom: 24px; }
+        .splash-tagline { color: #000; font-size: 1.15rem; font-weight: 700; letter-spacing: 0.2px; text-align: center; }
+        .splash-version { position: absolute; bottom: 30px; left: 0; right: 0; text-align: center; color: rgba(0,0,0,0.35); font-size: 0.75rem; font-weight: 500; }
 
         .auth-screen {
             position: fixed; inset: 0; background: #000000;
@@ -406,7 +406,7 @@
         html, body { max-width: 100%; overflow-x: hidden; }
         .app { width: 100%; max-width: 100%; overflow-x: hidden; }
         .section-header { width: 100%; box-sizing: border-box; }
-        .splash-logo { width: 100% !important; }
+        
 
         .global-loader {
             position: fixed;
@@ -459,7 +459,8 @@
 <body>
 
 <div class="splash" id="splash">
-    <div class="splash-tagline">Мои Кредиты</div>
+    <img class="splash-logo" src="logo.png" alt="Logo" onerror="this.style.display='none'">
+    <div class="splash-tagline">Думай о более важном!</div>
     <div class="splash-version">Версия 1.05</div>
 </div>
 
@@ -1552,8 +1553,7 @@ function setupBackBtn(){
     });
 }
 
-// Запуск через DOMContentLoaded — НЕ ждёт загрузки картинок и внешних ресурсов
-document.addEventListener('DOMContentLoaded', () => {
+window.onload = () => {
     if (screen.orientation && screen.orientation.lock) {
         screen.orientation.lock('portrait').catch(() => {});
     }
@@ -1563,20 +1563,14 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('endYear').value = new Date().getFullYear() + 1;
     buildPinDots('pinSetDots', 4, 'sd');
 
-    // PIN pad
-    function bindPad(padId, keyFn, delId, delFn) {
-        const pad = document.getElementById(padId); if (!pad) return;
-        const handle = (btn, e) => { e.preventDefault(); btn.classList.add('pressed'); setTimeout(() => btn.classList.remove('pressed'), 100); const v = btn.getAttribute('data-v'); if (v !== null) keyFn(v); else if (btn.id === delId) delFn(); };
-        pad.addEventListener('touchstart', e => { const btn = e.target.closest('.pin-key'); if (!btn || btn.classList.contains('empty')) return; handle(btn, e); }, { passive: false });
-        pad.addEventListener('mousedown', e => { const btn = e.target.closest('.pin-key'); if (!btn || btn.classList.contains('empty')) return; handle(btn, e); });
-    }
-    bindPad('pinSetPad', pinSetKey, 'pinSetDel', pinSetDel);
-    bindPad('pinLockPad', pinLockKey, 'pinLockDel', pinLockDel);
-
-    // Сплэш скрывается через 1.5 сек максимум — не зависит от Firebase
+    // РАДИКАЛЬНОЕ РЕШЕНИЕ: сплэш скрывается через 1.5 сек МАКСИМУМ,
+    // не зависит от Firebase вообще. Показываем экран авторизации сразу.
+    // Firebase подключается в фоне и обновляет UI когда готов.
+    const SPLASH_MAX_MS = 1500;
     setTimeout(() => {
         if (!splashTimerDone) {
             splashTimerDone = true;
+            // Если Firebase ещё не готов — показываем authScreen сразу
             if (!authResolved) {
                 document.getElementById('splash').classList.add('hidden');
                 document.getElementById('app').classList.remove('visible');
@@ -1585,12 +1579,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 evaluateLaunch();
             }
         }
-    }, 1500);
+    }, SPLASH_MAX_MS);
 
     // Firebase инициализируется когда SDK загрузится (параллельно)
     onFirebaseReady(() => {
         _initFirebase();
     });
+};
+
+window.onerror = function(msg) {
+    setSplashStatus('Ошибка: ' + msg);
+    return false;
+};
+
+document.getElementById('lockStatusRow').onclick = e => { toggleLockPanel(); e.stopPropagation(); };
+
+document.addEventListener('DOMContentLoaded', () => {
+    function bindPad(padId, keyFn, delId, delFn) {
+        const pad = document.getElementById(padId); if (!pad) return;
+        const handle = (btn, e) => { e.preventDefault(); btn.classList.add('pressed'); setTimeout(() => btn.classList.remove('pressed'), 100); const v = btn.getAttribute('data-v'); if (v !== null) keyFn(v); else if (btn.id === delId) delFn(); };
+        pad.addEventListener('touchstart', e => { const btn = e.target.closest('.pin-key'); if (!btn || btn.classList.contains('empty')) return; handle(btn, e); }, { passive: false });
+        pad.addEventListener('mousedown', e => { const btn = e.target.closest('.pin-key'); if (!btn || btn.classList.contains('empty')) return; handle(btn, e); });
+    }
+    bindPad('pinSetPad', pinSetKey, 'pinSetDel', pinSetDel);
+    bindPad('pinLockPad', pinLockKey, 'pinLockDel', pinLockDel);
 });
 
 
