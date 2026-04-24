@@ -120,15 +120,15 @@
         }
         input, textarea, select { -webkit-user-select: text; user-select: text; }
 
-        .splash { position: fixed; inset: 0; background: #FFDD2D; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000; transition: opacity 0.4s ease, visibility 0.4s ease; }
+        .splash { position: fixed; inset: 0; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000; transition: opacity 0.4s ease, visibility 0.4s ease; }
         .splash.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
         .no-splash .splash { display: none !important; }
-        .splash-logo { width: 72px; height: 72px; object-fit: contain; display: block; border-radius: 16px; margin-bottom: 24px; }
-        .splash-tagline { color: #000; font-size: 1.15rem; font-weight: 700; letter-spacing: 0.2px; text-align: center; }
-        .splash-version { position: absolute; bottom: 30px; left: 0; right: 0; text-align: center; color: rgba(0,0,0,0.35); font-size: 0.75rem; font-weight: 500; }
+        .splash-logo { width: 80vw; max-width: 320px; height: auto; object-fit: contain; display: block; margin-bottom: 32px; }
+        .splash-tagline { color: rgba(255,255,255,0.75); font-size: 1.05rem; font-weight: 500; letter-spacing: 0.3px; text-align: center; }
+        .splash-version { position: absolute; bottom: 30px; left: 0; right: 0; text-align: center; color: rgba(255,255,255,0.35); font-size: 0.75rem; font-weight: 500; }
 
         .auth-screen {
-            position: fixed; inset: 0; background: #000000;
+            position: fixed; inset: 0; background: #FFDD2D;
             display: none; flex-direction: column; align-items: center; justify-content: flex-end;
             z-index: 1000; padding: 0;
             padding-bottom: max(0px, env(safe-area-inset-bottom));
@@ -139,8 +139,8 @@
             padding-top: max(60px, env(safe-area-inset-top));
             bottom: 420px;
         }
-        .auth-logo-img { width: 80vw; max-width: 300px; height: auto; object-fit: contain; margin-bottom: 16px; }
-        .auth-logo-sub { font-size: 1rem; font-weight: 500; letter-spacing: 0.5px; text-align: center; white-space: nowrap; color: rgba(255,255,255,0.8); }
+        .auth-logo-img { width: 80px; height: 80px; object-fit: contain; border-radius: 18px; margin-bottom: 16px; }
+        .auth-logo-sub { font-size: 1rem; font-weight: 700; letter-spacing: 0.3px; text-align: center; white-space: nowrap; color: #000; }
         .auth-sheet {
             position: relative; width: 100%; background: var(--surface);
             border-radius: 24px 24px 0 0;
@@ -406,7 +406,7 @@
         html, body { max-width: 100%; overflow-x: hidden; }
         .app { width: 100%; max-width: 100%; overflow-x: hidden; }
         .section-header { width: 100%; box-sizing: border-box; }
-        
+        .splash-logo { width: 100% !important; }
 
         .global-loader {
             position: fixed;
