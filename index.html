@@ -24,7 +24,7 @@
     <script defer src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
     <script defer src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
 
-    <script>if(sessionStorage.getItem('session_started')==='1'){document.documentElement.classList.add('no-splash');}</script>
+    <script>if(sessionStorage.getItem('session_started')=='1'){document.documentElement.classList.add('no-splash');}</script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -752,7 +752,7 @@ let dateMode = 'cal';
 let theme = 'light';
 let amountsVisible = true;
 let fontSize = 'm';
-let allPaidShown = false;
+let allPaidShown = sessionStorage.getItem('all_paid_shown') === '1';
 let lockPanelOpen = false;
 let backPressedOnce = false;
 let _isSaving = false;
@@ -905,10 +905,14 @@ function updateSummary(active){
     document.getElementById('summaryCount').textContent = active.length;
     document.getElementById('summaryPaidCount').textContent = active.filter(c => c.paid).length;
     document.getElementById('summaryTotal').textContent = fmt(total) + ' ₽';
-    if (paidTotalSum >= total && total > 0 && active.length > 0 && !allPaidShown) {
+    const allPaidAlreadyShown = sessionStorage.getItem('all_paid_shown') === '1';
+    if (paidTotalSum >= total && total > 0 && active.length > 0 && !allPaidShown && !allPaidAlreadyShown) {
         allPaidShown = true;
+        sessionStorage.setItem('all_paid_shown', '1');
         setTimeout(() => document.getElementById('allPaidOverlay').classList.add('active'), 400);
-    } else if (pct < 100) allPaidShown = false;
+    } else if (pct < 100) {
+        allPaidShown = false;
+    }
 }
 
 // ========== ДЕЙСТВИЯ С КРЕДИТОМ ==========
@@ -1254,7 +1258,9 @@ async function doLogout(){
     closeSettings();
     sessionStorage.removeItem('pin_ok');
     sessionStorage.removeItem('session_started');
+    sessionStorage.removeItem('all_paid_shown');
     monthResetDone = false; credits = [];
+    allPaidShown = false;
     render();
     document.getElementById('authEmailOrNick').value = '';
     document.getElementById('authPassword').value = '';
@@ -1373,9 +1379,10 @@ async function doDeleteAccount() {
         await batch.commit();
         await authUser.delete();
         if (creditsUnsubscribe) { creditsUnsubscribe(); creditsUnsubscribe = null; }
-        sessionStorage.removeItem('pin_ok'); sessionStorage.removeItem('session_started');
+        sessionStorage.removeItem('pin_ok'); sessionStorage.removeItem('session_started'); sessionStorage.removeItem('all_paid_shown');
         ls.rm(PIN_K); ls.rm(PIN_LEN_K);
         monthResetDone = false; credits = []; window.authUser = null;
+        allPaidShown = false;
         closeDeleteAccount();
         document.getElementById('app').classList.remove('visible');
         document.getElementById('authScreen').style.display = 'flex';
