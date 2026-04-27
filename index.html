@@ -98,7 +98,7 @@
             padding-top: max(60px, env(safe-area-inset-top));
             bottom: 420px;
         }
-        .auth-logo-img { width: 120px; height: 120px; object-fit: contain; border-radius: 26px; margin-bottom: 20px; }
+        .auth-logo-img { width: 100%; max-width: 280px; height: auto; object-fit: contain; border-radius: 26px; margin-bottom: 20px; display: block; }
         .auth-logo-sub { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.3px; text-align: center; white-space: nowrap; color: #000; }
         .auth-sheet {
             position: relative; width: 100%; background: var(--surface);
@@ -417,6 +417,7 @@
 <body>
 
 <div class="splash" id="splash">
+    <img src="logo.png" alt="" style="width:100%;max-width:280px;height:auto;display:block;margin-bottom:16px;" onerror="this.style.display='none'">
     <div class="splash-tagline">Думай о более важном!</div>
     <div class="splash-version">Версия 1.1</div>
 </div>
@@ -504,8 +505,8 @@
         <div class="cat-grid">
           <div class="cat-item" data-cat="mortgage" onclick="selectCat('mortgage')"><span>🏠</span><span class="cat-label">Ипотека</span></div>
           <div class="cat-item" data-cat="auto" onclick="selectCat('auto')"><span>🚗</span><span class="cat-label">Авто</span></div>
-          <div class="cat-item" data-cat="consumer" onclick="selectCat('consumer')"><span>💳</span><span class="cat-label">Потреб.</span></div>
-          <div class="cat-item" data-cat="card" onclick="selectCat('card')"><span>💰</span><span class="cat-label">Карта</span></div>
+          <div class="cat-item" data-cat="consumer" onclick="selectCat('consumer')"><span>💰</span><span class="cat-label">Потреб.</span></div>
+          <div class="cat-item" data-cat="card" onclick="selectCat('card')"><span>💳</span><span class="cat-label">Карта</span></div>
           <div class="cat-item" data-cat="other" onclick="selectCat('other')"><span>📄</span><span class="cat-label">Прочее</span></div>
         </div>
       </div>
@@ -741,7 +742,7 @@ const PIN_K     = 'crt_pin_v5';
 const PIN_LEN_K = 'crt_pin_len_v4';
 const PIN_SALT  = 'mycredits_salt_2025';
 
-const CATS = { mortgage:{emoji:'🏠',label:'Ипотека'}, auto:{emoji:'🚗',label:'Автокредит'}, consumer:{emoji:'💳',label:'Потребительский'}, card:{emoji:'💰',label:'Карта'}, other:{emoji:'📄',label:'Прочее'} };
+const CATS = { mortgage:{emoji:'🏠',label:'Ипотека'}, auto:{emoji:'🚗',label:'Автокредит'}, consumer:{emoji:'💰',label:'Потребительский'}, card:{emoji:'💳',label:'Карта'}, other:{emoji:'📄',label:'Прочее'} };
 
 let credits = [];
 let editMode = false, editId = null;
@@ -1271,7 +1272,6 @@ async function doLogout(){
     document.getElementById('authEmailOrNick').placeholder = 'email@example.com или ваш логин';
     document.getElementById('app').classList.remove('visible');
     document.getElementById('authScreen').style.display = 'flex';
-    showToast('Вы вышли из аккаунта');
 }
 
 function toggleAuthMode(){
