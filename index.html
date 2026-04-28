@@ -27,86 +27,49 @@
     <script>if(sessionStorage.getItem('session_started')=='1'){document.documentElement.classList.add('no-splash');}</script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        @media screen and (orientation: landscape) {
-            body { display: none !important; }
-        }
+        @media screen and (orientation: landscape) { body { display: none !important; } }
 
         :root {
-            --accent: #FFDD2D;
-            --accent-dark: #F0C800;
-            --bg: #F5F5F7;
-            --surface: #FFFFFF;
-            --surface-2: #F0F0F2;
-            --text: #1A1A1A;
-            --text-2: #6B6B6B;
-            --text-3: #ABABAB;
-            --border: #E8E8EA;
-            --danger: #E63946;
-            --success: #2CB67D;
-            --warning: #FF9F1C;
-            --shadow: 0 2px 12px rgba(0,0,0,0.08);
-            --shadow-md: 0 4px 24px rgba(0,0,0,0.12);
-            --radius: 16px;
-            --radius-sm: 10px;
+            --accent: #FFDD2D; --accent-dark: #F0C800; --bg: #F5F5F7; --surface: #FFFFFF; --surface-2: #F0F0F2;
+            --text: #1A1A1A; --text-2: #6B6B6B; --text-3: #ABABAB; --border: #E8E8EA; --danger: #E63946;
+            --success: #2CB67D; --warning: #FF9F1C; --shadow: 0 2px 12px rgba(0,0,0,0.08); --shadow-md: 0 4px 24px rgba(0,0,0,0.12);
+            --radius: 16px; --radius-sm: 10px;
         }
         [data-theme="dark"] {
-            --bg: #0A0A0A;
-            --surface: #161616;
-            --surface-2: #1E1E1E;
-            --text: #F5F5F5;
-            --text-2: #8A8A8A;
-            --text-3: #4A4A4A;
-            --border: #2A2A2A;
-            --shadow: 0 2px 12px rgba(0,0,0,0.4);
-            --shadow-md: 0 4px 24px rgba(0,0,0,0.5);
+            --bg: #0A0A0A; --surface: #161616; --surface-2: #1E1E1E; --text: #F5F5F5; --text-2: #8A8A8A;
+            --text-3: #4A4A4A; --border: #2A2A2A; --shadow: 0 2px 12px rgba(0,0,0,0.4); --shadow-md: 0 4px 24px rgba(0,0,0,0.5);
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
             background: var(--bg); color: var(--text);
-            -webkit-tap-highlight-color: transparent;
-            margin: 0;
-            padding: 0;
-            transition: background 0.3s, color 0.3s;
+            -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; transition: background 0.3s, color 0.3s;
         }
         .app {
-            min-height: 100vh;
-            padding-top: env(safe-area-inset-top);
-            padding-bottom: max(80px, env(safe-area-inset-bottom));
-            padding-left: env(safe-area-inset-left);
-            padding-right: env(safe-area-inset-right);
+            min-height: 100vh; padding-top: env(safe-area-inset-top); padding-bottom: max(80px, env(safe-area-inset-bottom));
+            padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right);
         }
         input, textarea, select { -webkit-user-select: text; user-select: text; }
 
         .splash { position: fixed; inset: 0; background: #FFDD2D; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000; transition: opacity 0.4s ease, visibility 0.4s ease; }
         .splash.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
         .no-splash .splash { display: none !important; }
-        
         .splash-tagline { color: #000; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.3px; text-align: center; padding: 0 24px; }
         .splash-version { position: absolute; bottom: 30px; left: 0; right: 0; text-align: center; color: rgba(0,0,0,0.75); font-size: 0.75rem; font-weight: 500; }
 
         .auth-screen {
-            position: fixed; inset: 0; background: #FFDD2D;
-            display: none; flex-direction: column; align-items: center; justify-content: flex-end;
-            z-index: 1000; padding: 0;
-            padding-bottom: max(0px, env(safe-area-inset-bottom));
+            position: fixed; inset: 0; background: #FFDD2D; display: none; flex-direction: column; align-items: center; justify-content: flex-end;
+            z-index: 1000; padding: 0; padding-bottom: max(0px, env(safe-area-inset-bottom));
         }
         .auth-logo-area {
-            position: absolute; top: 0; left: 0; right: 0;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            padding-top: max(60px, env(safe-area-inset-top));
-            bottom: 420px;
+            position: absolute; top: 0; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding-top: max(60px, env(safe-area-inset-top)); bottom: 420px;
         }
         .auth-logo-img { width: 100%; max-width: 280px; height: auto; object-fit: contain; border-radius: 26px; margin-bottom: 20px; display: block; }
         .auth-logo-sub { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.3px; text-align: center; white-space: nowrap; color: #000; }
         .auth-sheet {
-            position: relative; width: 100%; background: var(--surface);
-            border-radius: 24px 24px 0 0;
-            padding: 28px 24px 20px;
-            display: flex; flex-direction: column; gap: 14px;
-            border-top: 1px solid var(--border);
-            box-shadow: 0 -4px 24px rgba(0,0,0,0.06);
+            position: relative; width: 100%; background: var(--surface); border-radius: 24px 24px 0 0; padding: 28px 24px 20px;
+            display: flex; flex-direction: column; gap: 14px; border-top: 1px solid var(--border); box-shadow: 0 -4px 24px rgba(0,0,0,0.06);
         }
         .auth-sheet-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 6px; }
         .auth-sheet-title { font-size: 1.1rem; font-weight: 700; color: var(--text); text-align: center; margin-bottom: 2px; }
@@ -114,17 +77,15 @@
         .auth-field { display: flex; flex-direction: column; gap: 5px; }
         .auth-field-label { font-size: 0.72rem; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.06em; }
         .auth-field input {
-            background: var(--surface-2); border: 1.5px solid var(--border); border-radius: 12px;
-            color: var(--text); padding: 13px 16px; font-size: 0.95rem; font-family: inherit;
-            font-weight: 500; outline: none; transition: border-color 0.15s; width: 100%;
-            -webkit-appearance: none;
+            background: var(--surface-2); border: 1.5px solid var(--border); border-radius: 12px; color: var(--text);
+            padding: 13px 16px; font-size: 0.95rem; font-family: inherit; font-weight: 500; outline: none;
+            transition: border-color 0.15s; width: 100%; -webkit-appearance: none;
         }
         .auth-field input:focus { border-color: var(--accent-dark); }
         .auth-field input::placeholder { color: var(--text-3); }
         .auth-submit-btn {
-            width: 100%; padding: 15px; background: var(--text); border: none; border-radius: 14px;
-            font-family: inherit; font-size: 1rem; font-weight: 700; color: var(--bg);
-            cursor: pointer; transition: all 0.15s; margin-top: 2px; letter-spacing: -0.2px;
+            width: 100%; padding: 15px; background: var(--text); border: none; border-radius: 14px; font-family: inherit;
+            font-size: 1rem; font-weight: 700; color: var(--bg); cursor: pointer; transition: all 0.15s; margin-top: 2px; letter-spacing: -0.2px;
         }
         .auth-submit-btn:active { transform: scale(0.97); opacity: 0.85; }
         .auth-submit-btn:disabled { opacity: 0.5; pointer-events: none; }
@@ -142,10 +103,8 @@
         .summary-header-left { flex: 1; }
         .summary-label { font-size: 0.78rem; font-weight: 500; opacity: 0.6; margin-bottom: 6px; }
         .summary-settings-btn {
-            width: 36px; height: 36px; border-radius: 50%;
-            background: rgba(255,255,255,0.2); border: none; color: var(--bg);
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; flex-shrink: 0;
+            width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.2); border: none; color: var(--bg);
+            display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;
         }
         [data-theme="dark"] .summary-settings-btn { background: rgba(0,0,0,0.2); color: #1A1A1A; }
         .summary-settings-btn:active { transform: scale(0.92); }
@@ -157,7 +116,6 @@
         .summary-bar { height: 5px; background: rgba(255,255,255,0.2); border-radius: 3px; overflow: hidden; margin-bottom: 14px; }
         [data-theme="dark"] .summary-bar { background: rgba(0,0,0,0.15); }
         .summary-bar-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.5s cubic-bezier(0.4,0,0.2,1); }
-        [data-theme="dark"] .summary-bar-fill { background: rgba(0,0,0,0.35); }
         .summary-stats { display: flex; gap: 20px; }
         .summary-stat { display: flex; flex-direction: column; gap: 2px; }
         .summary-stat-label { font-size: 0.7rem; opacity: 0.55; font-weight: 500; }
@@ -197,12 +155,15 @@
         .credit-term-tag.infinite { background: var(--surface-2); color: var(--text-3); }
         .credit-right { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex-shrink: 0; }
         .credit-amount { font-size: 0.92rem; font-weight: 600; color: var(--text); }
-        .credit-paid-badge { font-size: 0.68rem; font-weight: 600; padding: 2px 7px; border-radius: 4px; background: rgba(44,182,125,0.12); color: var(--success); }
+        .credit-paid-badge { font-size: 0.68rem; font-weight: 600; padding: 2px 7px; border-radius: 4px; }
+        :root .credit-paid-badge { background: rgba(255,221,45,0.2); color: #b38f00; }
         .check-wrap { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s; flex-shrink: 0; background: var(--surface); }
         .check-wrap.checked { background: var(--success); border-color: var(--success); }
         .check-wrap svg { width: 14px; height: 14px; opacity: 0; transition: opacity 0.15s; }
         .check-wrap.checked svg { opacity: 1; }
         .check-wrap:active { transform: scale(0.88); }
+        :root .check-wrap.checked { background: #FFDD2D; border-color: #FFDD2D; }
+        :root .check-wrap.checked svg { stroke: #1A1A1A; }
 
         .empty-state { padding: 48px 20px; display: flex; flex-direction: column; align-items: center; gap: 10px; background: var(--surface); border-radius: var(--radius); }
         .empty-icon { font-size: 2.5rem; }
@@ -210,13 +171,13 @@
         .empty-sub { font-size: 0.82rem; color: var(--text-3); text-align: center; }
 
         .fab { position: fixed; bottom: calc(28px + env(safe-area-inset-bottom)); right: 20px; width: 60px; height: 60px; border-radius: 18px; background: #f9ddd8; color: #3a1a14; border: none; cursor: pointer; z-index: 200; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(0,0,0,0.15); transition: transform 0.2s cubic-bezier(0.175,0.885,0.32,1.275), background 0.2s; }
+        :root .fab { background: #000; color: #FFDD2D; }
         [data-theme="dark"] .fab { background: var(--accent); color: #1A1A1A; }
         .fab:active { transform: scale(0.91); }
         .fab svg { width: 26px; height: 26px; transition: transform 0.3s ease; stroke-width: 2; }
         .fab.active svg { transform: rotate(45deg); }
         .fab.active { background: var(--danger); color: #fff; }
 
-        /* FAB Menu */
         .fab-menu { position: fixed; bottom: calc(102px + env(safe-area-inset-bottom)); right: 20px; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; z-index: 199; pointer-events: none; }
         .fab-menu.active { pointer-events: auto; }
         .fab-menu-item { opacity: 0; transform: translateY(16px) scale(0.92); transition: opacity 0.22s ease, transform 0.26s cubic-bezier(0.175,0.885,0.32,1.275); }
@@ -278,9 +239,7 @@
         .confirm-body { padding: 20px 16px; }
         .confirm-text { font-size: 0.9rem; color: var(--text-2); text-align: center; line-height: 1.5; margin-bottom: 20px; }
 
-        /* Credit Card Form */
         .form-optional-tag { font-size: 0.68rem; color: var(--text-3); font-weight: 500; margin-left: 6px; text-transform: none; letter-spacing: 0; }
-        /* Payment dots tracker */
         .payment-dots-wrap { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 12px; background: var(--surface-2); border: 1.5px solid var(--border); border-radius: var(--radius-sm); min-height: 48px; align-items: center; }
         .payment-dot { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border); background: var(--surface); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; flex-shrink: 0; position: relative; }
         .payment-dot.done { background: var(--success); border-color: var(--success); }
@@ -291,23 +250,15 @@
         .payment-progress-fill { height: 100%; background: var(--success); border-radius: 3px; transition: width 0.3s ease; }
         .payment-progress-text { font-size: 0.72rem; color: var(--text-2); font-weight: 500; margin-top: 4px; display: flex; justify-content: space-between; }
 
-        /* Credit Card list items - modern style */
-        .card-item-body { flex: 1; min-width: 0; }
-        .card-item-name { font-size: 0.95rem; font-weight: 600; color: var(--text); margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .card-item-bar-wrap { margin-bottom: 4px; }
-        .card-item-bar-track { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; position: relative; }
-        .card-item-bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, #FFDD2D, #F0C800); transition: width 0.35s cubic-bezier(0.4,0,0.2,1); position: relative; }
-        .card-item-bar-fill::after { content: ''; position: absolute; top: 1px; left: 6px; right: 6px; height: 3px; background: rgba(255,255,255,0.4); border-radius: 2px; }
-        .card-item-bar-label { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-2); font-weight: 500; margin-top: 3px; }
-        .card-item-due { font-size: 0.7rem; color: var(--text-3); font-weight: 500; margin-top: 2px; }
-        .card-item-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; padding-left: 10px; }
-        .card-item-amount { font-size: 0.92rem; font-weight: 600; color: var(--text); }
-        .card-item-controls { display: flex; align-items: center; gap: 4px; }
-        .card-ctrl-btn { width: 28px; height: 28px; border-radius: 8px; border: 1.5px solid var(--border); background: var(--surface-2); color: var(--text); font-size: 1.1rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.12s; line-height: 1; }
+        /* Card item wrapper */
+        .card-item-wrap { background: var(--surface); display: flex; flex-direction: column; }
+        /* Multi-payment controls — replaces icon, sits as first flex child in credit-item */
+        .card-pay-row { display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
+        .card-ctrl-btn { width: 30px; height: 30px; border-radius: 9px; border: 1.5px solid var(--border); background: var(--surface-2); color: var(--text); font-size: 1.15rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.12s; line-height: 1; flex-shrink: 0; }
         .card-ctrl-btn:active { transform: scale(0.88); background: var(--border); }
         .card-ctrl-btn.plus { background: var(--accent); border-color: var(--accent-dark); color: #1A1A1A; }
         .card-ctrl-btn.plus:active { background: var(--accent-dark); }
-        .card-ctrl-count { font-size: 0.78rem; font-weight: 700; color: var(--text-2); min-width: 20px; text-align: center; }
+        .card-ctrl-count { font-size: 0.78rem; font-weight: 700; color: var(--text-2); min-width: 28px; text-align: center; }
 
         .settings-sheet { padding-bottom: max(20px, env(safe-area-inset-bottom)); }
         .settings-section { padding: 16px 20px; border-bottom: 1px solid var(--border); }
@@ -408,43 +359,24 @@
         html, body { max-width: 100%; overflow-x: hidden; }
         .app { width: 100%; max-width: 100%; overflow-x: hidden; }
         .section-header { width: 100%; box-sizing: border-box; }
-        
+
         .global-loader {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: var(--surface);
-            padding: 20px 30px;
-            border-radius: 20px;
-            box-shadow: var(--shadow-md);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-            z-index: 9000;
-            color: var(--text);
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: var(--surface); padding: 20px 30px; border-radius: 20px;
+            box-shadow: var(--shadow-md); display: flex; flex-direction: column;
+            align-items: center; gap: 12px; z-index: 9000; color: var(--text);
         }
         .loader-spinner {
-            width: 32px;
-            height: 32px;
-            border: 3px solid var(--border);
-            border-top-color: var(--accent-dark);
-            border-radius: 50%;
+            width: 32px; height: 32px; border: 3px solid var(--border);
+            border-top-color: var(--accent-dark); border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
         .partial-quick-amounts { display: flex; gap: 8px; margin-bottom: 10px; }
         .partial-quick-btn {
-            flex: 1;
-            padding: 8px 0;
-            background: var(--surface-2);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--text);
-            cursor: pointer;
-            transition: all 0.15s;
+            flex: 1; padding: 8px 0; background: var(--surface-2);
+            border: 1px solid var(--border); border-radius: 10px;
+            font-size: 0.8rem; font-weight: 600; color: var(--text);
+            cursor: pointer; transition: all 0.15s;
         }
         .partial-quick-btn:active { background: var(--border); transform: scale(0.96); }
         .shake { animation: shake 0.4s ease; }
@@ -466,7 +398,6 @@
 </div>
 
 <script>
-  // Аварийный сброс HTML сплэш-экрана
   setTimeout(function() {
     var splash = document.getElementById('splash');
     if (splash && !splash.classList.contains('hidden')) {
@@ -522,7 +453,7 @@
     </div>
     <div id="resetMsg">Новый месяц — статусы платежей сброшены</div>
     <div class="section">
-        <div class="section-header"><span class="section-title">Активные</span><span class="section-count" id="activeCount"></span></div>
+        <div class="section-header"><span class="section-title">🗃️ Активные</span><span class="section-count" id="activeCount"></span></div>
         <div class="credit-list" id="creditList"></div>
     </div>
     <div class="completed-section" id="completedSection" style="display:none">
@@ -587,51 +518,27 @@
   </div>
 </div>
 
-<!-- Модальное окно: Кредитная карта -->
 <div class="overlay" id="cardFormOverlay" onclick="if(event.target===this)closeCardForm()">
   <div class="sheet">
     <div class="sheet-handle"></div>
     <div class="sheet-title"><span id="cardFormTitle">Кредитная карта</span><button class="sheet-close" onclick="closeCardForm()">✕</button></div>
     <div class="form-body">
-      <div class="form-group">
-        <label class="form-label">Название</label>
-        <input type="text" id="cardNameInput" placeholder="Например: Тинькофф Платинум" autocomplete="off">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Сумма <span class="form-optional-tag">(необязательно)</span></label>
-        <input type="number" id="cardAmountInput" placeholder="Минимальный платёж, ₽" inputmode="decimal">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Количество платежей <span class="form-optional-tag">(необязательно)</span></label>
-        <input type="number" id="cardPaymentsInput" placeholder="Например: 10" min="1" max="99" inputmode="numeric" oninput="updateCardPaymentDots()">
-        <span class="form-hint">Платежи которые надо провести за месяц — можно отмечать каждый</span>
-      </div>
-      <div class="form-group" id="cardDotsPreview" style="display:none">
-        <label class="form-label">Предпросмотр прогресса</label>
-        <div class="payment-dots-wrap" id="cardDotsWrap">
-          <span class="payment-dot-empty">Укажите количество платежей</span>
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Дата платежа <span class="form-optional-tag">(необязательно)</span></label>
-        <input type="number" id="cardDayInput" placeholder="День месяца (1–31)" min="1" max="31" inputmode="numeric">
-        <span class="form-hint">До какого числа надо закрыть платёж</span>
-      </div>
+      <div class="form-group"><label class="form-label">Название</label><input type="text" id="cardNameInput" placeholder="Например: Тинькофф Платинум" autocomplete="off"></div>
+      <div class="form-group"><label class="form-label">Сумма <span class="form-optional-tag">(необязательно)</span></label><input type="number" id="cardAmountInput" placeholder="Минимальный платёж, ₽" inputmode="decimal"></div>
+      <div class="form-group"><label class="form-label">Количество платежей <span class="form-optional-tag">(необязательно)</span></label><input type="number" id="cardPaymentsInput" placeholder="Например: 10" min="1" max="99" inputmode="numeric" oninput="updateCardPaymentDots()"><span class="form-hint">Платежи которые надо провести за месяц — можно отмечать каждый</span></div>
+      <div class="form-group" id="cardDotsPreview" style="display:none"><label class="form-label">Предпросмотр прогресса</label><div class="payment-dots-wrap" id="cardDotsWrap"><span class="payment-dot-empty">Укажите количество платежей</span></div></div>
+      <div class="form-group"><label class="form-label">Дата платежа <span class="form-optional-tag">(необязательно)</span></label><input type="number" id="cardDayInput" placeholder="День месяца (1–31)" min="1" max="31" inputmode="numeric"><span class="form-hint">До какого числа надо закрыть платёж</span></div>
     </div>
     <div class="form-actions"><button class="btn btn-primary" id="cardSaveBtn" onclick="handleCardSave()">Добавить карту</button></div>
     <div style="height:8px"></div>
   </div>
 </div>
 
-<!-- Модальное окно: Действия с картой -->
 <div class="overlay" id="cardActionOverlay" onclick="if(event.target===this)closeCardAction()">
   <div class="sheet action-sheet">
     <div class="sheet-handle"></div>
     <div class="sheet-title"><span>Кредитная карта</span><button class="sheet-close" onclick="closeCardAction()">✕</button></div>
-    <div class="action-credit-name">
-      <div id="cardActionName"></div>
-      <div class="action-credit-sub" id="cardActionSub"></div>
-    </div>
+    <div class="action-credit-name"><div id="cardActionName"></div><div class="action-credit-sub" id="cardActionSub"></div></div>
     <div style="padding:0 16px 12px">
       <div class="form-label" style="margin-bottom:10px">Прогресс платежей</div>
       <div class="payment-dots-wrap" id="cardActionDots"></div>
@@ -649,7 +556,6 @@
   </div>
 </div>
 
-<!-- Удаление карты -->
 <div class="overlay" id="cardDeleteOverlay" onclick="if(event.target===this)closeCardDelete()">
   <div class="sheet" style="padding-bottom:max(16px,env(safe-area-inset-bottom))">
     <div class="sheet-handle"></div>
@@ -792,21 +698,17 @@
 </div>
 
 <script>
-// ========== ИНИЦИАЛИЗАЦИЯ FIREBASE С ПОДДЕРЖКОЙ ОФЛАЙНА ==========
+// ========== ИНИЦИАЛИЗАЦИЯ FIREBASE ==========
 let auth, db;
 let authResolveTimer = null;
-
 function _initFirebase() {
     if (window._fbAppInited) return;
     window._fbAppInited = true;
-
     if (typeof firebase === 'undefined') {
-        console.error('Firebase не загружен');
         authResolved = true; authUser = null;
         splashTimerDone = true; evaluateLaunch();
         return;
     }
-
     const firebaseConfig = {
         apiKey: "AIzaSyB15_LES6x8ZO6FvfkZ-uLdn6ytKO6ZTaM",
         authDomain: "my-credits-804ab.firebaseapp.com",
@@ -815,40 +717,33 @@ function _initFirebase() {
         messagingSenderId: "602702013620",
         appId: "1:602702013620:web:1babc849f5ed8bcdaee3e1"
     };
-
     try {
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         auth = firebase.auth();
         db   = firebase.firestore();
-
         db.enablePersistence({synchronizeTabs:true}).catch(function(err) {
             console.log('Ошибка запуска офлайн-режима:', err);
         });
-        
     } catch(e) {
         authResolved = true; authUser = null;
         splashTimerDone = true; evaluateLaunch();
         return;
     }
-
     authResolveTimer = setTimeout(() => {
         if (!authResolved) {
             authResolved = true; authUser = null;
             splashTimerDone = true; evaluateLaunch();
         }
     }, 5000);
-
     auth.onAuthStateChanged(user => {
         clearTimeout(authResolveTimer);
         authUser = user || null;
         authResolved = true;
         splashTimerDone = true;
-        
         if (!user && creditsUnsubscribe) {
             creditsUnsubscribe();
             creditsUnsubscribe = null;
         }
-
         evaluateLaunch();
         if (user) {
             user.reload().catch(() => {});
@@ -872,7 +767,7 @@ const PIN_SALT  = 'mycredits_salt_2025';
 
 const CATS = { mortgage:{emoji:'🏠',label:'Ипотека'}, auto:{emoji:'🚗',label:'Автокредит'}, consumer:{emoji:'💰',label:'Потребительский'}, card:{emoji:'💳',label:'Карта'}, other:{emoji:'📄',label:'Прочее'} };
 
-let credits = [];
+let credits = [], cards = [];
 let editMode = false, editId = null;
 let selectedCreditId = null;
 let selectedCat = 'mortgage';
@@ -890,7 +785,7 @@ let pinLockBuf = '', pinLockLen = 4;
 
 let isLoginMode = true;
 let authResolved = false;
-window.authUser = null; 
+window.authUser = null;
 let splashTimerDone = false;
 let creditsUnsubscribe = null;
 let monthResetDone = false;
@@ -898,19 +793,17 @@ let monthResetDone = false;
 const ls = { get:k=>{try{return localStorage.getItem(k);}catch(e){return null;}}, set:(k,v)=>{try{localStorage.setItem(k,v);return true;}catch(e){return false;}}, rm:k=>{try{localStorage.removeItem(k);}catch(e){}} };
 
 // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
-function formatPaymentDate(dayNumber){ const months=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря']; return `${dayNumber} ${months[new Date().getMonth()]}`; }
+function formatPaymentDate(dayNumber){ const months=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря']; return `до ${dayNumber} ${months[new Date().getMonth()]}`; }
 function fmt(n){ return Math.round(n).toLocaleString('ru-RU'); }
 function esc(t){ const d=document.createElement('div'); d.textContent=t; return d.innerHTML; }
 function showToast(msg){ document.querySelectorAll('.toast').forEach(t=>t.remove()); const d=document.createElement('div'); d.className='toast'; d.textContent=msg; document.body.appendChild(d); setTimeout(()=>d.remove(),2200); }
 function showGlobalLoader(show) { document.getElementById('globalLoader').style.display = show ? 'flex' : 'none'; }
 
-// ========== ЗАГРУЗКА КРЕДИТОВ И КАРТ ==========
+// ========== ЗАГРУЗКА ДАННЫХ ==========
 function loadCredits() {
     if (!authUser || !db) return;
-    
     showGlobalLoader(true);
     if (creditsUnsubscribe) { creditsUnsubscribe(); creditsUnsubscribe = null; }
-    
     creditsUnsubscribe = db.collection('credits').where('userId', '==', authUser.uid)
         .onSnapshot(snapshot => {
             credits = [];
@@ -929,8 +822,6 @@ function loadCredits() {
             showGlobalLoader(false);
         });
 }
-
-function loadCards() { /* объединено в loadCredits */ }
 
 async function deleteCredit(id){ if (!db) return; await db.collection('credits').doc(id).delete(); }
 async function updateCreditField(id,data){ if (!db) return; await db.collection('credits').doc(id).update(data); }
@@ -1013,7 +904,7 @@ function buildCreditItem(c, cm, cy){
         <div class="credit-main"><div class="credit-name">${esc(c.name)}</div>
         <div class="credit-meta"><span class="credit-date-tag">${formatPaymentDate(c.day)}</span>${termHtml}</div></div>
         <div class="credit-right"><span class="credit-amount">${displayAmount} ₽</span>
-        ${c.paid ? '<span class="credit-paid-badge">Оплачен</span>' : (partial > 0 ? `<span style="font-size:0.68rem;color:var(--text-2);font-weight:500">из ${fmt(c.amount)} ₽</span>` : '')}</div>
+        ${c.paid ? '<span class="credit-paid-badge">Оплачено</span>' : (partial > 0 ? `<span style="font-size:0.68rem;color:var(--text-2);font-weight:500">из ${fmt(c.amount)} ₽</span>` : '')}</div>
         <div class="check-wrap ${c.paid || c.completed ? 'checked' : ''}" data-id="${c.id}">
             <svg viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="2.5"><polyline points="2,7 6,11 12,3"/></svg>
         </div>`;
@@ -1042,11 +933,17 @@ function updateSummary(active){
     document.getElementById('summaryPaidCount').textContent = active.filter(c => c.paid).length;
     document.getElementById('summaryTotal').textContent = fmt(total) + ' ₽';
     const allPaidAlreadyShown = sessionStorage.getItem('all_paid_shown') === '1';
-    if (paidTotalSum >= total && total > 0 && active.length > 0 && !allPaidShown && !allPaidAlreadyShown) {
+    const creditsAllPaid = paidTotalSum >= total && total > 0 && active.length > 0;
+    const cardsAllPaid = cards.length === 0 || cards.every(c => {
+        if (c.payments > 1) return (c.donePayments || 0) >= c.payments;
+        else return (c.donePayments || 0) >= 1;
+    });
+    const everythingPaid = creditsAllPaid && cardsAllPaid;
+    if (everythingPaid && !allPaidShown && !allPaidAlreadyShown) {
         allPaidShown = true;
         sessionStorage.setItem('all_paid_shown', '1');
         setTimeout(() => document.getElementById('allPaidOverlay').classList.add('active'), 400);
-    } else if (pct < 100) {
+    } else if (!everythingPaid) {
         allPaidShown = false;
     }
 }
@@ -1197,7 +1094,6 @@ function openCreditForm(){ closeFabMenu(); toggleForm(); }
 function updateFab(active){ document.getElementById('fab').classList.toggle('active', active); }
 
 // ========== КРЕДИТНЫЕ КАРТЫ ==========
-let cards = [];
 let selectedCardId = null;
 let cardEditMode = false;
 let cardEditId = null;
@@ -1307,7 +1203,6 @@ function renderCardActionDots(c){
 }
 
 async function toggleCardPayment(cardId, idx, total, currentDone){
-    // Toggle: if clicking on a done dot (idx < currentDone), set done to idx; if clicking undone, set done to idx+1
     let newDone;
     if (idx < currentDone) newDone = idx;
     else newDone = idx + 1;
@@ -1342,20 +1237,6 @@ function showCardDeleteConfirm(){ closeCardAction(); setTimeout(() => document.g
 function closeCardDelete(){ document.getElementById('cardDeleteOverlay').classList.remove('active'); }
 async function doCardDelete(){ if(selectedCardId){ await db.collection('credits').doc(selectedCardId).delete(); showToast('Карта удалена'); } closeCardDelete(); selectedCardId = null; }
 
-function loadCards(){
-    const currentAuthUser = window.authUser;
-    if (!currentAuthUser || !db) return;
-    db.collection('credits').where('userId', '==', currentAuthUser.uid)
-        .onSnapshot(snapshot => {
-            cards = [];
-            snapshot.forEach(doc => {
-                const d = doc.data();
-                if (d.type === 'creditcard') cards.push({ id: doc.id, ...d });
-            });
-            renderCards();
-        }, e => console.error('Ошибка карт:', e));
-}
-
 function renderCards(){
     const section = document.getElementById('cardsSection');
     const list = document.getElementById('cardList');
@@ -1365,54 +1246,55 @@ function renderCards(){
     list.innerHTML = '';
     const frag = document.createDocumentFragment();
     cards.forEach(c => {
-        const wrap = document.createElement('div');
-        wrap.style.background = 'var(--surface)';
-        const item = document.createElement('div');
-        item.className = 'credit-item';
-        item.style.alignItems = 'center';
-
         const done = c.donePayments || 0;
         const total = c.payments || 0;
-        const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+        const effectiveTotal = total > 0 ? total : 1;
+        const isPaid = done >= effectiveTotal;
+        const hasMultiPayments = total > 1;
 
-        // Progress bar HTML
-        let barHtml = '';
-        if (total > 0) {
-            barHtml = `
-            <div class="card-item-bar-wrap">
-                <div class="card-item-bar-track">
-                    <div class="card-item-bar-fill" style="width:${pct}%"></div>
-                </div>
-                <div class="card-item-bar-label">
-                    <span>${done} из ${total} платежей</span>
-                    <span>${pct}%</span>
-                </div>
-            </div>`;
-        }
+        const wrap = document.createElement('div');
+        wrap.style.background = 'var(--surface)';
 
-        const dueHtml = c.day > 0 ? `<div class="card-item-due">до ${c.day} числа</div>` : '';
-        const amtHtml = c.amount > 0 ? `<div class="card-item-amount credit-amount">${fmt(c.amount)} ₽</div>` : '';
+        const item = document.createElement('div');
+        item.className = 'credit-item' + (isPaid ? ' paid' : '');
 
-        // Inline +/- controls
-        const controlsHtml = total > 0 ? `
-            <div class="card-item-controls" onclick="event.stopPropagation()">
+        const dueTag = c.day > 0
+            ? `<span class="credit-date-tag">до ${c.day} числа</span>`
+            : '';
+
+        const amtHtml = c.amount > 0
+            ? `<span class="credit-amount">${fmt(c.amount)} ₽</span>`
+            : '';
+
+        const badgeHtml = isPaid ? '<span class="credit-paid-badge">Оплачено</span>' : '';
+
+        // Left side: for multi-payment = controls block; for single = empty spacer (no icon)
+        const leftHtml = hasMultiPayments
+            ? `<div class="card-pay-row" onclick="event.stopPropagation()">
                 <button class="card-ctrl-btn minus" onclick="cardPaymentStep('${c.id}', ${done}, ${total}, -1)">−</button>
                 <span class="card-ctrl-count">${done}/${total}</span>
                 <button class="card-ctrl-btn plus" onclick="cardPaymentStep('${c.id}', ${done}, ${total}, 1)">+</button>
-            </div>` : '';
+               </div>`
+            : '';
 
         item.innerHTML = `
-            <div class="credit-icon-wrap">💳</div>
-            <div class="card-item-body">
-                <div class="card-item-name">${esc(c.name)}</div>
-                ${barHtml}
-                ${dueHtml}
+            ${leftHtml}
+            <div class="credit-main">
+                <div class="credit-name">${esc(c.name)}</div>
+                <div class="credit-meta">${dueTag}</div>
             </div>
-            <div class="card-item-right">
+            <div class="credit-right">
                 ${amtHtml}
-                ${controlsHtml}
+                ${badgeHtml}
+            </div>
+            <div class="check-wrap ${isPaid ? 'checked' : ''}" data-id="${c.id}">
+                <svg viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="2.5"><polyline points="2,7 6,11 12,3"/></svg>
             </div>`;
 
+        item.querySelector('.check-wrap').addEventListener('click', e => {
+            e.stopPropagation();
+            toggleCardFull(c.id, total, done);
+        });
         item.addEventListener('click', () => openCardAction(c.id));
         wrap.appendChild(item);
         frag.appendChild(wrap);
@@ -1421,12 +1303,20 @@ function renderCards(){
     if (!amountsVisible) setTimeout(startSpoilers, 30);
 }
 
+async function toggleCardFull(cardId, total, currentDone) {
+    // For single/no-payment cards total may be 0 or 1 — treat as binary toggle
+    const effectiveTotal = total > 0 ? total : 1;
+    const newDone = currentDone >= effectiveTotal ? 0 : effectiveTotal;
+    await db.collection('credits').doc(cardId).update({ donePayments: newDone });
+    showToast(newDone >= effectiveTotal ? 'Оплачено! 🎉' : 'Оплата отменена');
+}
+
 async function cardPaymentStep(cardId, currentDone, total, delta) {
     const newDone = Math.max(0, Math.min(total, currentDone + delta));
     if (newDone === currentDone) return;
     try {
         await db.collection('credits').doc(cardId).update({ donePayments: newDone });
-        if (newDone === total) showToast('Все платежи выполнены! 🎉');
+        if (newDone === total) showToast('Все платежи по карте выполнены! 🎉');
     } catch(e) { console.error(e); showToast('Ошибка обновления'); }
 }
 
@@ -1553,7 +1443,6 @@ async function doAuth() {
         return;
     }
 
-    // Регистрация
     const email = document.getElementById('authEmailOrNick').value.trim();
     if (!email) { showToast('Введите email'); return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast('Введите корректный email'); return; }
@@ -1880,7 +1769,7 @@ function stopSpoilers(){ if (spoilerRAF) { cancelAnimationFrame(spoilerRAF); spo
 function toggleCompleted(){ const list = document.getElementById('completedList'); const arrow = document.getElementById('completedArrow'); const open = !list.classList.contains('open'); list.classList.toggle('open', open); arrow.classList.toggle('open', open); if (open) { const cm = new Date().getMonth(), cy = new Date().getFullYear(); list.innerHTML = ''; const frag = document.createDocumentFragment(); credits.filter(c => c.completed).forEach(c => frag.appendChild(buildCreditItem(c, cm, cy))); list.appendChild(frag); } }
 function closeAllPaid(){ document.getElementById('allPaidOverlay').classList.remove('active'); }
 
-// ========== ЗАПУСК И ОБРАБОТЧИК DOM ==========
+// ========== ЗАПУСК ==========
 function evaluateLaunch(){
     if (!authResolved || !splashTimerDone) return;
     document.getElementById('splash').classList.add('hidden');
@@ -1894,7 +1783,6 @@ function evaluateLaunch(){
             sessionStorage.setItem('session_started', '1');
             document.getElementById('app').classList.add('visible');
             loadCredits();
-            loadCards();
         }
     } else {
         document.getElementById('app').classList.remove('visible');
@@ -1967,7 +1855,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, 1500);
 
-    // Вызываем инициализацию напрямую, так как скрипты загружаются через defer
     _initFirebase();
 });
 
@@ -1978,7 +1865,6 @@ window.onerror = function(msg) {
 
 document.getElementById('lockStatusRow').onclick = e => { toggleLockPanel(); e.stopPropagation(); };
 
-// ========== PWA – РЕГИСТРАЦИЯ SERVICE WORKER (v7) ==========
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js?v=8').then(reg => {
