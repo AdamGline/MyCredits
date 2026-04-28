@@ -209,12 +209,24 @@
         .empty-title { font-size: 0.95rem; font-weight: 600; color: var(--text-2); }
         .empty-sub { font-size: 0.82rem; color: var(--text-3); text-align: center; }
 
-        .fab { position: fixed; bottom: calc(28px + env(safe-area-inset-bottom)); right: 20px; width: 56px; height: 56px; border-radius: 50%; background: var(--text); color: var(--bg); border: none; cursor: pointer; z-index: 200; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md); transition: transform 0.3s cubic-bezier(0.175,0.885,0.32,1.275), background 0.2s; }
+        .fab { position: fixed; bottom: calc(28px + env(safe-area-inset-bottom)); right: 20px; width: 60px; height: 60px; border-radius: 18px; background: #f9ddd8; color: #3a1a14; border: none; cursor: pointer; z-index: 200; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(0,0,0,0.15); transition: transform 0.2s cubic-bezier(0.175,0.885,0.32,1.275), background 0.2s; }
         [data-theme="dark"] .fab { background: var(--accent); color: #1A1A1A; }
-        .fab:active { transform: scale(0.92); }
-        .fab svg { width: 22px; height: 22px; transition: transform 0.3s ease; }
+        .fab:active { transform: scale(0.91); }
+        .fab svg { width: 26px; height: 26px; transition: transform 0.3s ease; stroke-width: 2; }
         .fab.active svg { transform: rotate(45deg); }
         .fab.active { background: var(--danger); color: #fff; }
+
+        /* FAB Menu */
+        .fab-menu { position: fixed; bottom: calc(102px + env(safe-area-inset-bottom)); right: 20px; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; z-index: 199; pointer-events: none; }
+        .fab-menu.active { pointer-events: auto; }
+        .fab-menu-item { opacity: 0; transform: translateY(16px) scale(0.92); transition: opacity 0.22s ease, transform 0.26s cubic-bezier(0.175,0.885,0.32,1.275); }
+        .fab-menu.active .fab-menu-item { opacity: 1; transform: translateY(0) scale(1); }
+        .fab-menu.active .fab-menu-item:nth-child(1) { transition-delay: 0.07s; }
+        .fab-menu.active .fab-menu-item:nth-child(2) { transition-delay: 0.02s; }
+        .fab-menu-label { display: block; background: var(--surface); color: var(--text); font-size: 1.05rem; font-weight: 700; padding: 13px 22px; border-radius: 24px; box-shadow: 0 3px 0 rgba(0,0,0,0.12), 0 6px 20px rgba(0,0,0,0.14); border: 1px solid var(--border); white-space: nowrap; cursor: pointer; transition: background 0.12s, transform 0.12s; }
+        .fab-menu-label:active { background: var(--surface-2); transform: scale(0.97); }
+        .fab-menu-backdrop { position: fixed; inset: 0; z-index: 198; display: none; }
+        .fab-menu-backdrop.active { display: block; }
 
         .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); backdrop-filter: blur(6px); display: none; align-items: flex-end; justify-content: center; z-index: 500; opacity: 0; transition: opacity 0.25s ease; }
         .overlay.active { display: flex; opacity: 1; }
@@ -265,6 +277,37 @@
         .partial-input-wrap input { flex: 1; }
         .confirm-body { padding: 20px 16px; }
         .confirm-text { font-size: 0.9rem; color: var(--text-2); text-align: center; line-height: 1.5; margin-bottom: 20px; }
+
+        /* Credit Card Form */
+        .form-optional-tag { font-size: 0.68rem; color: var(--text-3); font-weight: 500; margin-left: 6px; text-transform: none; letter-spacing: 0; }
+        /* Payment dots tracker */
+        .payment-dots-wrap { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 12px; background: var(--surface-2); border: 1.5px solid var(--border); border-radius: var(--radius-sm); min-height: 48px; align-items: center; }
+        .payment-dot { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border); background: var(--surface); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; flex-shrink: 0; position: relative; }
+        .payment-dot.done { background: var(--success); border-color: var(--success); }
+        .payment-dot.done::after { content: ''; position: absolute; width: 8px; height: 6px; border-left: 2px solid #fff; border-bottom: 2px solid #fff; transform: rotate(-45deg) translate(1px, -1px); }
+        .payment-dot-empty { font-size: 0.72rem; color: var(--text-3); font-style: italic; }
+        .payment-progress-bar-wrap { margin-top: 8px; }
+        .payment-progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+        .payment-progress-fill { height: 100%; background: var(--success); border-radius: 3px; transition: width 0.3s ease; }
+        .payment-progress-text { font-size: 0.72rem; color: var(--text-2); font-weight: 500; margin-top: 4px; display: flex; justify-content: space-between; }
+
+        /* Credit Card list items - modern style */
+        .card-item-body { flex: 1; min-width: 0; }
+        .card-item-name { font-size: 0.95rem; font-weight: 600; color: var(--text); margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .card-item-bar-wrap { margin-bottom: 4px; }
+        .card-item-bar-track { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; position: relative; }
+        .card-item-bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, #FFDD2D, #F0C800); transition: width 0.35s cubic-bezier(0.4,0,0.2,1); position: relative; }
+        .card-item-bar-fill::after { content: ''; position: absolute; top: 1px; left: 6px; right: 6px; height: 3px; background: rgba(255,255,255,0.4); border-radius: 2px; }
+        .card-item-bar-label { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-2); font-weight: 500; margin-top: 3px; }
+        .card-item-due { font-size: 0.7rem; color: var(--text-3); font-weight: 500; margin-top: 2px; }
+        .card-item-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; padding-left: 10px; }
+        .card-item-amount { font-size: 0.92rem; font-weight: 600; color: var(--text); }
+        .card-item-controls { display: flex; align-items: center; gap: 4px; }
+        .card-ctrl-btn { width: 28px; height: 28px; border-radius: 8px; border: 1.5px solid var(--border); background: var(--surface-2); color: var(--text); font-size: 1.1rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.12s; line-height: 1; }
+        .card-ctrl-btn:active { transform: scale(0.88); background: var(--border); }
+        .card-ctrl-btn.plus { background: var(--accent); border-color: var(--accent-dark); color: #1A1A1A; }
+        .card-ctrl-btn.plus:active { background: var(--accent-dark); }
+        .card-ctrl-count { font-size: 0.78rem; font-weight: 700; color: var(--text-2); min-width: 20px; text-align: center; }
 
         .settings-sheet { padding-bottom: max(20px, env(safe-area-inset-bottom)); }
         .settings-section { padding: 16px 20px; border-bottom: 1px solid var(--border); }
@@ -482,18 +525,33 @@
         <div class="section-header"><span class="section-title">Активные</span><span class="section-count" id="activeCount"></span></div>
         <div class="credit-list" id="creditList"></div>
     </div>
-    <div id="installPwaContainer" style="text-align: center; margin: 16px;">
-        <button id="installBtn" style="padding: 12px 24px; background: #FFDD2D; border: none; border-radius: 30px; font-weight: bold; font-size: 1rem; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">📲 Установить приложение</button>
-        <div id="iosInstruction" style="display: none; margin-top: 10px; font-size: 0.75rem; color: var(--text-2);">На iPhone: нажмите «Поделиться» → «На экран «Домой»»</div>
-    </div>
     <div class="completed-section" id="completedSection" style="display:none">
         <div class="completed-header-btn" onclick="toggleCompleted()"><span id="completedLabel">Завершённые</span><span class="completed-arrow" id="completedArrow">▼</span></div>
         <div class="credit-list completed-list" id="completedList"></div>
     </div>
+    <div class="section" id="cardsSection" style="display:none">
+        <div class="section-header"><span class="section-title">💳 Кредитные карты</span><span class="section-count" id="cardsCount"></span></div>
+        <div class="credit-list" id="cardList"></div>
+    </div>
+    <div id="installPwaContainer" style="text-align: center; margin: 16px;">
+        <button id="installBtn" style="padding: 12px 24px; background: #FFDD2D; border: none; border-radius: 30px; font-weight: bold; font-size: 1rem; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">📲 Установить приложение</button>
+        <div id="iosInstruction" style="display: none; margin-top: 10px; font-size: 0.75rem; color: var(--text-2);">На iPhone: нажмите «Поделиться» → «На экран «Домой»»</div>
+    </div>
     <div style="height:20px"></div>
 </div>
 
-<button class="fab" id="fab" onclick="fabClick(event)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+<div class="fab-menu-backdrop" id="fabMenuBackdrop" onclick="closeFabMenu()"></div>
+<div class="fab-menu" id="fabMenu">
+  <div class="fab-menu-item">
+    <span class="fab-menu-label" onclick="openCardForm()">Кредитная карта</span>
+  </div>
+  <div class="fab-menu-item">
+    <span class="fab-menu-label" onclick="openCreditForm()">Новый кредит</span>
+  </div>
+</div>
+<button class="fab" id="fab" onclick="fabClick(event)">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+</button>
 
 <div class="overlay" id="formOverlay" onclick="if(event.target===this)closeForm()">
   <div class="sheet">
@@ -506,7 +564,6 @@
           <div class="cat-item" data-cat="mortgage" onclick="selectCat('mortgage')"><span>🏠</span><span class="cat-label">Ипотека</span></div>
           <div class="cat-item" data-cat="auto" onclick="selectCat('auto')"><span>🚗</span><span class="cat-label">Авто</span></div>
           <div class="cat-item" data-cat="consumer" onclick="selectCat('consumer')"><span>💰</span><span class="cat-label">Потреб.</span></div>
-          <div class="cat-item" data-cat="card" onclick="selectCat('card')"><span>💳</span><span class="cat-label">Карта</span></div>
           <div class="cat-item" data-cat="other" onclick="selectCat('other')"><span>📄</span><span class="cat-label">Прочее</span></div>
         </div>
       </div>
@@ -527,6 +584,77 @@
     </div>
     <div class="form-actions"><button class="btn btn-primary" id="formSaveBtn" onclick="handleSave()">Добавить</button></div>
     <div style="height:8px"></div>
+  </div>
+</div>
+
+<!-- Модальное окно: Кредитная карта -->
+<div class="overlay" id="cardFormOverlay" onclick="if(event.target===this)closeCardForm()">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title"><span id="cardFormTitle">Кредитная карта</span><button class="sheet-close" onclick="closeCardForm()">✕</button></div>
+    <div class="form-body">
+      <div class="form-group">
+        <label class="form-label">Название</label>
+        <input type="text" id="cardNameInput" placeholder="Например: Тинькофф Платинум" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Сумма <span class="form-optional-tag">(необязательно)</span></label>
+        <input type="number" id="cardAmountInput" placeholder="Минимальный платёж, ₽" inputmode="decimal">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Количество платежей <span class="form-optional-tag">(необязательно)</span></label>
+        <input type="number" id="cardPaymentsInput" placeholder="Например: 10" min="1" max="99" inputmode="numeric" oninput="updateCardPaymentDots()">
+        <span class="form-hint">Платежи которые надо провести за месяц — можно отмечать каждый</span>
+      </div>
+      <div class="form-group" id="cardDotsPreview" style="display:none">
+        <label class="form-label">Предпросмотр прогресса</label>
+        <div class="payment-dots-wrap" id="cardDotsWrap">
+          <span class="payment-dot-empty">Укажите количество платежей</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Дата платежа <span class="form-optional-tag">(необязательно)</span></label>
+        <input type="number" id="cardDayInput" placeholder="День месяца (1–31)" min="1" max="31" inputmode="numeric">
+        <span class="form-hint">До какого числа надо закрыть платёж</span>
+      </div>
+    </div>
+    <div class="form-actions"><button class="btn btn-primary" id="cardSaveBtn" onclick="handleCardSave()">Добавить карту</button></div>
+    <div style="height:8px"></div>
+  </div>
+</div>
+
+<!-- Модальное окно: Действия с картой -->
+<div class="overlay" id="cardActionOverlay" onclick="if(event.target===this)closeCardAction()">
+  <div class="sheet action-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title"><span>Кредитная карта</span><button class="sheet-close" onclick="closeCardAction()">✕</button></div>
+    <div class="action-credit-name">
+      <div id="cardActionName"></div>
+      <div class="action-credit-sub" id="cardActionSub"></div>
+    </div>
+    <div style="padding:0 16px 12px">
+      <div class="form-label" style="margin-bottom:10px">Прогресс платежей</div>
+      <div class="payment-dots-wrap" id="cardActionDots"></div>
+      <div class="payment-progress-bar-wrap" id="cardActionProgressWrap" style="display:none">
+        <div class="payment-progress-bar"><div class="payment-progress-fill" id="cardActionProgressFill"></div></div>
+        <div class="payment-progress-text"><span id="cardActionProgressText"></span><span id="cardActionProgressPct"></span></div>
+      </div>
+    </div>
+    <div style="padding:0 12px">
+      <button class="action-btn" onclick="resetCardPayments()"><div class="action-btn-icon">↺</div>Сбросить платежи (новый месяц)</button>
+      <button class="action-btn" onclick="openCardEdit()"><div class="action-btn-icon">✎</div>Редактировать</button>
+      <button class="action-btn danger" onclick="showCardDeleteConfirm()"><div class="action-btn-icon">🗑</div>Удалить карту</button>
+    </div>
+    <div style="height:4px"></div>
+  </div>
+</div>
+
+<!-- Удаление карты -->
+<div class="overlay" id="cardDeleteOverlay" onclick="if(event.target===this)closeCardDelete()">
+  <div class="sheet" style="padding-bottom:max(16px,env(safe-area-inset-bottom))">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title"><span>Удаление карты</span><button class="sheet-close" onclick="closeCardDelete()">✕</button></div>
+    <div class="confirm-body"><div class="confirm-text">Вы уверены, что хотите удалить эту карту?</div><button class="btn" style="background:var(--danger);color:#fff;margin-bottom:10px;width:100%" onclick="doCardDelete()">Удалить</button></div>
   </div>
 </div>
 
@@ -776,7 +904,7 @@ function esc(t){ const d=document.createElement('div'); d.textContent=t; return 
 function showToast(msg){ document.querySelectorAll('.toast').forEach(t=>t.remove()); const d=document.createElement('div'); d.className='toast'; d.textContent=msg; document.body.appendChild(d); setTimeout(()=>d.remove(),2200); }
 function showGlobalLoader(show) { document.getElementById('globalLoader').style.display = show ? 'flex' : 'none'; }
 
-// ========== ЗАГРУЗКА КРЕДИТОВ ==========
+// ========== ЗАГРУЗКА КРЕДИТОВ И КАРТ ==========
 function loadCredits() {
     if (!authUser || !db) return;
     
@@ -786,8 +914,14 @@ function loadCredits() {
     creditsUnsubscribe = db.collection('credits').where('userId', '==', authUser.uid)
         .onSnapshot(snapshot => {
             credits = [];
-            snapshot.forEach(doc => credits.push({ id: doc.id, ...doc.data() }));
+            cards = [];
+            snapshot.forEach(doc => {
+                const d = doc.data();
+                if (d.type === 'creditcard') cards.push({ id: doc.id, ...d });
+                else credits.push({ id: doc.id, ...d });
+            });
             render();
+            renderCards();
             if (!monthResetDone) { monthResetDone = true; checkMonthReset(); }
             showGlobalLoader(false);
         }, e => {
@@ -795,6 +929,8 @@ function loadCredits() {
             showGlobalLoader(false);
         });
 }
+
+function loadCards() { /* объединено в loadCredits */ }
 
 async function deleteCredit(id){ if (!db) return; await db.collection('credits').doc(id).delete(); }
 async function updateCreditField(id,data){ if (!db) return; await db.collection('credits').doc(id).update(data); }
@@ -1055,8 +1191,244 @@ function getEndDate(){
     return (mo !== '' && yr) ? `${yr}-${String(parseInt(mo)+1).padStart(2, '0')}-01` : null;
 }
 
-function fabClick(e){ e.stopPropagation(); const fab = document.getElementById('fab'); if (fab.classList.contains('active')) { closeForm(); return; } fab.style.transform = 'scale(0.88)'; setTimeout(() => { fab.style.transform = ''; toggleForm(); }, 120); }
+function fabClick(e){ e.stopPropagation(); const fab = document.getElementById('fab'); const menu = document.getElementById('fabMenu'); const backdrop = document.getElementById('fabMenuBackdrop'); if (menu.classList.contains('active')) { closeFabMenu(); return; } fab.classList.add('active'); menu.classList.add('active'); backdrop.classList.add('active'); }
+function closeFabMenu(){ const fab = document.getElementById('fab'); const menu = document.getElementById('fabMenu'); const backdrop = document.getElementById('fabMenuBackdrop'); fab.classList.remove('active'); menu.classList.remove('active'); backdrop.classList.remove('active'); }
+function openCreditForm(){ closeFabMenu(); toggleForm(); }
 function updateFab(active){ document.getElementById('fab').classList.toggle('active', active); }
+
+// ========== КРЕДИТНЫЕ КАРТЫ ==========
+let cards = [];
+let selectedCardId = null;
+let cardEditMode = false;
+let cardEditId = null;
+let _isCardSaving = false;
+
+function updateCardPaymentDots(){
+    const n = parseInt(document.getElementById('cardPaymentsInput').value) || 0;
+    const preview = document.getElementById('cardDotsPreview');
+    const wrap = document.getElementById('cardDotsWrap');
+    if (n < 1 || n > 99) { preview.style.display = 'none'; return; }
+    preview.style.display = '';
+    wrap.innerHTML = '';
+    for (let i = 0; i < n; i++) {
+        const d = document.createElement('div');
+        d.className = 'payment-dot';
+        wrap.appendChild(d);
+    }
+}
+
+function openCardForm(){ 
+    closeFabMenu(); 
+    cardEditMode = false; cardEditId = null;
+    document.getElementById('cardNameInput').value = '';
+    document.getElementById('cardAmountInput').value = '';
+    document.getElementById('cardPaymentsInput').value = '';
+    document.getElementById('cardDayInput').value = '';
+    document.getElementById('cardDotsPreview').style.display = 'none';
+    document.getElementById('cardFormTitle').textContent = 'Кредитная карта';
+    document.getElementById('cardSaveBtn').textContent = 'Добавить карту';
+    document.getElementById('cardFormOverlay').classList.add('active'); 
+}
+function closeCardForm(){ document.getElementById('cardFormOverlay').classList.remove('active'); _isCardSaving = false; }
+
+async function handleCardSave(){
+    if (_isCardSaving) return;
+    const currentAuthUser = window.authUser;
+    if (!db || !currentAuthUser) { showToast('Нет подключения или не авторизован'); return; }
+    const name = document.getElementById('cardNameInput').value.trim();
+    if (!name) { showToast('Введите название карты'); return; }
+    const amount = parseFloat(document.getElementById('cardAmountInput').value) || 0;
+    const payments = parseInt(document.getElementById('cardPaymentsInput').value) || 0;
+    const day = parseInt(document.getElementById('cardDayInput').value) || 0;
+    _isCardSaving = true;
+    const btn = document.getElementById('cardSaveBtn');
+    btn.disabled = true; btn.textContent = 'Сохранение...';
+    const wasEditMode = cardEditMode;
+    const wasEditId = cardEditId;
+    try {
+        const currentMonthKey = `${new Date().getMonth()}-${new Date().getFullYear()}`;
+        const cardData = { name, amount, payments, day, userId: currentAuthUser.uid, type: 'creditcard' };
+        if (wasEditMode && wasEditId) {
+            await db.collection('credits').doc(wasEditId).update(cardData);
+            showToast('Карта обновлена');
+        } else {
+            cardData.donePayments = 0;
+            cardData.lastResetMonth = currentMonthKey;
+            cardData.createdAt = new Date().toISOString();
+            await db.collection('credits').add(cardData);
+            showToast('Карта добавлена');
+        }
+        closeCardForm();
+    } catch(e) { 
+        console.error('Card save error:', e);
+        showToast('Ошибка: ' + (e.message || 'неизвестная ошибка'));
+    } finally { 
+        _isCardSaving = false; 
+        btn.disabled = false; 
+        btn.textContent = wasEditMode ? 'Сохранить' : 'Добавить карту'; 
+    }
+}
+
+function openCardAction(id){
+    const c = cards.find(x => x.id === id);
+    if (!c) return;
+    selectedCardId = id;
+    document.getElementById('cardActionName').textContent = '💳 ' + c.name;
+    const subs = [];
+    if (c.amount > 0) subs.push(fmt(c.amount) + ' ₽');
+    if (c.day > 0) subs.push('до ' + c.day + ' числа');
+    document.getElementById('cardActionSub').textContent = subs.join(' · ');
+    renderCardActionDots(c);
+    document.getElementById('cardActionOverlay').classList.add('active');
+}
+function closeCardAction(){ document.getElementById('cardActionOverlay').classList.remove('active'); }
+
+function renderCardActionDots(c){
+    const wrap = document.getElementById('cardActionDots');
+    const progressWrap = document.getElementById('cardActionProgressWrap');
+    wrap.innerHTML = '';
+    if (!c.payments || c.payments < 1) {
+        wrap.innerHTML = '<span class="payment-dot-empty">Количество платежей не задано</span>';
+        progressWrap.style.display = 'none';
+        return;
+    }
+    const done = c.donePayments || 0;
+    for (let i = 0; i < c.payments; i++) {
+        const d = document.createElement('div');
+        d.className = 'payment-dot' + (i < done ? ' done' : '');
+        d.onclick = () => toggleCardPayment(c.id, i, c.payments, c.donePayments || 0);
+        wrap.appendChild(d);
+    }
+    progressWrap.style.display = '';
+    const pct = Math.round((done / c.payments) * 100);
+    document.getElementById('cardActionProgressFill').style.width = pct + '%';
+    document.getElementById('cardActionProgressText').textContent = `Выполнено ${done} из ${c.payments}`;
+    document.getElementById('cardActionProgressPct').textContent = pct + '%';
+}
+
+async function toggleCardPayment(cardId, idx, total, currentDone){
+    // Toggle: if clicking on a done dot (idx < currentDone), set done to idx; if clicking undone, set done to idx+1
+    let newDone;
+    if (idx < currentDone) newDone = idx;
+    else newDone = idx + 1;
+    await db.collection('credits').doc(cardId).update({ donePayments: newDone });
+    closeCardAction();
+    showToast(newDone === total ? 'Все платежи выполнены! 🎉' : `Платёж ${newDone} из ${total}`);
+}
+
+async function resetCardPayments(){
+    if (!selectedCardId) return;
+    await db.collection('credits').doc(selectedCardId).update({ donePayments: 0, lastResetMonth: `${new Date().getMonth()}-${new Date().getFullYear()}` });
+    closeCardAction();
+    showToast('Платежи сброшены');
+}
+
+function openCardEdit(){
+    const c = cards.find(x => x.id === selectedCardId);
+    if (!c) return;
+    cardEditMode = true; cardEditId = selectedCardId;
+    document.getElementById('cardNameInput').value = c.name;
+    document.getElementById('cardAmountInput').value = c.amount || '';
+    document.getElementById('cardPaymentsInput').value = c.payments || '';
+    document.getElementById('cardDayInput').value = c.day || '';
+    document.getElementById('cardFormTitle').textContent = 'Редактировать карту';
+    document.getElementById('cardSaveBtn').textContent = 'Сохранить';
+    updateCardPaymentDots();
+    closeCardAction();
+    document.getElementById('cardFormOverlay').classList.add('active');
+}
+
+function showCardDeleteConfirm(){ closeCardAction(); setTimeout(() => document.getElementById('cardDeleteOverlay').classList.add('active'), 100); }
+function closeCardDelete(){ document.getElementById('cardDeleteOverlay').classList.remove('active'); }
+async function doCardDelete(){ if(selectedCardId){ await db.collection('credits').doc(selectedCardId).delete(); showToast('Карта удалена'); } closeCardDelete(); selectedCardId = null; }
+
+function loadCards(){
+    const currentAuthUser = window.authUser;
+    if (!currentAuthUser || !db) return;
+    db.collection('credits').where('userId', '==', currentAuthUser.uid)
+        .onSnapshot(snapshot => {
+            cards = [];
+            snapshot.forEach(doc => {
+                const d = doc.data();
+                if (d.type === 'creditcard') cards.push({ id: doc.id, ...d });
+            });
+            renderCards();
+        }, e => console.error('Ошибка карт:', e));
+}
+
+function renderCards(){
+    const section = document.getElementById('cardsSection');
+    const list = document.getElementById('cardList');
+    document.getElementById('cardsCount').textContent = cards.length ? `${cards.length}` : '';
+    if (!cards.length) { section.style.display = 'none'; return; }
+    section.style.display = '';
+    list.innerHTML = '';
+    const frag = document.createDocumentFragment();
+    cards.forEach(c => {
+        const wrap = document.createElement('div');
+        wrap.style.background = 'var(--surface)';
+        const item = document.createElement('div');
+        item.className = 'credit-item';
+        item.style.alignItems = 'center';
+
+        const done = c.donePayments || 0;
+        const total = c.payments || 0;
+        const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+        // Progress bar HTML
+        let barHtml = '';
+        if (total > 0) {
+            barHtml = `
+            <div class="card-item-bar-wrap">
+                <div class="card-item-bar-track">
+                    <div class="card-item-bar-fill" style="width:${pct}%"></div>
+                </div>
+                <div class="card-item-bar-label">
+                    <span>${done} из ${total} платежей</span>
+                    <span>${pct}%</span>
+                </div>
+            </div>`;
+        }
+
+        const dueHtml = c.day > 0 ? `<div class="card-item-due">до ${c.day} числа</div>` : '';
+        const amtHtml = c.amount > 0 ? `<div class="card-item-amount credit-amount">${fmt(c.amount)} ₽</div>` : '';
+
+        // Inline +/- controls
+        const controlsHtml = total > 0 ? `
+            <div class="card-item-controls" onclick="event.stopPropagation()">
+                <button class="card-ctrl-btn minus" onclick="cardPaymentStep('${c.id}', ${done}, ${total}, -1)">−</button>
+                <span class="card-ctrl-count">${done}/${total}</span>
+                <button class="card-ctrl-btn plus" onclick="cardPaymentStep('${c.id}', ${done}, ${total}, 1)">+</button>
+            </div>` : '';
+
+        item.innerHTML = `
+            <div class="credit-icon-wrap">💳</div>
+            <div class="card-item-body">
+                <div class="card-item-name">${esc(c.name)}</div>
+                ${barHtml}
+                ${dueHtml}
+            </div>
+            <div class="card-item-right">
+                ${amtHtml}
+                ${controlsHtml}
+            </div>`;
+
+        item.addEventListener('click', () => openCardAction(c.id));
+        wrap.appendChild(item);
+        frag.appendChild(wrap);
+    });
+    list.appendChild(frag);
+    if (!amountsVisible) setTimeout(startSpoilers, 30);
+}
+
+async function cardPaymentStep(cardId, currentDone, total, delta) {
+    const newDone = Math.max(0, Math.min(total, currentDone + delta));
+    if (newDone === currentDone) return;
+    try {
+        await db.collection('credits').doc(cardId).update({ donePayments: newDone });
+        if (newDone === total) showToast('Все платежи выполнены! 🎉');
+    } catch(e) { console.error(e); showToast('Ошибка обновления'); }
+}
 
 // ========== НАСТРОЙКИ ==========
 function gearClick(e) {
@@ -1522,6 +1894,7 @@ function evaluateLaunch(){
             sessionStorage.setItem('session_started', '1');
             document.getElementById('app').classList.add('visible');
             loadCredits();
+            loadCards();
         }
     } else {
         document.getElementById('app').classList.remove('visible');
@@ -1533,10 +1906,14 @@ function setupBackBtn(){
     document.addEventListener('backbutton', () => {
         if (document.getElementById('editAccountOverlay').classList.contains('active')) { closeEditAccount(); return; }
         if (document.getElementById('deleteAccountOverlay').classList.contains('active')) { closeDeleteAccount(); return; }
+        if (document.getElementById('cardDeleteOverlay').classList.contains('active')) { closeCardDelete(); return; }
+        if (document.getElementById('cardActionOverlay').classList.contains('active')) { closeCardAction(); return; }
+        if (document.getElementById('cardFormOverlay').classList.contains('active')) { closeCardForm(); return; }
         if (document.getElementById('deleteOverlay').classList.contains('active')) { closeDelete(); return; }
         if (document.getElementById('actionOverlay').classList.contains('active')) { closeAction(); return; }
         if (document.getElementById('formOverlay').classList.contains('active')) { closeForm(); return; }
         if (document.getElementById('settingsOverlay').classList.contains('active')) { closeSettings(); return; }
+        if (document.getElementById('fabMenu').classList.contains('active')) { closeFabMenu(); return; }
         if (backPressedOnce) { navigator.app && navigator.app.exitApp(); return; }
         backPressedOnce = true; showToast('Нажмите ещё раз для выхода'); setTimeout(() => backPressedOnce = false, 2000);
     });
