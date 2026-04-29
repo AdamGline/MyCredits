@@ -196,8 +196,8 @@
         .fab-menu.active .fab-menu-item:nth-child(2) { transition-delay: 0.02s; }
         .fab-menu-label { display: block; background: var(--surface); color: var(--text); font-size: 1.05rem; font-weight: 700; padding: 13px 22px; border-radius: 24px; box-shadow: 0 3px 0 rgba(0,0,0,0.12), 0 6px 20px rgba(0,0,0,0.14); border: 1px solid var(--border); white-space: nowrap; cursor: pointer; transition: background 0.12s, transform 0.12s; }
         .fab-menu-label:active { background: var(--surface-2); transform: scale(0.97); }
-        .fab-menu-backdrop { position: fixed; inset: 0; z-index: 198; display: none; }
-        .fab-menu-backdrop.active { display: block; }
+        .fab-menu-backdrop { position: fixed; inset: 0; z-index: 198; display: none; background: rgba(0,0,0,0.45); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); transition: opacity 0.25s; opacity: 0; }
+        .fab-menu-backdrop.active { display: block; opacity: 1; }
 
         .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); backdrop-filter: blur(6px); display: none; align-items: flex-end; justify-content: center; z-index: 500; opacity: 0; transition: opacity 0.25s ease; }
         .overlay.active { display: flex; opacity: 1; }
@@ -301,7 +301,7 @@
         .theme-toggle-row { display: flex; align-items: center; justify-content: center; gap: 8px; }
         .theme-icon-label { font-size: 1.1rem; }
         .theme-switch-track { width: 52px; height: 28px; background: #4a5568; border-radius: 14px; position: relative; cursor: pointer; transition: background 0.35s ease; box-shadow: inset 0 2px 6px rgba(0,0,0,0.25); }
-        .theme-switch-track.dark-on { background: #ffdd2d; }
+        .theme-switch-track.dark-on { background: linear-gradient(135deg, #203a43 0%, #2c5364 100%); }
         .theme-switch-thumb { position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; background: #fff; border-radius: 50%; box-shadow: 0 2px 8px rgba(0,0,0,0.3); transition: transform 0.35s cubic-bezier(0.4,0,0.2,1); }
         .theme-switch-track.dark-on .theme-switch-thumb { transform: translateX(24px); }
         .font-size-steps-full { display: flex; width: 100%; background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; padding: 6px; gap: 4px; }
@@ -507,10 +507,10 @@
 <div class="fab-menu-backdrop" id="fabMenuBackdrop" onclick="closeFabMenu()"></div>
 <div class="fab-menu" id="fabMenu">
   <div class="fab-menu-item">
-    <span class="fab-menu-label" onclick="openCardForm()">Кредитная карта</span>
+    <span class="fab-menu-label" onclick="openCreditForm()">Новый кредит</span>
   </div>
   <div class="fab-menu-item">
-    <span class="fab-menu-label" onclick="openCreditForm()">Новый кредит</span>
+    <span class="fab-menu-label" onclick="openCardForm()">Кредитная карта</span>
   </div>
 </div>
 <button class="fab" id="fab" onclick="fabClick(event)">
