@@ -1424,16 +1424,24 @@ let collapseEnabled = false;
 let activeCollapsed = false;
 let cardsCollapsed = false;
 
+const COLLAPSE_ACTIVE_K = 'crt_collapse_active_v1';
+const COLLAPSE_CARDS_K  = 'crt_collapse_cards_v1';
+
 function loadCollapse() {
-    const v = ls.get(COLLAPSE_K);
-    collapseEnabled = v === 'true';
+    collapseEnabled = ls.get(COLLAPSE_K) === 'true';
+    activeCollapsed  = ls.get(COLLAPSE_ACTIVE_K) === 'true';
+    cardsCollapsed   = ls.get(COLLAPSE_CARDS_K)  === 'true';
     applyCollapseUI();
 }
 
 function toggleCollapseFromSettings() {
     collapseEnabled = !collapseEnabled;
     ls.set(COLLAPSE_K, collapseEnabled);
-    if (!collapseEnabled) { activeCollapsed = false; cardsCollapsed = false; }
+    if (!collapseEnabled) {
+        activeCollapsed = false; cardsCollapsed = false;
+        ls.set(COLLAPSE_ACTIVE_K, false);
+        ls.set(COLLAPSE_CARDS_K,  false);
+    }
     applyCollapseUI();
     updateSettingsUI();
 }
@@ -1480,11 +1488,13 @@ function applyCollapseUI() {
 function toggleActiveSection() {
     if (!collapseEnabled) return;
     activeCollapsed = !activeCollapsed;
+    ls.set(COLLAPSE_ACTIVE_K, activeCollapsed);
     applyCollapseUI();
 }
 function toggleCardsSection() {
     if (!collapseEnabled) return;
     cardsCollapsed = !cardsCollapsed;
+    ls.set(COLLAPSE_CARDS_K, cardsCollapsed);
     applyCollapseUI();
 }
 
