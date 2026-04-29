@@ -120,8 +120,8 @@
         [data-theme="dark"] .summary-bar-fill { background: #1A1A1A; }
         .summary-stats { display: flex; gap: 20px; }
         .summary-stat { display: flex; flex-direction: column; gap: 2px; }
-        .summary-stat-label { font-size: 0.7rem; opacity: 0.55; font-weight: 500; }
-        .summary-stat-val { font-size: 0.9rem; font-weight: 600; }
+        .summary-stat-label { font-size: 0.72rem; opacity: 0.55; font-weight: 500; }
+        .summary-stat-val { font-size: 1rem; font-weight: 700; }
 
         .credit-amount, .total-val, .s-amount, .s-paid-val, .s-remain-val { position: relative; }
         .amounts-hidden .credit-amount, .amounts-hidden .total-val, .amounts-hidden .s-amount, .amounts-hidden .s-paid-val, .amounts-hidden .s-remain-val { color: transparent !important; text-shadow: none !important; user-select: none; }
@@ -463,9 +463,8 @@
         <div class="summary-progress-label"><span class="s-paid-val" id="summaryPaid">Внесено 0 ₽</span><span id="summaryPercent">0%</span></div>
         <div class="summary-bar"><div class="summary-bar-fill" id="summaryBarFill" style="width:0%"></div></div>
         <div class="summary-stats">
-            <div class="summary-stat"><div class="summary-stat-label">Кредитов</div><div class="summary-stat-val" id="summaryCount">0</div></div>
-            <div class="summary-stat"><div class="summary-stat-label">Оплачено</div><div class="summary-stat-val" id="summaryPaidCount">0</div></div>
-            <div class="summary-stat"><div class="summary-stat-label">Карт оплачено</div><div class="summary-stat-val" id="summaryCardsPaid">0</div></div>
+            <div class="summary-stat"><div class="summary-stat-label">Кредиты</div><div class="summary-stat-val" id="summaryCount">0</div></div>
+            <div class="summary-stat"><div class="summary-stat-label">Карты</div><div class="summary-stat-val" id="summaryCardsPaid">0</div></div>
             <div class="summary-stat"><div class="summary-stat-label">Всего к оплате</div><div class="summary-stat-val s-remain-val" id="summaryTotal">0 ₽</div></div>
         </div>
     </div>
@@ -985,8 +984,7 @@ function updateSummary(active){
     document.getElementById('summaryPaid').textContent = `Внесено ${fmt(grandPaid)} ₽`;
     document.getElementById('summaryPercent').textContent = pct + '%';
     document.getElementById('summaryBarFill').style.width = pct + '%';
-    document.getElementById('summaryCount').textContent = active.length;
-    document.getElementById('summaryPaidCount').textContent = active.filter(c => c.paid).length;
+    document.getElementById('summaryCount').textContent = active.filter(c => c.paid).length + '/' + active.length;
     document.getElementById('summaryCardsPaid').textContent = cardsPaidCount + '/' + cards.length;
     document.getElementById('summaryTotal').textContent = fmt(grandTotal) + ' ₽';
     const allPaidAlreadyShown = sessionStorage.getItem('all_paid_shown') === '1';
