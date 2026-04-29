@@ -252,13 +252,19 @@
 
         /* Card item wrapper */
         .card-item-wrap { background: var(--surface); display: flex; flex-direction: column; }
-        /* Multi-payment controls — replaces icon, sits as first flex child in credit-item */
-        .card-pay-row { display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
-        .card-ctrl-btn { width: 30px; height: 30px; border-radius: 9px; border: 1.5px solid var(--border); background: var(--surface-2); color: var(--text); font-size: 1.15rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.12s; line-height: 1; flex-shrink: 0; }
+        /* Fixed min-height on card credit-item matches icon height in regular credits */
+        #cardList .credit-item { min-height: 68px; }
+        /* credit-main overridden for cards: flex row so name+controls sit side by side */
+        .card-main-row { display: flex; flex-direction: row; align-items: center; gap: 8px; }
+        .card-name-col { flex: 1; min-width: 0; }
+        .card-name-col .credit-name { margin-bottom: 2px; }
+        /* Multi-payment controls inline */
+        .card-pay-row { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+        .card-ctrl-btn { width: 32px; height: 32px; border-radius: 9px; border: 1.5px solid var(--border); background: var(--surface-2); color: var(--text); font-size: 1.15rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.12s; line-height: 1; flex-shrink: 0; }
         .card-ctrl-btn:active { transform: scale(0.88); background: var(--border); }
         .card-ctrl-btn.plus { background: var(--accent); border-color: var(--accent-dark); color: #1A1A1A; }
         .card-ctrl-btn.plus:active { background: var(--accent-dark); }
-        .card-ctrl-count { font-size: 0.78rem; font-weight: 700; color: var(--text-2); min-width: 28px; text-align: center; }
+        .card-ctrl-count { font-size: 0.78rem; font-weight: 700; color: var(--text-2); min-width: 44px; text-align: center; }
 
         .settings-sheet { padding-bottom: max(20px, env(safe-area-inset-bottom)); }
         .settings-section { padding: 16px 20px; border-bottom: 1px solid var(--border); }
@@ -978,7 +984,6 @@ async function resetPartial(){
     if (c && !c.paid && !c.completed) {
         await updateCreditField(c.id, { partial: 0 });
         closeAction();
-        showToast('Частичная оплата сброшена');
     }
 }
 function closeAction(){ document.getElementById('actionOverlay').classList.remove('active'); }
@@ -992,7 +997,6 @@ async function savePartial(){
     const newPaid = newPartial >= c.amount;
     await updateCreditField(c.id, { partial: newPartial, paid: newPaid });
     closeAction();
-    showToast(newPaid ? 'Кредит полностью оплачен' : 'Внесено ' + fmt(inp) + ' ₽');
 }
 
 function openEdit(){
@@ -1208,14 +1212,12 @@ async function toggleCardPayment(cardId, idx, total, currentDone){
     else newDone = idx + 1;
     await db.collection('credits').doc(cardId).update({ donePayments: newDone });
     closeCardAction();
-    showToast(newDone === total ? 'Все платежи выполнены! 🎉' : `Платёж ${newDone} из ${total}`);
 }
 
 async function resetCardPayments(){
     if (!selectedCardId) return;
     await db.collection('credits').doc(selectedCardId).update({ donePayments: 0, lastResetMonth: `${new Date().getMonth()}-${new Date().getFullYear()}` });
     closeCardAction();
-    showToast('Платежи сброшены');
 }
 
 function openCardEdit(){
@@ -1256,32 +1258,39 @@ function renderCards(){
         wrap.style.background = 'var(--surface)';
 
         const item = document.createElement('div');
+        // Always center-aligned — no height jumps
         item.className = 'credit-item' + (isPaid ? ' paid' : '');
 
         const dueTag = c.day > 0
             ? `<span class="credit-date-tag">до ${c.day} числа</span>`
             : '';
 
+        // Match regular credit structure exactly: amount always shown, badge conditional
         const amtHtml = c.amount > 0
             ? `<span class="credit-amount">${fmt(c.amount)} ₽</span>`
             : '';
 
+        // Conditional render like regular credits — badge appears and pushes amount up
         const badgeHtml = isPaid ? '<span class="credit-paid-badge">Оплачено</span>' : '';
 
-        // Left side: for multi-payment = controls block; for single = empty spacer (no icon)
-        const leftHtml = hasMultiPayments
+        // Controls sit inline: [name] [− X/N +] — same row, same height as regular credit
+        // Minus/plus always rendered (visibility hidden at limits) to prevent layout jump
+        const controlsHtml = hasMultiPayments
             ? `<div class="card-pay-row" onclick="event.stopPropagation()">
-                <button class="card-ctrl-btn minus" onclick="cardPaymentStep('${c.id}', ${done}, ${total}, -1)">−</button>
+                <button class="card-ctrl-btn minus" style="visibility:${done > 0 ? 'visible' : 'hidden'}" onclick="cardPaymentStep('${c.id}', ${done}, ${total}, -1)">−</button>
                 <span class="card-ctrl-count">${done}/${total}</span>
-                <button class="card-ctrl-btn plus" onclick="cardPaymentStep('${c.id}', ${done}, ${total}, 1)">+</button>
+                <button class="card-ctrl-btn plus" style="visibility:${done < total ? 'visible' : 'hidden'}" onclick="cardPaymentStep('${c.id}', ${done}, ${total}, 1)">+</button>
                </div>`
             : '';
 
+        // credit-main becomes a flex row: name+date column | controls
         item.innerHTML = `
-            ${leftHtml}
-            <div class="credit-main">
-                <div class="credit-name">${esc(c.name)}</div>
-                <div class="credit-meta">${dueTag}</div>
+            <div class="credit-main card-main-row">
+                <div class="card-name-col">
+                    <div class="credit-name">${esc(c.name)}</div>
+                    <div class="credit-meta">${dueTag}</div>
+                </div>
+                ${controlsHtml}
             </div>
             <div class="credit-right">
                 ${amtHtml}
@@ -1308,7 +1317,6 @@ async function toggleCardFull(cardId, total, currentDone) {
     const effectiveTotal = total > 0 ? total : 1;
     const newDone = currentDone >= effectiveTotal ? 0 : effectiveTotal;
     await db.collection('credits').doc(cardId).update({ donePayments: newDone });
-    showToast(newDone >= effectiveTotal ? 'Оплачено! 🎉' : 'Оплата отменена');
 }
 
 async function cardPaymentStep(cardId, currentDone, total, delta) {
@@ -1316,7 +1324,6 @@ async function cardPaymentStep(cardId, currentDone, total, delta) {
     if (newDone === currentDone) return;
     try {
         await db.collection('credits').doc(cardId).update({ donePayments: newDone });
-        if (newDone === total) showToast('Все платежи по карте выполнены! 🎉');
     } catch(e) { console.error(e); showToast('Ошибка обновления'); }
 }
 
