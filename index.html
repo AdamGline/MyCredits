@@ -872,13 +872,24 @@ async function checkMonthReset(){
     if (!authUser || !db) return;
     const n = new Date();
     const currentMonthKey = `${n.getMonth()}-${n.getFullYear()}`;
-    const toReset = credits.filter(c => !c.completed && c.lastResetMonth !== currentMonthKey);
     let updatedCount = 0;
+
+    // Сброс кредитов
+    const toReset = credits.filter(c => !c.completed && c.lastResetMonth !== currentMonthKey);
     for (const c of toReset) {
         let updates = { lastResetMonth: currentMonthKey };
         if (c.lastResetMonth) { updates.paid = false; updates.partial = 0; updatedCount++; }
         await updateCreditField(c.id, updates);
     }
+
+    // Сброс кредитных карт
+    const cardsToReset = cards.filter(c => c.lastResetMonth !== currentMonthKey);
+    for (const c of cardsToReset) {
+        let updates = { lastResetMonth: currentMonthKey };
+        if (c.lastResetMonth) { updates.donePayments = 0; updatedCount++; }
+        await updateCreditField(c.id, updates);
+    }
+
     if (updatedCount > 0) {
         const m = document.getElementById('resetMsg');
         m.style.display = 'block';
