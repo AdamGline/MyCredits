@@ -49,7 +49,7 @@
             overflow: hidden;
         }
         .sticky-header { flex-shrink: 0; background: var(--bg); }
-        .scrollable-content { flex: 1; overflow-y: auto; padding-bottom: max(80px, env(safe-area-inset-bottom)); -webkit-overflow-scrolling: touch; }
+        .scrollable-content { flex: 1; overflow-y: auto; padding-bottom: max(16px, env(safe-area-inset-bottom)); -webkit-overflow-scrolling: touch; }
         input, textarea, select { -webkit-user-select: text; user-select: text; }
 
         .splash { position: fixed; inset: 0; background: #FFDD2D; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000; transition: opacity 0.4s ease, visibility 0.4s ease; }
@@ -134,6 +134,7 @@
         .scrollable-content { overflow-y: auto; }
         .section { margin: 16px 16px 0; }
         .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; padding: 0 2px; }
+        .section.list-hidden .section-header { margin-bottom: 0; }
         .section-title { font-size: 0.78rem; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.06em; }
         .section-count { font-size: 0.75rem; color: var(--text-3); font-weight: 500; }
 
@@ -495,12 +496,11 @@
         </div>
         <div class="credit-list" id="cardList"></div>
     </div>
-    </div><!-- /scrollable-content -->
     <div id="installPwaContainer" style="text-align: center; margin: 16px;">
         <button id="installBtn" style="padding: 12px 24px; background: #FFDD2D; border: none; border-radius: 30px; font-weight: bold; font-size: 1rem; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">📲 Установить приложение</button>
         <div id="iosInstruction" style="display: none; margin-top: 10px; font-size: 0.75rem; color: var(--text-2);">На iPhone: нажмите «Поделиться» → «На экран «Домой»»</div>
     </div>
-    <div style="height:20px"></div>
+    </div><!-- /scrollable-content -->
 </div>
 
 <div class="fab-menu-backdrop" id="fabMenuBackdrop" onclick="closeFabMenu()"></div>
@@ -1448,6 +1448,7 @@ function applyCollapseUI() {
     const activeHeader = document.getElementById('activeSectionHeader');
     const activeArrow = document.getElementById('activeArrow');
     const creditList = document.getElementById('creditList');
+    const activeSection = activeHeader && activeHeader.closest('.section');
     if (activeHeader && activeArrow && creditList) {
         if (collapseEnabled) {
             activeHeader.style.cursor = 'pointer';
@@ -1455,16 +1456,23 @@ function applyCollapseUI() {
             activeHeader.onclick = toggleActiveSection;
             creditList.style.display = activeCollapsed ? 'none' : '';
             activeArrow.style.transform = activeCollapsed ? 'rotate(-90deg)' : '';
+            if (activeSection) {
+                activeSection.style.marginBottom = activeCollapsed ? '0' : '';
+                activeSection.style.paddingBottom = activeCollapsed ? '0' : '';
+                activeCollapsed ? activeSection.classList.add('list-hidden') : activeSection.classList.remove('list-hidden');
+            }
         } else {
             activeHeader.style.cursor = 'default';
             activeArrow.style.display = 'none';
             activeHeader.onclick = null;
             creditList.style.display = '';
+            if (activeSection) { activeSection.style.marginBottom = ''; activeSection.style.paddingBottom = ''; activeSection.classList.remove('list-hidden'); }
         }
     }
     const cardsHeader = document.getElementById('cardsSectionHeader');
     const cardsArrow = document.getElementById('cardsArrow');
     const cardList = document.getElementById('cardList');
+    const cardsSection = cardsHeader && cardsHeader.closest('.section');
     if (cardsHeader && cardsArrow && cardList) {
         if (collapseEnabled) {
             cardsHeader.style.cursor = 'pointer';
@@ -1472,11 +1480,17 @@ function applyCollapseUI() {
             cardsHeader.onclick = toggleCardsSection;
             cardList.style.display = cardsCollapsed ? 'none' : '';
             cardsArrow.style.transform = cardsCollapsed ? 'rotate(-90deg)' : '';
+            if (cardsSection) {
+                cardsSection.style.marginBottom = cardsCollapsed ? '0' : '';
+                cardsSection.style.paddingBottom = cardsCollapsed ? '0' : '';
+                cardsCollapsed ? cardsSection.classList.add('list-hidden') : cardsSection.classList.remove('list-hidden');
+            }
         } else {
             cardsHeader.style.cursor = 'default';
             cardsArrow.style.display = 'none';
             cardsHeader.onclick = null;
             cardList.style.display = '';
+            if (cardsSection) { cardsSection.style.marginBottom = ''; cardsSection.style.paddingBottom = ''; cardsSection.classList.remove('list-hidden'); }
         }
     }
     const ct = document.getElementById('collapseSwitchTrack');
