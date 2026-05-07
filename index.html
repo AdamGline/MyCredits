@@ -532,6 +532,7 @@
       <div class="form-group"><label class="form-label">Ежемесячный платёж и день оплаты</label>
         <div class="form-row"><input type="number" id="amountInput" placeholder="Сумма, ₽" inputmode="decimal" style="flex:2"><input type="number" id="dayInput" placeholder="День" min="1" max="31" inputmode="numeric" style="flex:1"></div>
       </div>
+      <div class="form-group"><label class="form-label">День сброса <span class="form-optional-tag">(необязательно)</span></label><input type="number" id="resetDayInput" placeholder="По умолчанию — 1-е число" min="1" max="31" inputmode="numeric"><span class="form-hint">С какого числа считается новый расчётный период. Если не указано — сброс в начале месяца</span></div>
       <div class="form-group"><label class="form-label">Дата окончания</label>
         <div class="date-toggle"><button class="date-toggle-btn active" id="dtBtnCal" onclick="setDateMode('cal')">Календарь</button><button class="date-toggle-btn" id="dtBtnMan" onclick="setDateMode('man')">Вручную</button></div>
         <div class="date-inputs active" id="calInput"><input type="date" id="endDateCal"></div>
@@ -559,6 +560,7 @@
       <div class="form-group"><label class="form-label">Количество платежей <span class="form-optional-tag">(необязательно)</span></label><input type="number" id="cardPaymentsInput" placeholder="Например: 10" min="1" max="99" inputmode="numeric" oninput="updateCardPaymentDots()"><span class="form-hint">Платежи которые надо провести за месяц — можно отмечать каждый</span></div>
       <div class="form-group" id="cardDotsPreview" style="display:none"><label class="form-label">Предпросмотр прогресса</label><div class="payment-dots-wrap" id="cardDotsWrap"><span class="payment-dot-empty">Укажите количество платежей</span></div></div>
       <div class="form-group"><label class="form-label">Дата платежа <span class="form-optional-tag">(необязательно)</span></label><input type="number" id="cardDayInput" placeholder="День месяца (1–31)" min="1" max="31" inputmode="numeric"><span class="form-hint">До какого числа надо закрыть платёж</span></div>
+      <div class="form-group"><label class="form-label">День сброса <span class="form-optional-tag">(необязательно)</span></label><input type="number" id="cardResetDayInput" placeholder="По умолчанию — день платежа или 1-е" min="1" max="31" inputmode="numeric"><span class="form-hint">После какого числа обнуляются платежи карты. Если не указано — используется день платежа</span></div>
     </div>
     <div class="form-actions"><button class="btn btn-primary" id="cardSaveBtn" onclick="handleCardSave()">Добавить карту</button></div>
     <div style="height:8px"></div>
@@ -871,21 +873,45 @@ async function updateCreditField(id,data){ if (!db) return; await db.collection(
 async function checkMonthReset(){
     if (!authUser || !db) return;
     const n = new Date();
-    const currentMonthKey = `${n.getMonth()}-${n.getFullYear()}`;
+    const today = n.getDate();       // текущее число
+    const month = n.getMonth();
+    const year  = n.getFullYear();
+
+    // Вычисляем «ключ расчётного периода» для объекта с учётом его resetDay
+    // Логика: если resetDay=22, период «май» начался 22 апреля и закончится 21 мая.
+    // Ключ периода = год-месяц, в котором НАЧАЛОСЬ действие этого периода.
+    function getPeriodKey(resetDay) {
+        const rd = resetDay || 1;
+        // Если сегодня уже >= resetDay — текущий период начался в этом месяце
+        // Если сегодня < resetDay — текущий период начался в прошлом месяце
+        if (today >= rd) {
+            return `${month}-${year}`;
+        } else {
+            const prevMonth = month === 0 ? 11 : month - 1;
+            const prevYear  = month === 0 ? year - 1 : year;
+            return `${prevMonth}-${prevYear}`;
+        }
+    }
+
     let updatedCount = 0;
 
-    // Сброс кредитов
-    const toReset = credits.filter(c => !c.completed && c.lastResetMonth !== currentMonthKey);
-    for (const c of toReset) {
-        let updates = { lastResetMonth: currentMonthKey };
+    // --- Сброс кредитов ---
+    for (const c of credits) {
+        if (c.completed) continue;
+        const currentKey = getPeriodKey(c.resetDay || 1);
+        if (c.lastResetMonth === currentKey) continue;
+        const updates = { lastResetMonth: currentKey };
         if (c.lastResetMonth) { updates.paid = false; updates.partial = 0; updatedCount++; }
         await updateCreditField(c.id, updates);
     }
 
-    // Сброс кредитных карт
-    const cardsToReset = cards.filter(c => c.lastResetMonth !== currentMonthKey);
-    for (const c of cardsToReset) {
-        let updates = { lastResetMonth: currentMonthKey };
+    // --- Сброс кредитных карт ---
+    for (const c of cards) {
+        // Для карты день сброса: явный resetDay, иначе day (день платежа), иначе 1
+        const rd = c.resetDay || c.day || 1;
+        const currentKey = getPeriodKey(rd);
+        if (c.lastResetMonth === currentKey) continue;
+        const updates = { lastResetMonth: currentKey };
         if (c.lastResetMonth) { updates.donePayments = 0; updatedCount++; }
         await updateCreditField(c.id, updates);
     }
@@ -895,7 +921,7 @@ async function checkMonthReset(){
         m.style.display = 'block';
         setTimeout(() => m.style.display = 'none', 5000);
     }
-    ls.set(MONTH_K, currentMonthKey);
+    ls.set(MONTH_K, `${month}-${year}`);
 }
 
 // ========== РЕНДЕРИНГ ==========
@@ -1065,6 +1091,7 @@ function openEdit(){
     document.getElementById('nameInput').value = c.name;
     document.getElementById('amountInput').value = c.amount;
     document.getElementById('dayInput').value = c.day;
+    document.getElementById('resetDayInput').value = c.resetDay || '';
     selectCat(c.category);
     if (c.endDate) { setDateMode('cal'); document.getElementById('endDateCal').value = c.endDate; }
     document.getElementById('formTitleText').innerText = 'Редактировать';
@@ -1086,6 +1113,7 @@ function resetForm(){
     document.getElementById('nameInput').value = '';
     document.getElementById('amountInput').value = '';
     document.getElementById('dayInput').value = '';
+    document.getElementById('resetDayInput').value = '';
     document.getElementById('endDateCal').value = '';
     document.getElementById('formTitleText').innerText = 'Новый кредит';
     document.getElementById('formSaveBtn').innerText = 'Добавить';
@@ -1107,6 +1135,7 @@ async function handleSave(){
     const saveId = editId;
     const saveCat = selectedCat;
     const endDate = getEndDate();
+    const resetDay = parseInt(document.getElementById('resetDayInput').value) || null;
 
     _isSaving = true;
     const saveBtn = document.getElementById('formSaveBtn');
@@ -1115,7 +1144,7 @@ async function handleSave(){
 
     try {
         const currentMonthKey = `${new Date().getMonth()}-${new Date().getFullYear()}`;
-        const creditData = { name, amount, day, category: saveCat, endDate };
+        const creditData = { name, amount, day, category: saveCat, endDate, resetDay: resetDay || null };
         if (isEdit && saveId) {
             creditData.userId = authUser.uid;
             await db.collection('credits').doc(saveId).update(creditData);
@@ -1183,6 +1212,7 @@ function openCardForm(){
     document.getElementById('cardAmountInput').value = '';
     document.getElementById('cardPaymentsInput').value = '';
     document.getElementById('cardDayInput').value = '';
+    document.getElementById('cardResetDayInput').value = '';
     document.getElementById('cardDotsPreview').style.display = 'none';
     document.getElementById('cardFormTitle').textContent = 'Кредитная карта';
     document.getElementById('cardSaveBtn').textContent = 'Добавить карту';
@@ -1199,6 +1229,7 @@ async function handleCardSave(){
     const amount = parseFloat(document.getElementById('cardAmountInput').value) || 0;
     const payments = parseInt(document.getElementById('cardPaymentsInput').value) || 0;
     const day = parseInt(document.getElementById('cardDayInput').value) || 0;
+    const resetDay = parseInt(document.getElementById('cardResetDayInput').value) || null;
     _isCardSaving = true;
     const btn = document.getElementById('cardSaveBtn');
     btn.disabled = true; btn.textContent = 'Сохранение...';
@@ -1206,7 +1237,7 @@ async function handleCardSave(){
     const wasEditId = cardEditId;
     try {
         const currentMonthKey = `${new Date().getMonth()}-${new Date().getFullYear()}`;
-        const cardData = { name, amount, payments, day, userId: currentAuthUser.uid, type: 'creditcard' };
+        const cardData = { name, amount, payments, day, resetDay: resetDay || null, userId: currentAuthUser.uid, type: 'creditcard' };
         if (wasEditMode && wasEditId) {
             await db.collection('credits').doc(wasEditId).update(cardData);
             showToast('Карта обновлена');
@@ -1287,6 +1318,7 @@ function openCardEdit(){
     document.getElementById('cardAmountInput').value = c.amount || '';
     document.getElementById('cardPaymentsInput').value = c.payments || '';
     document.getElementById('cardDayInput').value = c.day || '';
+    document.getElementById('cardResetDayInput').value = c.resetDay || '';
     document.getElementById('cardFormTitle').textContent = 'Редактировать карту';
     document.getElementById('cardSaveBtn').textContent = 'Сохранить';
     updateCardPaymentDots();
