@@ -843,6 +843,18 @@ function esc(t){ const d=document.createElement('div'); d.textContent=t; return 
 function showToast(msg){ document.querySelectorAll('.toast').forEach(t=>t.remove()); const d=document.createElement('div'); d.className='toast'; d.textContent=msg; document.body.appendChild(d); setTimeout(()=>d.remove(),2200); }
 function showGlobalLoader(show) { document.getElementById('globalLoader').style.display = show ? 'flex' : 'none'; }
 
+// Формирование даты для кредитной карты с учётом периода
+function getCardPaymentDate(c) {
+    if (!c.day) return '';
+    const rd = c.resetDay || c.day || 1;
+    const now = new Date();
+    const currentDay = now.getDate();
+    // Платёжный месяц: если сегодня >= resetDay, платёж в следующем месяце, иначе в текущем
+    const paymentMonth = new Date(now.getFullYear(), now.getMonth() + (currentDay >= rd ? 1 : 0), 1);
+    const monthsGen = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+    return `до ${c.day} ${monthsGen[paymentMonth.getMonth()]}`;
+}
+
 // ========== ЗАГРУЗКА ДАННЫХ ==========
 function loadCredits() {
     if (!authUser || !db) return;
@@ -1266,7 +1278,7 @@ function openCardAction(id){
     document.getElementById('cardActionName').textContent = '💳 ' + c.name;
     const subs = [];
     if (c.amount > 0) subs.push(fmt(c.amount) + ' ₽');
-    if (c.day > 0) subs.push('до ' + c.day + ' числа');
+    if (c.day > 0) subs.push(getCardPaymentDate(c));
     document.getElementById('cardActionSub').textContent = subs.join(' · ');
     renderCardActionDots(c);
     document.getElementById('cardActionOverlay').classList.add('active');
@@ -1352,7 +1364,7 @@ function renderCards(){
         item.className = 'credit-item' + (isPaid ? ' paid' : '');
 
         const dueTag = c.day > 0
-            ? `<span class="credit-date-tag">до ${c.day} числа</span>`
+            ? `<span class="credit-date-tag">${getCardPaymentDate(c)}</span>`
             : '';
 
         const amtHtml = c.amount > 0
