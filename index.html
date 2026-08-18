@@ -124,21 +124,21 @@ display: flex; align-items: center; justify-content: center; cursor: pointer; fl
 .section-title { font-size: 0.78rem; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.06em; }
 .section-count { font-size: 0.75rem; color: var(--text-3); font-weight: 500; }
 .credit-list { display: flex; flex-direction: column; gap: 1px; background: var(--border); border-radius: var(--radius); overflow: hidden; }
-.credit-item { background: var(--surface); padding: 14px 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: background 0.12s; position: relative; overflow: hidden; touch-action: pan-y; }
-.credit-item::before { content: ''; position: absolute; top: 0; left: 0; bottom: 0; width: 0%; background-color: rgba(255,221,45,0.2); transition: width 0.3s; z-index: 0; pointer-events: none; }
-.credit-item.partial-bg::before { width: var(--partial-width, 0%); }
-.credit-item.partial-complete::before { background-color: rgba(44,182,125,0.2); width: 100%; }
-[data-theme="dark"] .credit-item.partial-complete::before { background-color: rgba(0,0,0,0.35); }
-[data-theme="dark"] .credit-term-tag.ok { background: rgba(255,255,255,0.08); color: var(--text-2); }
-[data-theme="dark"] .credit-term-tag.infinite { background: rgba(255,255,255,0.06); color: var(--text-3); }
-[data-theme="dark"] .credit-term-tag.ending { background: rgba(230,57,70,0.2); }
-[data-theme="dark"] .credit-term-tag.soon { background: rgba(255,159,28,0.2); }
-[data-theme="dark"] .credit-paid-badge { background: rgba(0,0,0,0.35); color: #1a1a1a; }
-.credit-item > * { position: relative; z-index: 1; }
-.credit-item:active { background: var(--surface-2); }
+.credit-item { background: var(--surface); position: relative; overflow: hidden; cursor: pointer; transition: background 0.12s; touch-action: pan-y; }
+.credit-item:active .swipe-content { background: var(--surface-2); }
 .credit-item.paid { opacity: 0.55; }
 .credit-item.paid .credit-amount { text-decoration: line-through; }
 .credit-item.completed { opacity: 0.4; }
+/* --- свайп-подсказки как в почте --- */
+.swipe-hint { position: absolute; top: 0; bottom: 0; z-index: 0; display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 800; opacity: 0; letter-spacing: 0.02em; }
+.hint-left { left: 0; padding-left: 20px; color: var(--success); }
+.hint-right { right: 0; padding-right: 20px; color: var(--danger); }
+.swipe-content { position: relative; z-index: 1; display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: var(--surface); width: 100%; overflow: hidden; }
+.swipe-content::before { content: ''; position: absolute; top: 0; left: 0; bottom: 0; width: 0%; background-color: rgba(255,221,45,0.2); transition: width 0.3s; z-index: 0; pointer-events: none; }
+.credit-item.partial-bg .swipe-content::before { width: var(--partial-width, 0%); }
+.credit-item.partial-complete .swipe-content::before { background-color: rgba(44,182,125,0.2); width: 100%; }
+[data-theme="dark"] .credit-item.partial-complete .swipe-content::before { background-color: rgba(0,0,0,0.35); }
+.swipe-content > * { position: relative; z-index: 1; }
 .credit-icon-wrap { width: 40px; height: 40px; border-radius: 12px; background: var(--surface-2); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; border: 1px solid var(--border); }
 .credit-main { flex: 1; min-width: 0; }
 .credit-name { font-size: 0.95rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
@@ -250,20 +250,47 @@ input:focus, select:focus { border-color: var(--accent-dark); }
 .card-ctrl-btn.plus { background: var(--accent); border-color: var(--accent-dark); color: #1A1A1A; }
 .card-ctrl-btn.plus:active { background: var(--accent-dark); }
 .card-ctrl-count { font-size: 0.78rem; font-weight: 700; color: var(--text-2); min-width: 44px; text-align: center; }
-.settings-sheet { padding-bottom: 0; max-height: 92vh; }
-.settings-footer { position: sticky; bottom: 0; background: var(--surface); display: flex; gap: 10px; padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); border-top: 1px solid var(--border); z-index: 5; }
-.settings-section { padding: 16px 20px; border-bottom: 1px solid var(--border); }
-.settings-section:last-of-type { border-bottom: none; }
-.settings-section-label { font-size: 0.72rem; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 14px; }
-.account-main-row { display: flex; align-items: center; gap: 14px; background: var(--surface-2); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 16px; border: 1px solid var(--border); }
-.account-info { flex: 1; overflow: hidden; }
-.account-display-name { font-size: 1.1rem; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
-.account-email-small { font-size: 0.8rem; color: var(--text-2); word-break: break-all; }
-.email-status { display: flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 0.7rem; }
-.email-status.verified { color: var(--success); }
-.email-status.unverified { color: var(--warning); }
-.email-status svg { width: 14px; height: 14px; }
-.account-btns-row { display: flex; gap: 10px; margin-top: 8px; }
+/* ========== НАСТРОЙКИ: ПОЛНОЭКРАННОЕ ОКНО ========== */
+.overlay.settings-full { align-items: stretch; justify-content: stretch; background: var(--bg); }
+.settings-page { width: 100%; height: 100%; display: flex; flex-direction: column; background: var(--bg); }
+.settings-page-header {
+display: flex; align-items: center; gap: 12px;
+padding: calc(env(safe-area-inset-top) + 12px) 16px 12px;
+background: var(--bg); z-index: 10; border-bottom: 1px solid var(--border);
+}
+.settings-back {
+width: 40px; height: 40px; border-radius: 12px; border: 1.5px solid var(--border);
+background: var(--surface); font-size: 1.15rem; cursor: pointer; color: var(--text);
+display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.settings-back:active { transform: scale(0.94); }
+.settings-page-title { flex: 1; font-size: 1.15rem; font-weight: 800; color: var(--text); letter-spacing: -0.3px; }
+.settings-save-btn {
+padding: 10px 18px; border: none; border-radius: 12px; background: var(--text); color: var(--bg);
+font-weight: 700; font-family: inherit; font-size: 0.9rem; cursor: pointer; flex-shrink: 0;
+}
+.settings-save-btn:active { transform: scale(0.95); }
+[data-theme="dark"] .settings-save-btn { background: var(--accent); color: #1A1A1A; }
+.settings-page-body {
+flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+padding: 16px 16px calc(24px + env(safe-area-inset-bottom));
+display: flex; flex-direction: column; gap: 14px;
+}
+.profile-card {
+display: flex; align-items: center; gap: 14px;
+background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px;
+}
+.profile-avatar {
+width: 56px; height: 56px; border-radius: 50%; background: var(--accent); color: #1A1A1A;
+display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 800; flex-shrink: 0;
+box-shadow: 0 2px 10px rgba(240,200,0,0.35);
+}
+.profile-info { flex: 1; min-width: 0; }
+.profile-name { font-size: 1.05rem; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.profile-email { font-size: 0.8rem; color: var(--text-2); word-break: break-all; }
+.profile-actions { display: flex; gap: 10px; }
+.settings-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+.settings-card-label { font-size: 0.72rem; font-weight: 700; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px; }
 .account-btn { flex: 1; padding: 12px 10px; border-radius: var(--radius-sm); border: 1.5px solid var(--border); background: var(--surface-2); font-family: inherit; font-size: 0.85rem; font-weight: 600; color: var(--text); cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 7px; }
 .account-btn:active { transform: scale(0.97); background: var(--border); }
 .account-btn.btn-logout { color: var(--danger); border-color: rgba(230,57,70,0.25); background: rgba(230,57,70,0.05); }
@@ -294,6 +321,9 @@ input:focus, select:focus { border-color: var(--accent-dark); }
 .lock-btn-set { border-color: rgba(102,126,234,0.3); color: #667eea; background: rgba(102,126,234,0.08); }
 .lock-btn-remove { border-color: rgba(231,76,60,0.2); color: #e74c3c; background: rgba(231,76,60,0.06); }
 .lock-btn:active { transform: scale(0.97); }
+.email-status { display: flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 0.7rem; }
+.email-status.verified { color: var(--success); }
+.email-status.unverified { color: var(--warning); }
 .pin-overlay { position: fixed; inset: 0; z-index: 9998; background: var(--bg); display: none; flex-direction: column; align-items: center; justify-content: flex-end; padding: max(env(safe-area-inset-top), 60px) 0 max(env(safe-area-inset-bottom), 24px); gap: 48px; }
 .pin-overlay.active { display: flex; }
 .pin-top { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 0 20px; width: 100%; }
@@ -383,17 +413,18 @@ cursor: pointer; transition: all 0.15s;
 .history-empty { padding: 48px 20px; text-align: center; color: var(--text-3); font-size: 0.85rem; }
 .history-clear-btn { margin: 8px 16px; padding: 10px; background: rgba(230,57,70,0.08); border: 1.5px solid rgba(230,57,70,0.25); border-radius: var(--radius-sm); color: var(--danger); font-family: inherit; font-size: 0.82rem; font-weight: 600; cursor: pointer; width: calc(100% - 32px); }
 .history-clear-btn:active { transform: scale(0.98); }
-.credit-item.swipeable { transition: transform 0.2s ease; }
+.credit-item.swipeable .swipe-content { transition: transform 0.2s ease; }
 .biometric-btn { width: 100%; padding: 14px; background: var(--surface-2); border: 1.5px solid var(--border); border-radius: 14px; font-family: inherit; font-size: 0.95rem; font-weight: 600; color: var(--text); cursor: pointer; margin-top: 4px; display: flex; align-items: center; justify-content: center; gap: 8px; }
 .biometric-btn:active { transform: scale(0.97); background: var(--border); }
 .biometric-btn:disabled { opacity: 0.5; pointer-events: none; }
+.settings-sheet { padding-bottom: 0; max-height: 92vh; }
 </style>
 </head>
 <body>
 <div class="splash" id="splash">
 <img src="logo.png" alt="" style="width:100%;max-width:280px;height:auto;display:block;margin-bottom:16px;" onerror="this.style.display='none'">
 <div class="splash-tagline">Думай о более важном!</div>
-<div class="splash-version">Версия 1.6</div>
+<div class="splash-version">Версия 1.8</div>
 </div>
 <script>
 setTimeout(function() {
@@ -603,27 +634,30 @@ if (auth) auth.style.display = 'flex';
 <div class="confirm-body"><div class="confirm-text">Вы уверены, что хотите удалить этот кредит?</div><button class="btn" style="background:var(--danger);color:#fff;margin-bottom:10px;width:100%" onclick="doDelete()">Удалить</button></div>
 </div>
 </div>
-<div class="overlay" id="settingsOverlay" onclick="if(event.target===this)cancelSettings()">
-<div class="sheet settings-sheet">
-<div class="sheet-handle"></div>
-<div class="sheet-title">Настройки <button class="sheet-close" onclick="cancelSettings()">✕</button></div>
-<div class="settings-section">
-<div class="settings-section-label">Аккаунт</div>
-<div class="account-main-row">
-<div class="account-info">
-<div class="account-display-name" id="settingsDisplayName">Загрузка...</div>
-<div class="account-email-small" id="settingsEmail">—</div>
+<!-- ========== НАСТРОЙКИ: ОТДЕЛЬНОЕ ОКНО ========== -->
+<div class="overlay settings-full" id="settingsOverlay">
+<div class="settings-page">
+<div class="settings-page-header">
+<button class="settings-back" onclick="cancelSettings()">←</button>
+<span class="settings-page-title">Настройки</span>
+<button class="settings-save-btn" onclick="saveSettings()">Сохранить</button>
+</div>
+<div class="settings-page-body">
+<div class="profile-card">
+<div class="profile-avatar" id="profileAvatar">М</div>
+<div class="profile-info">
+<div class="profile-name" id="settingsDisplayName">Загрузка...</div>
+<div class="profile-email" id="settingsEmail">—</div>
 <div class="email-status" id="emailStatusIndicator"></div>
 </div>
 </div>
-<div class="account-btns-row">
+<div class="profile-actions">
 <button class="account-btn" id="editAccountBtn" onclick="openEditAccount()">✏️ Редактировать</button>
 <button class="account-btn verify-email-btn" id="verifyEmailBtn" onclick="sendVerificationEmail()" style="display:none;">📧 Подтвердить</button>
 <button class="account-btn btn-logout" onclick="doLogout()">🚪 Выйти</button>
 </div>
-</div>
-<div class="settings-section">
-<div class="settings-section-label">Внешний вид</div>
+<div class="settings-card">
+<div class="settings-card-label">Внешний вид</div>
 <div class="settings-two-controls">
 <div class="settings-control-item"><span class="settings-control-label">Тема</span>
 <div class="theme-toggle-row"><span class="theme-icon-label">☀️</span><div class="theme-switch-track" id="themeSwitchTrack" onclick="toggleThemeFromSettings();event.stopPropagation()"><div class="theme-switch-thumb"></div></div><span class="theme-icon-label">🌙</span></div>
@@ -633,16 +667,16 @@ if (auth) auth.style.display = 'flex';
 </div>
 </div>
 </div>
-<div class="settings-section">
-<div class="settings-section-label">Размер текста</div>
+<div class="settings-card">
+<div class="settings-card-label">Размер текста</div>
 <div class="font-size-steps-full">
 <div class="font-step" data-size="s" onclick="setFontSize('s')"><span>А</span><span class="font-step-label">Мелкий</span></div>
 <div class="font-step" data-size="m" onclick="setFontSize('m')"><span>А</span><span class="font-step-label">Обычный</span></div>
 <div class="font-step" data-size="l" onclick="setFontSize('l')"><span>А</span><span class="font-step-label">Крупный</span></div>
 </div>
 </div>
-<div class="settings-section">
-<div class="settings-section-label">Отображение</div>
+<div class="settings-card">
+<div class="settings-card-label">Отображение</div>
 <div class="settings-two-controls">
 <div class="settings-control-item" style="flex:1;align-items:flex-start;gap:6px">
 <span class="settings-control-label">Сворачивать вкладки</span>
@@ -651,8 +685,8 @@ if (auth) auth.style.display = 'flex';
 <div class="theme-switch-track" id="collapseSwitchTrack" onclick="toggleCollapseFromSettings();event.stopPropagation()"><div class="theme-switch-thumb"></div></div>
 </div>
 </div>
-<div class="settings-section">
-<div class="settings-section-label">Звуки и вибрация</div>
+<div class="settings-card">
+<div class="settings-card-label">Звуки и вибрация</div>
 <div class="settings-two-controls">
 <div class="settings-control-item"><span class="settings-control-label">Звуки</span>
 <div class="theme-toggle-row"><span class="theme-icon-label">🔇</span><div class="theme-switch-track" id="soundSwitchTrack" onclick="toggleSoundFromSettings();event.stopPropagation()"><div class="theme-switch-thumb"></div></div><span class="theme-icon-label">🔊</span></div>
@@ -662,8 +696,8 @@ if (auth) auth.style.display = 'flex';
 </div>
 </div>
 </div>
-<div class="settings-section">
-<div class="settings-section-label">Уведомления</div>
+<div class="settings-card">
+<div class="settings-card-label">Уведомления</div>
 <div class="settings-two-controls">
 <div class="settings-control-item" style="flex:1;align-items:flex-start;gap:6px">
 <span class="settings-control-label">Напоминать о платежах</span>
@@ -672,12 +706,12 @@ if (auth) auth.style.display = 'flex';
 <div class="theme-switch-track" id="notifSwitchTrack" onclick="toggleNotifFromSettings();event.stopPropagation()"><div class="theme-switch-thumb"></div></div>
 </div>
 </div>
-<div class="settings-section">
-<div class="settings-section-label">История и данные</div>
+<div class="settings-card">
+<div class="settings-card-label">История и данные</div>
 <button class="account-btn" onclick="openHistory()" style="width:100%">📜 История платежей</button>
 </div>
-<div class="settings-section">
-<div class="settings-section-label">Защита</div>
+<div class="settings-card">
+<div class="settings-card-label">Защита</div>
 <div class="lock-status-row" id="lockStatusRow">
 <div class="lock-status-icon" id="lockStatusIcon">🔓</div>
 <div class="lock-status-text"><span class="lock-status-title" id="lockStatusTitle">Защита не установлена</span><span class="lock-status-sub" id="lockStatusSub">Нажмите чтобы настроить</span></div>
@@ -689,9 +723,6 @@ if (auth) auth.style.display = 'flex';
 <button class="lock-btn lock-btn-remove" id="removeLockBtn" onclick="doRemoveLock()" style="display:none">🗑 Убрать защиту</button>
 </div>
 </div>
-<div class="settings-footer">
-<button class="btn" style="background:var(--surface-2);color:var(--text);border:1.5px solid var(--border)" onclick="cancelSettings()">Отмена</button>
-<button class="btn btn-primary" onclick="saveSettings()">💾 Сохранить</button>
 </div>
 </div>
 </div>
@@ -840,7 +871,6 @@ let monthResetDone = false;
 let settingsSnapshot = null;
 let _bioAutoTried = false;
 const ls = { get:k=>{try{return localStorage.getItem(k);}catch(e){return null;}}, set:(k,v)=>{try{localStorage.setItem(k,v);return true;}catch(e){return false;}}, rm:k=>{try{localStorage.removeItem(k);}catch(e){}} };
-
 // ========== ЗВУКИ (WebAudio) ==========
 let _audioCtx = null;
 function _getAudioCtx() {
@@ -883,16 +913,19 @@ else { note(520, 0, 0.08, 0.15); }
 } catch(e) {}
 }
 document.addEventListener('touchstart', function(){ try { _getAudioCtx(); } catch(e) {} }, { once: true, passive: true });
-
-// ========== ВИБРАЦИЯ ==========
+// ========== ВИБРАЦИЯ (исправлено: мгновенно + проверка поддержки) ==========
 let _userTapped = false;
+let _vibeWarned = false;
 document.addEventListener('touchstart', function(){ _userTapped = true; }, { once: true, passive: true });
-document.addEventListener('mousedown', function(){ _userTapped = true; }, { once: true });
+document.addEventListener('pointerdown', function(){ _userTapped = true; }, { passive: true, capture: true });
 function haptic(pattern) {
 if (!hapticEnabled || !_userTapped) return;
-if (navigator.vibrate) { try { navigator.vibrate(pattern || 10); } catch(e) {} }
+if (!('vibrate' in navigator)) {
+if (!_vibeWarned) { _vibeWarned = true; showToast('Вибрация не поддерживается этим браузером'); }
+return;
 }
-
+try { navigator.vibrate(pattern || 10); } catch(e) {}
+}
 // ========== АНТИ-ТОРМОЗА ПРИ ПЛОХОЙ СЕТИ ==========
 let _netDisabled = false;
 function guardNetwork(err) {
@@ -905,7 +938,6 @@ setTimeout(() => { _netDisabled = false; try { if (db) db.enableNetwork().catch(
 }
 window.addEventListener('offline', () => { if (db && !_netDisabled) { _netDisabled = true; try { db.disableNetwork().catch(()=>{}); } catch(e) {} showToast('📴 Офлайн-режим'); } });
 window.addEventListener('online', () => { if (db) { _netDisabled = false; try { db.enableNetwork().catch(()=>{}); } catch(e) {} showToast('🟢 Снова в сети'); } });
-
 // ========== ВСПОМОГАТЕЛЬНЫЕ ==========
 function formatPaymentDate(dayNumber){ const months=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря']; return `до ${dayNumber} ${months[new Date().getMonth()]}`; }
 function fmt(n){ return Math.round(n).toLocaleString('ru-RU'); }
@@ -932,7 +964,6 @@ const paymentMonth = new Date(now.getFullYear(), now.getMonth() + (currentDay >=
 const monthsGen = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
 return `до ${c.day} ${monthsGen[paymentMonth.getMonth()]}`;
 }
-
 // ========== ИСТОРИЯ ПЛАТЕЖЕЙ ==========
 async function logPayment(creditId, creditName, type, amount, note) {
 if (!db || !authUser) return;
@@ -1040,7 +1071,6 @@ showToast('История очищена');
 closeHistory();
 } catch(e) { showToast('Ошибка: ' + e.message); }
 }
-
 // ========== ЗАГРУЗКА ДАННЫХ ==========
 function loadCredits() {
 if (!authUser || !db) return;
@@ -1102,7 +1132,6 @@ setTimeout(() => m.style.display = 'none', 5000);
 const n = new Date();
 ls.set(MONTH_K, `${n.getMonth()}-${n.getFullYear()}`);
 }
-
 // ========== УВЕДОМЛЕНИЯ ==========
 async function requestNotificationPermission() {
 if (!('Notification' in window)) { showToast('Уведомления не поддерживаются в этом браузере'); return false; }
@@ -1154,7 +1183,6 @@ ls.set('crt_last_notif_date', todayKey);
 }
 }
 setInterval(checkUpcomingNotifications, 3600000);
-
 // ========== РЕНДЕРИНГ ==========
 function render(){
 const now = new Date();
@@ -1213,22 +1241,31 @@ if (partial >= c.amount) item.classList.add('partial-complete');
 else { item.classList.add('partial-bg'); item.style.setProperty('--partial-width', percent + '%'); }
 }
 const displayAmount = c.paid ? fmt(c.amount) : (partial > 0 ? fmt(remain) : fmt(c.amount));
-item.innerHTML = `<div class="credit-icon-wrap">${cat.emoji}</div>
+item.innerHTML = `
+<div class="swipe-hint hint-left">✅ Оплачено</div>
+<div class="swipe-hint hint-right">Удалить 🗑</div>
+<div class="swipe-content">
+<div class="credit-icon-wrap">${cat.emoji}</div>
 <div class="credit-main"><div class="credit-name">${esc(c.name)}</div>
 <div class="credit-meta"><span class="credit-date-tag">${formatPaymentDate(c.day)}</span>${termHtml}</div></div>
 <div class="credit-right"><span class="credit-amount">${displayAmount} ₽</span>
 ${c.paid ? '<span class="credit-paid-badge">Оплачено</span>' : (partial > 0 ? `<span style="font-size:0.68rem;color:var(--text-2);font-weight:500">из ${fmt(c.amount)} ₽</span>` : '')}</div>
 <div class="check-wrap ${c.paid || c.completed ? 'checked' : ''}" data-id="${c.id}">
 <svg viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="2.5"><polyline points="2,7 6,11 12,3"/></svg>
+</div>
 </div>`;
-item.addEventListener('click', e => { if (!c.completed && !e.target.closest('.check-wrap')) openAction(c.id); });
+item.addEventListener('click', e => {
+if (item.dataset.suppressClick === '1') return;
+if (!c.completed && !e.target.closest('.check-wrap')) openAction(c.id);
+});
 item.querySelector('.check-wrap').addEventListener('click', async e => {
 e.stopPropagation();
 if (!c.completed) {
 const newPaid = !c.paid;
+haptic(15);
 await updateCreditField(c.id, { paid: newPaid, partial: newPaid ? c.amount : 0 });
 if (newPaid) { await logPayment(c.id, c.name, 'paid_full', c.amount, ''); playSound('coins'); haptic([30, 50, 30]); }
-else { await logPayment(c.id, c.name, 'unpaid', c.amount, ''); playSound('swipe'); haptic(10); }
+else { await logPayment(c.id, c.name, 'unpaid', c.amount, ''); playSound('swipe'); }
 }
 });
 wrap.appendChild(item);
@@ -1265,17 +1302,20 @@ playSound('coins'); haptic([50, 50, 50]);
 setTimeout(() => document.getElementById('allPaidOverlay').classList.add('active'), 400);
 } else if (!everythingPaid) { allPaidShown = false; }
 }
-
-// ========== СВАЙПЫ ==========
+// ========== СВАЙПЫ С ПОДПИСЯМИ (как в почте) ==========
 function attachSwipeHandlers() {
 document.querySelectorAll('.credit-item.swipeable').forEach(item => {
 if (item.dataset.swipeAttached === '1') return;
 item.dataset.swipeAttached = '1';
+const content = item.querySelector('.swipe-content');
+const hintL = item.querySelector('.hint-left');
+const hintR = item.querySelector('.hint-right');
+if (!content) return;
 let startX = 0, startY = 0, currentX = 0, isSwiping = false, direction = null;
 item.addEventListener('touchstart', e => {
 const t = e.touches[0];
 startX = t.clientX; startY = t.clientY; currentX = 0; isSwiping = false; direction = null;
-item.style.transition = 'none';
+content.style.transition = 'none';
 }, { passive: true });
 item.addEventListener('touchmove', e => {
 const t = e.touches[0];
@@ -1287,22 +1327,41 @@ else if (Math.abs(dy) > 10) return;
 }
 if (isSwiping) {
 currentX = dx;
-const clamped = Math.max(-120, Math.min(120, dx));
-item.style.transform = `translateX(${clamped}px)`;
+const clamped = Math.max(-140, Math.min(140, dx));
+content.style.transform = `translateX(${clamped}px)`;
+const prog = Math.min(1, Math.abs(dx) / 90);
+if (dx > 0) { hintL.style.opacity = prog; hintR.style.opacity = 0; item.style.background = 'rgba(44,182,125,0.15)'; }
+else { hintR.style.opacity = prog; hintL.style.opacity = 0; item.style.background = 'rgba(230,57,70,0.12)'; }
 }
 }, { passive: true });
 item.addEventListener('touchend', async () => {
-if (!isSwiping) return;
-item.style.transition = 'transform 0.2s ease';
+if (!isSwiping) { content.style.transition = ''; return; }
+content.style.transition = 'transform 0.2s ease';
 const creditId = item.dataset.creditId;
 const creditType = item.dataset.creditType;
+let acted = false;
 if (direction === 'right' && currentX > 80) {
+if (creditType === 'card') {
+const c = cards.find(x => x.id === creditId);
+const eff = c && (c.payments || 0) > 0 ? c.payments : 1;
+if (c && (c.donePayments || 0) < eff) {
+haptic(20);
+await db.collection('credits').doc(creditId).update({ donePayments: eff });
+await logPayment(creditId, c.name, 'card_payment', c.amount || 0, 'Оплачено свайпом');
+playSound('coins'); haptic([30, 50, 30]);
+showToast('✅ Оплачено');
+acted = true;
+}
+} else {
 const c = credits.find(x => x.id === creditId);
 if (c && !c.completed && !c.paid) {
+haptic(20);
 await updateCreditField(creditId, { paid: true, partial: c.amount });
 await logPayment(creditId, c.name, 'paid_full', c.amount, 'Оплачено свайпом');
 playSound('coins'); haptic([30, 50, 30]);
 showToast('✅ Оплачено');
+acted = true;
+}
 }
 } else if (direction === 'left' && currentX < -80) {
 if (confirm('Удалить этот элемент?')) {
@@ -1312,14 +1371,19 @@ await db.collection('credits').doc(creditId).delete();
 await logPayment(creditId, found ? found.name : '', 'deleted', 0, 'Удалено свайпом');
 playSound('swipe'); haptic([15, 30, 15]);
 showToast('Удалено');
+acted = true;
 }
 }
-item.style.transform = '';
-setTimeout(() => { item.style.transition = ''; }, 220);
+if (acted) {
+item.dataset.suppressClick = '1';
+setTimeout(() => { delete item.dataset.suppressClick; }, 500);
+}
+content.style.transform = '';
+hintL.style.opacity = 0; hintR.style.opacity = 0; item.style.background = '';
+setTimeout(() => { content.style.transition = ''; }, 220);
 });
 });
 }
-
 // ========== ДЕЙСТВИЯ С КРЕДИТОМ ==========
 function openAction(id){
 const c = credits.find(x => x.id === id);
@@ -1358,12 +1422,13 @@ const c = credits.find(x => x.id === selectedCreditId);
 if (!c) return;
 const inp = parseFloat(document.getElementById('partialInput').value);
 if (!inp || inp <= 0) { showToast('Введите сумму'); return; }
+haptic(15);
 const newPartial = Math.min(c.amount, (c.partial || 0) + inp);
 const newPaid = newPartial >= c.amount;
 await updateCreditField(c.id, { partial: newPartial, paid: newPaid });
 await logPayment(c.id, c.name, 'partial', inp, newPaid ? 'Доплачено до конца' : '');
 closeAction();
-if (newPaid) { playSound('coins'); haptic([30, 50, 30]); } else { playSound('pay'); haptic(20); }
+if (newPaid) { playSound('coins'); haptic([30, 50, 30]); } else { playSound('pay'); }
 }
 function openEdit(){
 const c = credits.find(x => x.id === selectedCreditId);
@@ -1392,7 +1457,6 @@ showToast('Удалено'); haptic(15);
 }
 closeDelete(); selectedCreditId = null;
 }
-
 // ========== ФОРМА КРЕДИТА ==========
 function toggleForm(){ const ov = document.getElementById('formOverlay'); if (!ov.classList.contains('active')) { ov.classList.add('active'); updateFab(true); } else closeForm(); }
 function closeForm(){ document.getElementById('formOverlay').classList.remove('active'); updateFab(false); resetForm(); _isSaving = false; }
@@ -1468,7 +1532,6 @@ function fabClick(e){ e.stopPropagation(); const menu = document.getElementById(
 function closeFabMenu(){ document.getElementById('fab').classList.remove('active'); document.getElementById('fabMenu').classList.remove('active'); document.getElementById('fabMenuBackdrop').classList.remove('active'); }
 function openCreditForm(){ closeFabMenu(); toggleForm(); }
 function updateFab(active){ document.getElementById('fab').classList.toggle('active', active); }
-
 // ========== КРЕДИТНЫЕ КАРТЫ ==========
 let selectedCardId = null;
 let cardEditMode = false;
@@ -1577,12 +1640,13 @@ document.getElementById('cardActionProgressText').textContent = `Выполне�
 document.getElementById('cardActionProgressPct').textContent = pct + '%';
 }
 async function toggleCardPayment(cardId, idx, total, currentDone){
+haptic(10);
 const newDone = idx < currentDone ? idx : idx + 1;
 await db.collection('credits').doc(cardId).update({ donePayments: newDone });
 const c = cards.find(x => x.id === cardId);
 if (newDone > currentDone) {
 await logPayment(cardId, c ? c.name : 'Карта', 'card_payment', c ? c.amount : 0, `Платёж ${newDone} из ${total}`);
-if (newDone >= total) { playSound('coins'); haptic([30, 50, 30]); } else { playSound('pay'); haptic(20); }
+if (newDone >= total) { playSound('coins'); haptic([30, 50, 30]); } else { playSound('pay'); }
 }
 closeCardAction();
 }
@@ -1651,6 +1715,9 @@ const controlsHtml = hasMultiPayments
 <button class="card-ctrl-btn plus" style="visibility:${done < total ? 'visible' : 'hidden'}" onclick="cardPaymentStep('${c.id}', ${done}, ${total}, 1)">+</button>
 </div>` : '';
 item.innerHTML = `
+<div class="swipe-hint hint-left">✅ Оплачено</div>
+<div class="swipe-hint hint-right">Удалить 🗑</div>
+<div class="swipe-content">
 <div class="credit-main card-main-row">
 <div class="card-name-col">
 <div class="credit-name">${esc(c.name)}</div>
@@ -1661,12 +1728,16 @@ ${controlsHtml}
 <div class="credit-right">${amtHtml}${badgeHtml}</div>
 <div class="check-wrap ${isPaid ? 'checked' : ''}" data-id="${c.id}">
 <svg viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="2.5"><polyline points="2,7 6,11 12,3"/></svg>
+</div>
 </div>`;
 item.querySelector('.check-wrap').addEventListener('click', e => {
 e.stopPropagation();
 toggleCardFull(c.id, total, done);
 });
-item.addEventListener('click', () => openCardAction(c.id));
+item.addEventListener('click', () => {
+if (item.dataset.suppressClick === '1') return;
+openCardAction(c.id);
+});
 wrap.appendChild(item);
 frag.appendChild(wrap);
 });
@@ -1675,6 +1746,7 @@ if (!amountsVisible) setTimeout(startSpoilers, 30);
 attachSwipeHandlers();
 }
 async function toggleCardFull(cardId, total, currentDone) {
+haptic(15);
 const effectiveTotal = total > 0 ? total : 1;
 const newDone = currentDone >= effectiveTotal ? 0 : effectiveTotal;
 await db.collection('credits').doc(cardId).update({ donePayments: newDone });
@@ -1684,26 +1756,25 @@ await logPayment(cardId, c ? c.name : 'Карта', 'card_payment', c ? c.amount
 playSound('coins'); haptic([30, 50, 30]);
 } else {
 await logPayment(cardId, c ? c.name : 'Карта', 'unpaid', c ? c.amount : 0, 'Отменена оплата');
-playSound('swipe'); haptic(10);
+playSound('swipe');
 }
 }
 async function cardPaymentStep(cardId, currentDone, total, delta) {
 const newDone = Math.max(0, Math.min(total, currentDone + delta));
 if (newDone === currentDone) return;
+haptic(10);
 try {
 await db.collection('credits').doc(cardId).update({ donePayments: newDone });
 const c = cards.find(x => x.id === cardId);
 if (delta > 0) {
 await logPayment(cardId, c ? c.name : 'Карта', 'card_payment', c ? c.amount : 0, `Платёж ${newDone} из ${total}`);
-if (newDone >= total) { playSound('coins'); haptic([30, 50, 30]); } else { playSound('pay'); haptic(20); }
+if (newDone >= total) { playSound('coins'); haptic([30, 50, 30]); } else { playSound('pay'); }
 } else {
 await logPayment(cardId, c ? c.name : 'Карта', 'unpaid', c ? c.amount : 0, 'Отменён платёж');
-haptic(10);
 }
 } catch(e) { console.error(e); showToast('Ошибка обновления'); }
 }
-
-// ========== НАСТРОЙКИ (С СОХРАНЕНИЕМ/ОТМЕНОЙ) ==========
+// ========== НАСТРОЙКИ (ОТДЕЛЬНОЕ ОКНО, СОХРАНЕНИЕ/ОТМЕНА) ==========
 function gearClick(e) {
 e.stopPropagation();
 const btn = document.getElementById('settingsBtn');
@@ -1720,6 +1791,7 @@ if (authUser) {
 const display = authUser.displayName || authUser.email.split('@')[0];
 document.getElementById('settingsDisplayName').textContent = display;
 document.getElementById('settingsEmail').textContent = authUser.email || '—';
+document.getElementById('profileAvatar').textContent = (String(display).charAt(0) || 'М').toUpperCase();
 updateEmailStatusUI();
 }
 takeSettingsSnapshot();
@@ -1740,7 +1812,7 @@ ls.set(HAPTIC_K, hapticEnabled);
 ls.set(NOTIF_K, notifEnabled);
 showToast('✅ Настройки сохранены');
 playSound('pay');
-haptic(20);
+haptic([20, 40, 20]);
 closeSettings();
 }
 function cancelSettings(){
@@ -1772,9 +1844,10 @@ function toggleSoundFromSettings(){ soundEnabled = !soundEnabled; if (soundEnabl
 function loadHaptic(){ const v = ls.get(HAPTIC_K); if (v !== null) hapticEnabled = v === 'true'; }
 function toggleHapticFromSettings(){
 hapticEnabled = !hapticEnabled;
+_userTapped = true;
 if (hapticEnabled) {
 if (!('vibrate' in navigator)) showToast('Вибрация не поддерживается в этом браузере');
-else haptic([20, 40, 20]);
+else { try { navigator.vibrate([20, 40, 20]); } catch(e) {} }
 }
 updateSettingsUI();
 }
@@ -1835,7 +1908,6 @@ bioBtn.style.display = hasPin ? '' : 'none';
 bioBtn.textContent = biometricEnabled ? '🔐 Биометрия ✓' : '🔐 Включить биометрию';
 }
 }
-
 // ========== СВОРАЧИВАНИЕ ==========
 let collapseEnabled = false;
 let activeCollapsed = false;
@@ -1931,7 +2003,6 @@ indicator.className = 'email-status unverified';
 if (verifyBtn) verifyBtn.style.display = 'flex';
 }
 }
-
 // ========== АУТЕНТИФИКАЦИЯ ==========
 async function resolveEmailFromNick(nick) {
 if (!db) return null;
@@ -2097,7 +2168,6 @@ document.getElementById('authConfirmPassword').value = '';
 document.getElementById('authName').value = '';
 if (!isLoginMode) emailInput.value = '';
 }
-
 // ========== АККАУНТ ==========
 function openEditAccount() {
 closeSettings();
@@ -2183,7 +2253,6 @@ if (e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') sh
 else showToast('Ошибка: ' + e.message);
 }
 }
-
 // ========== ПИН + БИОМЕТРИЯ ==========
 async function hashPin(pin) {
 const encoder = new TextEncoder();
@@ -2303,7 +2372,6 @@ function startSetPin(){ const s = ls.get(PIN_K); if (s) { pinSetVerifyMode = 'ch
 function doRemoveLock(){ const s = ls.get(PIN_K); if (s) { pinSetVerifyMode = 'remove'; openPinVerify('Подтвердите удаление', 'Введите текущий ПИН-код'); } else _removeLock(); }
 function _removeLock(){ ls.rm(PIN_K); ls.rm(PIN_LEN_K); ls.rm(BIO_K); ls.rm('crt_bio_cred_id'); biometricEnabled = false; lockPanelOpen = false; document.getElementById('lockButtons').style.display = 'none'; document.getElementById('lockStatusRow').classList.remove('open'); updateSettingsUI(); showToast('Защита снята'); }
 function toggleLockPanel(){ lockPanelOpen = !lockPanelOpen; document.getElementById('lockButtons').style.display = lockPanelOpen ? '' : 'none'; document.getElementById('lockStatusRow').classList.toggle('open', lockPanelOpen); haptic(10); }
-
 // ========== БИОМЕТРИЯ (WebAuthn) ==========
 async function isBiometricAvailable() {
 if (!window.PublicKeyCredential) return false;
@@ -2374,7 +2442,6 @@ if (!btn) return;
 if (biometricEnabled && ls.get('crt_bio_cred_id') && (await isBiometricAvailable())) btn.style.display = '';
 else btn.style.display = 'none';
 }
-
 // ========== СПОЙЛЕРЫ ==========
 let spoilerRAF = null; const spoilerMap = new Map();
 function makeDotColor(){ const dark = theme === 'dark'; const v = dark ? (160 + Math.random() * 90) | 0 : (50 + Math.random() * 80) | 0; return `rgba(${v},${v},${v},${(0.08 + Math.random() * 0.22).toFixed(2)})`; }
@@ -2382,11 +2449,9 @@ function initSpoilerCanvas(el){ if (el.querySelector('.spoiler-canvas')) return;
 function animateSpoilers(){ document.querySelectorAll('.spoiler-canvas').forEach(cv => { const pts = spoilerMap.get(cv); if (!pts) return; const ctx = cv.getContext('2d'); ctx.clearRect(0, 0, cv.width, cv.height); pts.forEach(p => { p.x += p.vx; p.y += p.vy; if (p.x < 0) p.x = cv.width; else if (p.x > cv.width) p.x = 0; if (p.y < 0) p.y = cv.height; else if (p.y > cv.height) p.y = 0; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fillStyle = p.color; ctx.fill(); }); }); spoilerRAF = requestAnimationFrame(animateSpoilers); }
 function startSpoilers(){ document.querySelectorAll('.credit-amount,.total-val,.s-amount,.s-paid-val,.s-remain-val').forEach(initSpoilerCanvas); if (!spoilerRAF) spoilerRAF = requestAnimationFrame(animateSpoilers); }
 function stopSpoilers(){ if (spoilerRAF) { cancelAnimationFrame(spoilerRAF); spoilerRAF = null; } document.querySelectorAll('.spoiler-canvas').forEach(cv => { spoilerMap.delete(cv); cv.remove(); }); }
-
 // ========== ЗАВЕРШЁННЫЕ ==========
 function toggleCompleted(){ const list = document.getElementById('completedList'); const arrow = document.getElementById('completedArrow'); const open = !list.classList.contains('open'); list.classList.toggle('open', open); arrow.classList.toggle('open', open); if (open) { const cm = new Date().getMonth(), cy = new Date().getFullYear(); list.innerHTML = ''; const frag = document.createDocumentFragment(); credits.filter(c => c.completed).forEach(c => frag.appendChild(buildCreditItem(c, cm, cy))); list.appendChild(frag); } }
 function closeAllPaid(){ document.getElementById('allPaidOverlay').classList.remove('active'); }
-
 // ========== ЗАПУСК ==========
 function evaluateLaunch(){
 if (!authResolved || !splashTimerDone) return;
@@ -2470,7 +2535,7 @@ window.onerror = function(msg) { console.log('Ошибка: ' + msg); return fal
 document.getElementById('lockStatusRow').onclick = e => { toggleLockPanel(); e.stopPropagation(); };
 if ('serviceWorker' in navigator) {
 window.addEventListener('load', () => {
-navigator.serviceWorker.register('./sw.js?v=12').then(reg => reg.update()).catch(() => {});
+navigator.serviceWorker.register('./sw.js?v=14').then(reg => reg.update()).catch(() => {});
 });
 }
 const installBtn = document.getElementById('installBtn');

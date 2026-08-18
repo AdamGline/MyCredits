@@ -1,4 +1,4 @@
-const CACHE_NAME = 'credits-cache-v12';
+const CACHE_NAME = 'credits-cache-v14';
 const ASSETS_TO_CACHE = [
 './', './index.html', './manifest.json', './icon.png', './logo.png',
 'https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js',
