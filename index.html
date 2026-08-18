@@ -129,9 +129,8 @@ display: flex; align-items: center; justify-content: center; cursor: pointer; fl
 .credit-item.paid { opacity: 0.55; }
 .credit-item.paid .credit-amount { text-decoration: line-through; }
 .credit-item.completed { opacity: 0.4; }
-/* --- свайп-подсказки как в почте --- */
-.swipe-hint { position: absolute; top: 0; bottom: 0; z-index: 0; display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 800; opacity: 0; letter-spacing: 0.02em; }
-.hint-left { left: 0; padding-left: 20px; color: var(--success); }
+.swipe-hint { position: absolute; top: 0; bottom: 0; z-index: 0; display: flex; align-items: center; font-size: 0.85rem; font-weight: 800; opacity: 0; letter-spacing: 0.02em; }
+.hint-left { left: 0; padding-left: 20px; color: var(--text-2); }
 .hint-right { right: 0; padding-right: 20px; color: var(--danger); }
 .swipe-content { position: relative; z-index: 1; display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: var(--surface); width: 100%; overflow: hidden; }
 .swipe-content::before { content: ''; position: absolute; top: 0; left: 0; bottom: 0; width: 0%; background-color: rgba(255,221,45,0.2); transition: width 0.3s; z-index: 0; pointer-events: none; }
@@ -424,7 +423,7 @@ cursor: pointer; transition: all 0.15s;
 <div class="splash" id="splash">
 <img src="logo.png" alt="" style="width:100%;max-width:280px;height:auto;display:block;margin-bottom:16px;" onerror="this.style.display='none'">
 <div class="splash-tagline">Думай о более важном!</div>
-<div class="splash-version">Версия 1.8</div>
+<div class="splash-version">Версия 1.9</div>
 </div>
 <script>
 setTimeout(function() {
@@ -631,7 +630,7 @@ if (auth) auth.style.display = 'flex';
 <div class="sheet" style="padding-bottom:max(16px,env(safe-area-inset-bottom))">
 <div class="sheet-handle"></div>
 <div class="sheet-title"><span>Удаление кредита</span><button class="sheet-close" onclick="closeDelete()">✕</button></div>
-<div class="confirm-body"><div class="confirm-text">Вы уверены, что хотите удалить этот кредит?</div><button class="btn" style="background:var(--danger);color:#fff;margin-bottom:10px;width:100%" onclick="doDelete()">Удалить</button></div>
+<div class="confirm-body"><div class="confirm-text">Вы уверены, что хотите удалить этот кредит? Это действие нельзя отменить.</div><button class="btn" style="background:var(--danger);color:#fff;margin-bottom:10px;width:100%" onclick="doDelete()">Удалить</button></div>
 </div>
 </div>
 <!-- ========== НАСТРОЙКИ: ОТДЕЛЬНОЕ ОКНО ========== -->
@@ -871,21 +870,28 @@ let monthResetDone = false;
 let settingsSnapshot = null;
 let _bioAutoTried = false;
 const ls = { get:k=>{try{return localStorage.getItem(k);}catch(e){return null;}}, set:(k,v)=>{try{localStorage.setItem(k,v);return true;}catch(e){return false;}}, rm:k=>{try{localStorage.removeItem(k);}catch(e){}} };
-// ========== ЗВУКИ (WebAudio) ==========
+// ========== ЗВУКИ (WebAudio, исправлено: контекст будится ДО воспроизведения) ==========
 let _audioCtx = null;
 function _getAudioCtx() {
 if (!_audioCtx) {
 const AC = window.AudioContext || window.webkitAudioContext;
 if (AC) _audioCtx = new AC();
 }
-if (_audioCtx && _audioCtx.state === 'suspended') _audioCtx.resume();
 return _audioCtx;
 }
+// Прогрев при первом касании — чтобы звук никогда не был "через раз"
+document.addEventListener('touchstart', function(){
+try {
+const c = _getAudioCtx();
+if (c && c.state === 'suspended') c.resume().catch(()=>{});
+} catch(e) {}
+}, { once: true, passive: true });
 function playSound(type) {
 if (!soundEnabled) return;
 try {
 const ctx = _getAudioCtx();
 if (!ctx) return;
+const doPlay = () => {
 const now = ctx.currentTime;
 function note(freq, t0, dur, vol, wave) {
 const o = ctx.createOscillator();
@@ -910,10 +916,12 @@ note(1568, 0.42, 0.3, 0.15);
 }
 else if (type === 'error') { note(220, 0, 0.15, 0.18, 'sawtooth'); note(180, 0.12, 0.2, 0.18, 'sawtooth'); }
 else { note(520, 0, 0.08, 0.15); }
+};
+if (ctx.state === 'suspended') { ctx.resume().then(doPlay).catch(()=>{}); }
+else doPlay();
 } catch(e) {}
 }
-document.addEventListener('touchstart', function(){ try { _getAudioCtx(); } catch(e) {} }, { once: true, passive: true });
-// ========== ВИБРАЦИЯ (исправлено: мгновенно + проверка поддержки) ==========
+// ========== ВИБРАЦИЯ (исправлено: усиlena, вызов в момент жеста) ==========
 let _userTapped = false;
 let _vibeWarned = false;
 document.addEventListener('touchstart', function(){ _userTapped = true; }, { once: true, passive: true });
@@ -924,7 +932,7 @@ if (!('vibrate' in navigator)) {
 if (!_vibeWarned) { _vibeWarned = true; showToast('Вибрация не поддерживается этим браузером'); }
 return;
 }
-try { navigator.vibrate(pattern || 10); } catch(e) {}
+try { navigator.vibrate(pattern || 20); } catch(e) {}
 }
 // ========== АНТИ-ТОРМОЗА ПРИ ПЛОХОЙ СЕТИ ==========
 let _netDisabled = false;
@@ -1242,8 +1250,8 @@ else { item.classList.add('partial-bg'); item.style.setProperty('--partial-width
 }
 const displayAmount = c.paid ? fmt(c.amount) : (partial > 0 ? fmt(remain) : fmt(c.amount));
 item.innerHTML = `
-<div class="swipe-hint hint-left">✅ Оплачено</div>
-<div class="swipe-hint hint-right">Удалить 🗑</div>
+<div class="swipe-hint hint-left">Редактировать</div>
+<div class="swipe-hint hint-right">Удалить</div>
 <div class="swipe-content">
 <div class="credit-icon-wrap">${cat.emoji}</div>
 <div class="credit-main"><div class="credit-name">${esc(c.name)}</div>
@@ -1254,17 +1262,14 @@ ${c.paid ? '<span class="credit-paid-badge">Оплачено</span>' : (partial 
 <svg viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="2.5"><polyline points="2,7 6,11 12,3"/></svg>
 </div>
 </div>`;
-item.addEventListener('click', e => {
-if (item.dataset.suppressClick === '1') return;
-if (!c.completed && !e.target.closest('.check-wrap')) openAction(c.id);
-});
+item.addEventListener('click', e => { if (!c.completed && !e.target.closest('.check-wrap')) openAction(c.id); });
 item.querySelector('.check-wrap').addEventListener('click', async e => {
 e.stopPropagation();
 if (!c.completed) {
 const newPaid = !c.paid;
-haptic(15);
+haptic(20);
 await updateCreditField(c.id, { paid: newPaid, partial: newPaid ? c.amount : 0 });
-if (newPaid) { await logPayment(c.id, c.name, 'paid_full', c.amount, ''); playSound('coins'); haptic([30, 50, 30]); }
+if (newPaid) { await logPayment(c.id, c.name, 'paid_full', c.amount, ''); playSound('coins'); haptic([40, 60, 40]); }
 else { await logPayment(c.id, c.name, 'unpaid', c.amount, ''); playSound('swipe'); }
 }
 });
@@ -1298,11 +1303,11 @@ const everythingPaid = creditsAllPaid && cardsAllPaid;
 if (everythingPaid && !allPaidShown && !allPaidAlreadyShown) {
 allPaidShown = true;
 sessionStorage.setItem('all_paid_shown', '1');
-playSound('coins'); haptic([50, 50, 50]);
+playSound('coins'); haptic([60, 60, 60]);
 setTimeout(() => document.getElementById('allPaidOverlay').classList.add('active'), 400);
 } else if (!everythingPaid) { allPaidShown = false; }
 }
-// ========== СВАЙПЫ С ПОДПИСЯМИ (как в почте) ==========
+// ========== СВАЙПЫ: ВПРАВО — РЕДАКТИРОВАТЬ, ВЛЕВО — УДАЛИТЬ ==========
 function attachSwipeHandlers() {
 document.querySelectorAll('.credit-item.swipeable').forEach(item => {
 if (item.dataset.swipeAttached === '1') return;
@@ -1330,8 +1335,8 @@ currentX = dx;
 const clamped = Math.max(-140, Math.min(140, dx));
 content.style.transform = `translateX(${clamped}px)`;
 const prog = Math.min(1, Math.abs(dx) / 90);
-if (dx > 0) { hintL.style.opacity = prog; hintR.style.opacity = 0; item.style.background = 'rgba(44,182,125,0.15)'; }
-else { hintR.style.opacity = prog; hintL.style.opacity = 0; item.style.background = 'rgba(230,57,70,0.12)'; }
+if (dx > 0) { hintL.style.opacity = prog; hintR.style.opacity = 0; item.style.background = 'rgba(107,107,107,0.12)'; }
+else { hintR.style.opacity = prog; hintL.style.opacity = 0; item.style.background = 'rgba(230,57,70,0.10)'; }
 }
 }, { passive: true });
 item.addEventListener('touchend', async () => {
@@ -1341,35 +1346,23 @@ const creditId = item.dataset.creditId;
 const creditType = item.dataset.creditType;
 let acted = false;
 if (direction === 'right' && currentX > 80) {
+// Свайп вправо — РЕДАКТИРОВАТЬ
 if (creditType === 'card') {
 const c = cards.find(x => x.id === creditId);
-const eff = c && (c.payments || 0) > 0 ? c.payments : 1;
-if (c && (c.donePayments || 0) < eff) {
-haptic(20);
-await db.collection('credits').doc(creditId).update({ donePayments: eff });
-await logPayment(creditId, c.name, 'card_payment', c.amount || 0, 'Оплачено свайпом');
-playSound('coins'); haptic([30, 50, 30]);
-showToast('✅ Оплачено');
-acted = true;
-}
+if (c) { openEditCard(c); acted = true; }
 } else {
 const c = credits.find(x => x.id === creditId);
-if (c && !c.completed && !c.paid) {
-haptic(20);
-await updateCreditField(creditId, { paid: true, partial: c.amount });
-await logPayment(creditId, c.name, 'paid_full', c.amount, 'Оплачено свайпом');
-playSound('coins'); haptic([30, 50, 30]);
-showToast('✅ Оплачено');
-acted = true;
+if (c) { openEditCredit(c); acted = true; }
 }
-}
+if (acted) haptic(20);
 } else if (direction === 'left' && currentX < -80) {
+// Свайп влево — УДАЛИТЬ
 if (confirm('Удалить этот элемент?')) {
 const src = creditType === 'card' ? cards : credits;
 const found = src.find(x => x.id === creditId);
 await db.collection('credits').doc(creditId).delete();
 await logPayment(creditId, found ? found.name : '', 'deleted', 0, 'Удалено свайпом');
-playSound('swipe'); haptic([15, 30, 15]);
+playSound('swipe'); haptic([40, 40, 40]);
 showToast('Удалено');
 acted = true;
 }
@@ -1413,7 +1406,7 @@ await updateCreditField(c.id, { partial: 0 });
 await logPayment(c.id, c.name, 'reset_partial', 0, '');
 closeAction();
 showToast('Частичная оплата сброшена');
-haptic(15);
+haptic(20);
 }
 }
 function closeAction(){ document.getElementById('actionOverlay').classList.remove('active'); }
@@ -1422,18 +1415,17 @@ const c = credits.find(x => x.id === selectedCreditId);
 if (!c) return;
 const inp = parseFloat(document.getElementById('partialInput').value);
 if (!inp || inp <= 0) { showToast('Введите сумму'); return; }
-haptic(15);
+haptic(20);
 const newPartial = Math.min(c.amount, (c.partial || 0) + inp);
 const newPaid = newPartial >= c.amount;
 await updateCreditField(c.id, { partial: newPartial, paid: newPaid });
 await logPayment(c.id, c.name, 'partial', inp, newPaid ? 'Доплачено до конца' : '');
 closeAction();
-if (newPaid) { playSound('coins'); haptic([30, 50, 30]); } else { playSound('pay'); }
+if (newPaid) { playSound('coins'); haptic([40, 60, 40]); } else { playSound('pay'); }
 }
-function openEdit(){
-const c = credits.find(x => x.id === selectedCreditId);
-if (!c) return;
-editMode = true; editId = selectedCreditId;
+// Открытие формы редактирования напрямую (для свайпа)
+function openEditCredit(c){
+editMode = true; editId = c.id;
 document.getElementById('nameInput').value = c.name;
 document.getElementById('amountInput').value = c.amount;
 document.getElementById('dayInput').value = c.day;
@@ -1442,9 +1434,14 @@ selectCat(c.category);
 if (c.endDate) { setDateMode('cal'); document.getElementById('endDateCal').value = c.endDate; }
 document.getElementById('formTitleText').innerText = 'Редактировать';
 document.getElementById('formSaveBtn').innerText = 'Сохранить';
-closeAction();
 document.getElementById('formOverlay').classList.add('active');
 updateFab(true);
+}
+function openEdit(){
+const c = credits.find(x => x.id === selectedCreditId);
+if (!c) return;
+closeAction();
+openEditCredit(c);
 }
 function showDeleteConfirm(){ closeAction(); setTimeout(() => document.getElementById('deleteOverlay').classList.add('active'), 100); }
 function closeDelete(){ document.getElementById('deleteOverlay').classList.remove('active'); }
@@ -1453,7 +1450,7 @@ if(selectedCreditId){
 const c = credits.find(x => x.id === selectedCreditId);
 await deleteCredit(selectedCreditId);
 await logPayment(selectedCreditId, c ? c.name : 'Кредит', 'deleted', 0, '');
-showToast('Удалено'); haptic(15);
+showToast('Удалено'); haptic(20);
 }
 closeDelete(); selectedCreditId = null;
 }
@@ -1646,7 +1643,7 @@ await db.collection('credits').doc(cardId).update({ donePayments: newDone });
 const c = cards.find(x => x.id === cardId);
 if (newDone > currentDone) {
 await logPayment(cardId, c ? c.name : 'Карта', 'card_payment', c ? c.amount : 0, `Платёж ${newDone} из ${total}`);
-if (newDone >= total) { playSound('coins'); haptic([30, 50, 30]); } else { playSound('pay'); }
+if (newDone >= total) { playSound('coins'); haptic([40, 60, 40]); } else { playSound('pay'); }
 }
 closeCardAction();
 }
@@ -1657,12 +1654,11 @@ const rd = c ? (c.resetDay || c.day || 1) : 1;
 await db.collection('credits').doc(selectedCardId).update({ donePayments: 0, lastResetMonth: getPeriodKeyForToday(rd) });
 await logPayment(selectedCardId, c ? c.name : 'Карта', 'card_reset', 0, 'Ручной сброс');
 closeCardAction();
-haptic(15);
+haptic(20);
 }
-function openCardEdit(){
-const c = cards.find(x => x.id === selectedCardId);
-if (!c) return;
-cardEditMode = true; cardEditId = selectedCardId;
+// Открытие формы редактирования карты напрямую (для свайпа)
+function openEditCard(c){
+cardEditMode = true; cardEditId = c.id;
 document.getElementById('cardNameInput').value = c.name;
 document.getElementById('cardAmountInput').value = c.amount || '';
 document.getElementById('cardPaymentsInput').value = c.payments || '';
@@ -1671,8 +1667,13 @@ document.getElementById('cardResetDayInput').value = c.resetDay || '';
 document.getElementById('cardFormTitle').textContent = 'Редактировать карту';
 document.getElementById('cardSaveBtn').textContent = 'Сохранить';
 updateCardPaymentDots();
-closeCardAction();
 document.getElementById('cardFormOverlay').classList.add('active');
+}
+function openCardEdit(){
+const c = cards.find(x => x.id === selectedCardId);
+if (!c) return;
+closeCardAction();
+openEditCard(c);
 }
 function showCardDeleteConfirm(){ closeCardAction(); setTimeout(() => document.getElementById('cardDeleteOverlay').classList.add('active'), 100); }
 function closeCardDelete(){ document.getElementById('cardDeleteOverlay').classList.remove('active'); }
@@ -1681,7 +1682,7 @@ if(selectedCardId){
 const c = cards.find(x => x.id === selectedCardId);
 await db.collection('credits').doc(selectedCardId).delete();
 await logPayment(selectedCardId, c ? c.name : 'Карта', 'deleted', 0, '');
-showToast('Карта удалена'); haptic(15);
+showToast('Карта удалена'); haptic(20);
 }
 closeCardDelete(); selectedCardId = null;
 }
@@ -1715,8 +1716,8 @@ const controlsHtml = hasMultiPayments
 <button class="card-ctrl-btn plus" style="visibility:${done < total ? 'visible' : 'hidden'}" onclick="cardPaymentStep('${c.id}', ${done}, ${total}, 1)">+</button>
 </div>` : '';
 item.innerHTML = `
-<div class="swipe-hint hint-left">✅ Оплачено</div>
-<div class="swipe-hint hint-right">Удалить 🗑</div>
+<div class="swipe-hint hint-left">Редактировать</div>
+<div class="swipe-hint hint-right">Удалить</div>
 <div class="swipe-content">
 <div class="credit-main card-main-row">
 <div class="card-name-col">
@@ -1746,14 +1747,14 @@ if (!amountsVisible) setTimeout(startSpoilers, 30);
 attachSwipeHandlers();
 }
 async function toggleCardFull(cardId, total, currentDone) {
-haptic(15);
+haptic(20);
 const effectiveTotal = total > 0 ? total : 1;
 const newDone = currentDone >= effectiveTotal ? 0 : effectiveTotal;
 await db.collection('credits').doc(cardId).update({ donePayments: newDone });
 const c = cards.find(x => x.id === cardId);
 if (newDone > currentDone) {
 await logPayment(cardId, c ? c.name : 'Карта', 'card_payment', c ? c.amount : 0, 'Отмечено как оплачено');
-playSound('coins'); haptic([30, 50, 30]);
+playSound('coins'); haptic([40, 60, 40]);
 } else {
 await logPayment(cardId, c ? c.name : 'Карта', 'unpaid', c ? c.amount : 0, 'Отменена оплата');
 playSound('swipe');
@@ -1768,7 +1769,7 @@ await db.collection('credits').doc(cardId).update({ donePayments: newDone });
 const c = cards.find(x => x.id === cardId);
 if (delta > 0) {
 await logPayment(cardId, c ? c.name : 'Карта', 'card_payment', c ? c.amount : 0, `Платёж ${newDone} из ${total}`);
-if (newDone >= total) { playSound('coins'); haptic([30, 50, 30]); } else { playSound('pay'); }
+if (newDone >= total) { playSound('coins'); haptic([40, 60, 40]); } else { playSound('pay'); }
 } else {
 await logPayment(cardId, c ? c.name : 'Карта', 'unpaid', c ? c.amount : 0, 'Отменён платёж');
 }
@@ -1812,7 +1813,7 @@ ls.set(HAPTIC_K, hapticEnabled);
 ls.set(NOTIF_K, notifEnabled);
 showToast('✅ Настройки сохранены');
 playSound('pay');
-haptic([20, 40, 20]);
+haptic(30);
 closeSettings();
 }
 function cancelSettings(){
@@ -1847,7 +1848,7 @@ hapticEnabled = !hapticEnabled;
 _userTapped = true;
 if (hapticEnabled) {
 if (!('vibrate' in navigator)) showToast('Вибрация не поддерживается в этом браузере');
-else { try { navigator.vibrate([20, 40, 20]); } catch(e) {} }
+else { try { navigator.vibrate([80, 40, 80]); } catch(e) {} showToast('Проверьте вибрацию'); }
 }
 updateSettingsUI();
 }
@@ -2268,14 +2269,14 @@ function unlockSuccess(){
 sessionStorage.setItem('pin_ok', '1'); sessionStorage.setItem('session_started', '1');
 document.getElementById('pinLockOverlay').classList.remove('active');
 document.getElementById('app').classList.add('visible');
-playSound('unlock'); haptic([30, 50, 30]);
+playSound('unlock'); haptic([40, 60, 40]);
 loadCredits();
 }
 function selectPinLen(n){ pinSetLen = n; document.querySelectorAll('.pin-len-btn').forEach(b => b.classList.toggle('active', parseInt(b.textContent) === n)); pinSetBuf = ''; buildPinDots('pinSetDots', n, 'sd'); fillPinDots('pinSetDots', 'sd', 0, n); }
 async function pinSetKey(v) {
 if (pinSetBuf.length >= pinSetLen) return;
 pinSetBuf += v;
-playSound('tick'); haptic(5);
+playSound('tick'); haptic(8);
 fillPinDots('pinSetDots', 'sd', pinSetBuf.length, pinSetLen);
 if (pinSetBuf.length === pinSetLen) {
 setTimeout(async () => {
@@ -2287,7 +2288,7 @@ else { pinSetBuf = ''; pinSetStep = 0; pinSetVerifyMode = null; document.getElem
 } else {
 document.getElementById('pinSetSub').textContent = 'Неверный ПИН-код';
 shakePinDots('pinSetDots', 'sd', pinSetLen);
-playSound('error'); haptic([20, 50, 20, 50, 20]);
+playSound('error'); haptic([60, 40, 60, 40, 60]);
 pinSetBuf = '';
 setTimeout(() => fillPinDots('pinSetDots', 'sd', 0, pinSetLen), 400);
 }
@@ -2305,14 +2306,14 @@ ls.set(PIN_LEN_K, String(pinSetLen));
 document.getElementById('pinSetOverlay').classList.remove('active');
 updateSettingsUI();
 showToast('ПИН-код установлен');
-playSound('unlock'); haptic([30, 50, 30]);
+playSound('unlock'); haptic([40, 60, 40]);
 lockPanelOpen = false;
 document.getElementById('lockButtons').style.display = 'none';
 document.getElementById('lockStatusRow').classList.remove('open');
 } else {
 document.getElementById('pinSetSub').textContent = 'Коды не совпадают';
 shakePinDots('pinSetDots', 'sd', pinSetLen);
-playSound('error'); haptic([20, 50, 20, 50, 20]);
+playSound('error'); haptic([60, 40, 60, 40, 60]);
 pinSetBuf = ''; pinSetStep = 0; pinSetFirst = '';
 document.getElementById('pinLenRow').style.display = '';
 buildPinDots('pinSetDots', pinSetLen, 'sd');
@@ -2350,7 +2351,7 @@ if (ok) unlockSuccess();
 async function pinLockKey(v){
 if (pinLockBuf.length >= pinLockLen) return;
 pinLockBuf += v;
-playSound('tick'); haptic(5);
+playSound('tick'); haptic(8);
 fillPinDots('pinLockDots', 'ld', pinLockBuf.length, pinLockLen);
 if (pinLockBuf.length === pinLockLen) {
 setTimeout(async () => {
@@ -2360,7 +2361,7 @@ unlockSuccess();
 } else {
 document.getElementById('pinLockSub').textContent = 'Неверный ПИН-код';
 shakePinDots('pinLockDots', 'ld', pinLockLen);
-playSound('error'); haptic([20, 50, 20, 50, 20]);
+playSound('error'); haptic([60, 40, 60, 40, 60]);
 pinLockBuf = '';
 setTimeout(() => { document.getElementById('pinLockSub').textContent = 'Для входа в приложение'; fillPinDots('pinLockDots', 'ld', 0, pinLockLen); }, 500);
 }
@@ -2433,7 +2434,7 @@ unlockSuccess();
 showToast('✅ Вход выполнен');
 } else {
 showToast('Биометрия не распознана');
-playSound('error'); haptic([15, 30, 15, 30, 15]);
+playSound('error'); haptic([60, 40, 60, 40, 60]);
 }
 }
 async function checkShowBiometricLogin() {
