@@ -1,6 +1,11 @@
-const CACHE_NAME = 'credits-cache-v14';
+const CACHE_NAME = 'credits-cache-1.2.04';
 const ASSETS_TO_CACHE = [
-'./', './index.html', './manifest.json', './icon.png', './logo.png',
+'./',
+'./index.html',
+'./app.js',
+'./manifest.json',
+'./icon.png',
+'./logo.png',
 'https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js',
 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js',
 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js'
@@ -24,7 +29,7 @@ if (event.request.mode === 'navigate') {
 event.respondWith(fetch(event.request).then(r => { if (r && r.status === 200 && r.type === 'basic') { const cl = r.clone(); caches.open(CACHE_NAME).then(c => c.put('./index.html', cl)); } return r; }).catch(() => caches.match('./index.html').then(c => c || caches.match('./'))));
 return;
 }
-event.respondWith(caches.match(event.request, { ignoreSearch: true }).then(cached => { const net = fetch(event.request).then(r => { if (r && r.status === 200 && r.type === 'basic') { const cl = r.clone(); caches.open(CACHE_NAME).then(c => c.put(event.request, cl)); } return r; }).catch(() => cached); return cached || net; }));
+event.respondWith(fetch(event.request).then(r => { if (r && r.status === 200 && r.type === 'basic') { const cl = r.clone(); caches.open(CACHE_NAME).then(c => c.put(event.request, cl)); } return r; }).catch(() => caches.match(event.request, { ignoreSearch: true })));
 });
 self.addEventListener('notificationclick', event => {
 event.notification.close();
