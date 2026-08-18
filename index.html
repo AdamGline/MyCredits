@@ -22,6 +22,7 @@
 <script>if(sessionStorage.getItem('session_started')=='1'){document.documentElement.classList.add('no-splash');}</script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 :root {
 --accent: #FFDD2D; --accent-dark: #F0C800; --bg: #F5F5F7; --surface: #FFFFFF; --surface-2: #F0F0F2;
 --text: #1A1A1A; --text-2: #6B6B6B; --text-3: #ABABAB; --border: #E8E8EA; --danger: #E63946;
@@ -33,9 +34,9 @@
 --text-3: #4A4A4A; --border: #2A2A2A; --shadow: 0 2px 12px rgba(0,0,0,0.4); --shadow-md: 0 4px 24px rgba(0,0,0,0.5);
 }
 body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; transition: background 0.3s, color 0.3s; }
-.app { height: 100dvh; display: flex; flex-direction: column; padding-top: env(safe-area-inset-top); padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); overflow: hidden; }
+.app { position: fixed; inset: 0; display: flex; flex-direction: column; padding-top: env(safe-area-inset-top); padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); overflow: hidden; }
 .sticky-header { flex-shrink: 0; background: var(--bg); }
-.scrollable-content { flex: 1; overflow-y: auto; padding-bottom: max(80px, env(safe-area-inset-bottom)); -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+.scrollable-content { flex: 1; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; touch-action: pan-y; padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
 input, textarea, select { -webkit-user-select: text; user-select: text; }
 .splash { position: fixed; inset: 0; background: #FFDD2D; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000; transition: opacity 0.4s ease, visibility 0.4s ease; }
 .splash.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
@@ -85,6 +86,9 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
 .summary-stat { display: flex; flex-direction: column; gap: 2px; }
 .summary-stat-label { font-size: 0.72rem; opacity: 0.55; font-weight: 500; }
 .summary-stat-val { font-size: 1rem; font-weight: 700; }
+.toolbar { display: flex; gap: 8px; margin: 12px 16px 0; }
+.toolbar input { flex: 1; }
+.toolbar select { width: auto; flex: 0 0 auto; font-family: inherit; }
 .credit-amount, .total-val, .s-amount, .s-paid-val, .s-remain-val { position: relative; }
 .amounts-hidden .credit-amount, .amounts-hidden .total-val, .amounts-hidden .s-amount, .amounts-hidden .s-paid-val, .amounts-hidden .s-remain-val { color: transparent !important; text-shadow: none !important; user-select: none; }
 .spoiler-canvas { position: absolute; inset: -2px -4px; width: calc(100% + 8px); height: calc(100% + 4px); border-radius: 4px; pointer-events: none; z-index: 3; opacity: 0; transition: opacity 0.25s ease; }
@@ -110,11 +114,13 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
 .credit-item.partial-complete .swipe-content::before { background-color: rgba(44,182,125,0.2); width: 100%; }
 [data-theme="dark"] .credit-item.partial-complete .swipe-content::before { background-color: rgba(0,0,0,0.35); }
 .swipe-content > * { position: relative; z-index: 1; }
+.credit-item.swipeable .swipe-content { transition: transform 0.2s ease; }
 .credit-icon-wrap { width: 40px; height: 40px; border-radius: 12px; background: var(--surface-2); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; border: 1px solid var(--border); }
 .credit-main { flex: 1; min-width: 0; }
 .credit-name { font-size: 0.95rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
-.credit-meta { display: flex; align-items: center; gap: 6px; }
+.credit-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .credit-date-tag { font-size: 0.72rem; color: var(--text-2); font-weight: 500; }
+.overdue-tag { background: rgba(230,57,70,0.12); color: var(--danger); }
 .credit-term-tag { font-size: 0.7rem; padding: 1px 6px; border-radius: 4px; font-weight: 500; }
 .credit-term-tag.ending { background: rgba(230,57,70,0.1); color: var(--danger); }
 .credit-term-tag.soon { background: rgba(255,159,28,0.1); color: var(--warning); }
@@ -124,6 +130,7 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
 .credit-amount { font-size: 0.92rem; font-weight: 600; color: var(--text); }
 .credit-paid-badge { font-size: 0.68rem; font-weight: 600; padding: 2px 7px; border-radius: 4px; }
 :root .credit-paid-badge { background: rgba(255,221,45,0.2); color: #b38f00; }
+.note-box { margin: 8px 16px 0; font-size: 0.8rem; color: var(--text-2); background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; white-space: pre-wrap; text-align: left; }
 .check-wrap { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s; flex-shrink: 0; background: var(--surface); }
 .check-wrap.checked { background: var(--success); border-color: var(--success); }
 .check-wrap svg { width: 14px; height: 14px; opacity: 0; transition: opacity 0.15s; }
@@ -154,6 +161,60 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
 .fab-menu-backdrop.active { display: block; opacity: 1; }
 .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: flex-end; justify-content: center; z-index: 500; opacity: 0; transition: opacity 0.25s ease; }
 .overlay.active { display: flex; opacity: 1; }
+.overlay.settings-full { align-items: stretch; justify-content: stretch; background: var(--bg); }
+.settings-page { width: 100%; height: 100%; display: flex; flex-direction: column; background: var(--bg); }
+.settings-page-header { display: flex; align-items: center; gap: 12px; padding: calc(env(safe-area-inset-top) + 12px) 16px 12px; background: var(--bg); z-index: 10; border-bottom: 1px solid var(--border); }
+.settings-back { width: 40px; height: 40px; border-radius: 12px; border: 1.5px solid var(--border); background: var(--surface); font-size: 1.15rem; cursor: pointer; color: var(--text); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.settings-back:active { transform: scale(0.94); }
+.settings-page-title { flex: 1; font-size: 1.15rem; font-weight: 800; color: var(--text); letter-spacing: -0.3px; }
+.settings-save-btn { padding: 10px 18px; border: none; border-radius: 12px; background: var(--text); color: var(--bg); font-weight: 700; font-family: inherit; font-size: 0.9rem; cursor: pointer; flex-shrink: 0; }
+.settings-save-btn:active { transform: scale(0.95); }
+[data-theme="dark"] .settings-save-btn { background: var(--accent); color: #1A1A1A; }
+.settings-page-body { flex: 1; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: 16px 16px calc(24px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 14px; }
+.profile-card { display: flex; align-items: center; gap: 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+.profile-avatar { width: 56px; height: 56px; border-radius: 50%; background: var(--accent); color: #1A1A1A; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 800; flex-shrink: 0; box-shadow: 0 2px 10px rgba(240,200,0,0.35); }
+.profile-info { flex: 1; min-width: 0; }
+.profile-name { font-size: 1.05rem; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.profile-email { font-size: 0.8rem; color: var(--text-2); word-break: break-all; }
+.profile-actions { display: flex; gap: 10px; }
+.settings-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+.settings-card-label { font-size: 0.72rem; font-weight: 700; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px; }
+.account-btn { flex: 1; padding: 12px 10px; border-radius: var(--radius-sm); border: 1.5px solid var(--border); background: var(--surface-2); font-family: inherit; font-size: 0.85rem; font-weight: 600; color: var(--text); cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 7px; }
+.account-btn:active { transform: scale(0.97); background: var(--border); }
+.account-btn.btn-logout { color: var(--danger); border-color: rgba(230,57,70,0.25); background: rgba(230,57,70,0.05); }
+.verify-email-btn { background: var(--warning); color: #fff; border-color: var(--warning); }
+.settings-two-controls { display: flex; align-items: center; gap: 12px; justify-content: space-between; }
+.settings-control-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.settings-control-label { font-size: 0.78rem; font-weight: 600; color: var(--text-2); }
+.theme-toggle-row { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.theme-icon-label { font-size: 1.1rem; }
+.theme-switch-track { width: 52px; height: 28px; background: #4a5568; border-radius: 14px; position: relative; cursor: pointer; transition: background 0.35s ease; box-shadow: inset 0 2px 6px rgba(0,0,0,0.25); }
+.theme-switch-track.dark-on { background: #ffdd2d; }
+.theme-switch-thumb { position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; background: #fff; border-radius: 50%; box-shadow: 0 2px 8px rgba(0,0,0,0.3); transition: transform 0.35s cubic-bezier(0.4,0,0.2,1); }
+.theme-switch-track.dark-on .theme-switch-thumb { transform: translateX(24px); }
+.seg-row { display: flex; gap: 6px; }
+.seg-btn { flex: 1; padding: 8px 0; border-radius: 8px; border: 1.5px solid var(--border); background: var(--surface-2); font-weight: 600; font-size: 0.8rem; color: var(--text-2); cursor: pointer; font-family: inherit; }
+.seg-btn.active { border-color: var(--text); color: var(--text); background: var(--surface); }
+.font-size-steps-full { display: flex; width: 100%; background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; padding: 6px; gap: 4px; }
+.font-step { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px; border-radius: 8px; cursor: pointer; color: var(--text-2); font-weight: 600; transition: all 0.2s; }
+.font-step.active { background: var(--accent); color: #1A1A1A; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.font-step span:first-child { font-size: 1.1rem; }
+.font-step-label { font-size: 0.65rem; font-weight: 500; display: block; }
+.lock-status-row { display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 4px 0; }
+.lock-status-icon { font-size: 1.6rem; }
+.lock-status-text { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.lock-status-title { font-size: 0.9rem; font-weight: 600; color: var(--text); }
+.lock-status-sub { font-size: 0.75rem; color: var(--text-2); }
+.lock-chevron { font-size: 1.2rem; color: var(--text-2); transition: transform 0.2s; }
+.lock-status-row.open .lock-chevron { transform: rotate(90deg); }
+.lock-buttons { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.lock-btn { padding: 12px; border: 1px solid var(--border); border-radius: 14px; font-size: 0.9rem; font-weight: 600; cursor: pointer; background: var(--surface-2); color: var(--text); transition: all 0.2s; }
+.lock-btn-set { border-color: rgba(102,126,234,0.3); color: #667eea; background: rgba(102,126,234,0.08); }
+.lock-btn-remove { border-color: rgba(231,76,60,0.2); color: #e74c3c; background: rgba(231,76,60,0.06); }
+.lock-btn:active { transform: scale(0.97); }
+.email-status { display: flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 0.7rem; }
+.email-status.verified { color: var(--success); }
+.email-status.unverified { color: var(--warning); }
 .sheet { background: var(--surface); border-radius: 20px 20px 0 0; width: 100%; max-width: 500px; padding: 0 0 max(20px, env(safe-area-inset-bottom)); transform: translateY(20px); transition: transform 0.3s ease; max-height: 85vh; overflow-y: auto; }
 .overlay.active .sheet { transform: translateY(0); }
 .sheet-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--border); margin: 12px auto 0; }
@@ -217,58 +278,6 @@ input:focus, select:focus { border-color: var(--accent-dark); }
 .card-ctrl-btn.plus { background: var(--accent); border-color: var(--accent-dark); color: #1A1A1A; }
 .card-ctrl-btn.plus:active { background: var(--accent-dark); }
 .card-ctrl-count { font-size: 0.78rem; font-weight: 700; color: var(--text-2); min-width: 44px; text-align: center; }
-/* ===== НАСТРОЙКИ: ПОЛНОЭКРАННОЕ ОКНО ===== */
-.overlay.settings-full { align-items: stretch; justify-content: stretch; background: var(--bg); }
-.settings-page { width: 100%; height: 100%; display: flex; flex-direction: column; background: var(--bg); }
-.settings-page-header { display: flex; align-items: center; gap: 12px; padding: calc(env(safe-area-inset-top) + 12px) 16px 12px; background: var(--bg); z-index: 10; border-bottom: 1px solid var(--border); }
-.settings-back { width: 40px; height: 40px; border-radius: 12px; border: 1.5px solid var(--border); background: var(--surface); font-size: 1.15rem; cursor: pointer; color: var(--text); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.settings-back:active { transform: scale(0.94); }
-.settings-page-title { flex: 1; font-size: 1.15rem; font-weight: 800; color: var(--text); letter-spacing: -0.3px; }
-.settings-save-btn { padding: 10px 18px; border: none; border-radius: 12px; background: var(--text); color: var(--bg); font-weight: 700; font-family: inherit; font-size: 0.9rem; cursor: pointer; flex-shrink: 0; }
-.settings-save-btn:active { transform: scale(0.95); }
-[data-theme="dark"] .settings-save-btn { background: var(--accent); color: #1A1A1A; }
-.settings-page-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px 16px calc(24px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 14px; }
-.profile-card { display: flex; align-items: center; gap: 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
-.profile-avatar { width: 56px; height: 56px; border-radius: 50%; background: var(--accent); color: #1A1A1A; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 800; flex-shrink: 0; box-shadow: 0 2px 10px rgba(240,200,0,0.35); }
-.profile-info { flex: 1; min-width: 0; }
-.profile-name { font-size: 1.05rem; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.profile-email { font-size: 0.8rem; color: var(--text-2); word-break: break-all; }
-.profile-actions { display: flex; gap: 10px; }
-.settings-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
-.settings-card-label { font-size: 0.72rem; font-weight: 700; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px; }
-.account-btn { flex: 1; padding: 12px 10px; border-radius: var(--radius-sm); border: 1.5px solid var(--border); background: var(--surface-2); font-family: inherit; font-size: 0.85rem; font-weight: 600; color: var(--text); cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 7px; }
-.account-btn:active { transform: scale(0.97); background: var(--border); }
-.account-btn.btn-logout { color: var(--danger); border-color: rgba(230,57,70,0.25); background: rgba(230,57,70,0.05); }
-.verify-email-btn { background: var(--warning); color: #fff; border-color: var(--warning); }
-.settings-two-controls { display: flex; align-items: center; gap: 12px; justify-content: space-between; }
-.settings-control-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 10px; }
-.settings-control-label { font-size: 0.78rem; font-weight: 600; color: var(--text-2); }
-.theme-toggle-row { display: flex; align-items: center; justify-content: center; gap: 8px; }
-.theme-icon-label { font-size: 1.1rem; }
-.theme-switch-track { width: 52px; height: 28px; background: #4a5568; border-radius: 14px; position: relative; cursor: pointer; transition: background 0.35s ease; box-shadow: inset 0 2px 6px rgba(0,0,0,0.25); }
-.theme-switch-track.dark-on { background: #ffdd2d; }
-.theme-switch-thumb { position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; background: #fff; border-radius: 50%; box-shadow: 0 2px 8px rgba(0,0,0,0.3); transition: transform 0.35s cubic-bezier(0.4,0,0.2,1); }
-.theme-switch-track.dark-on .theme-switch-thumb { transform: translateX(24px); }
-.font-size-steps-full { display: flex; width: 100%; background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; padding: 6px; gap: 4px; }
-.font-step { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px; border-radius: 8px; cursor: pointer; color: var(--text-2); font-weight: 600; transition: all 0.2s; }
-.font-step.active { background: var(--accent); color: #1A1A1A; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-.font-step span:first-child { font-size: 1.1rem; }
-.font-step-label { font-size: 0.65rem; font-weight: 500; display: block; }
-.lock-status-row { display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 4px 0; }
-.lock-status-icon { font-size: 1.6rem; }
-.lock-status-text { flex: 1; display: flex; flex-direction: column; gap: 2px; }
-.lock-status-title { font-size: 0.9rem; font-weight: 600; color: var(--text); }
-.lock-status-sub { font-size: 0.75rem; color: var(--text-2); }
-.lock-chevron { font-size: 1.2rem; color: var(--text-2); transition: transform 0.2s; }
-.lock-status-row.open .lock-chevron { transform: rotate(90deg); }
-.lock-buttons { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
-.lock-btn { padding: 12px; border: 1px solid var(--border); border-radius: 14px; font-size: 0.9rem; font-weight: 600; cursor: pointer; background: var(--surface-2); color: var(--text); transition: all 0.2s; }
-.lock-btn-set { border-color: rgba(102,126,234,0.3); color: #667eea; background: rgba(102,126,234,0.08); }
-.lock-btn-remove { border-color: rgba(231,76,60,0.2); color: #e74c3c; background: rgba(231,76,60,0.06); }
-.lock-btn:active { transform: scale(0.97); }
-.email-status { display: flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 0.7rem; }
-.email-status.verified { color: var(--success); }
-.email-status.unverified { color: var(--warning); }
 .pin-overlay { position: fixed; inset: 0; z-index: 9998; background: var(--bg); display: none; flex-direction: column; align-items: center; justify-content: flex-end; padding: max(env(safe-area-inset-top), 60px) 0 max(env(safe-area-inset-bottom), 24px); gap: 48px; }
 .pin-overlay.active { display: flex; }
 .pin-top { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 0 20px; width: 100%; }
@@ -288,7 +297,7 @@ input:focus, select:focus { border-color: var(--accent-dark); }
 .pin-length-row { display: flex; gap: 6px; margin-top: 4px; }
 .pin-len-btn { padding: 7px 16px; border-radius: 8px; border: 1.5px solid var(--border); background: var(--surface-2); font-family: inherit; font-size: 0.82rem; font-weight: 600; color: var(--text-2); cursor: pointer; }
 .pin-len-btn.active { border-color: var(--text); color: var(--text); background: var(--surface); }
-.toast { position: fixed; bottom: calc(90px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 10px 18px; border-radius: 10px; font-size: 0.85rem; font-weight: 600; z-index: 9999; pointer-events: none; white-space: nowrap; }
+.toast { position: fixed; bottom: calc(90px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 10px 18px; border-radius: 10px; font-size: 0.85rem; font-weight: 600; z-index: 9999; pointer-events: none; white-space: nowrap; max-width: 92vw; overflow: hidden; text-overflow: ellipsis; }
 .all-paid-overlay { position: fixed; inset: 0; z-index: 800; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; }
 .all-paid-overlay.active { display: flex; }
 .all-paid-card { background: var(--surface); border-radius: 20px; padding: 32px 24px; max-width: 320px; text-align: center; }
@@ -313,9 +322,6 @@ input:focus, select:focus { border-color: var(--accent-dark); }
 .delete-acc-btn-cancel { background: var(--surface-2); color: var(--text); border: 1.5px solid var(--border); }
 #installPwaContainer { text-align: center; width: 100%; }
 #installBtn { display: none; margin: 0 auto; }
-html, body { max-width: 100%; overflow-x: hidden; }
-.app { width: 100%; max-width: 100%; overflow-x: hidden; }
-.section-header { width: 100%; box-sizing: border-box; }
 .global-loader { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--surface); padding: 20px 30px; border-radius: 20px; box-shadow: var(--shadow-md); display: flex; flex-direction: column; align-items: center; gap: 12px; z-index: 9000; color: var(--text); }
 .loader-spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent-dark); border-radius: 50%; animation: spin 0.8s linear infinite; }
 .partial-quick-amounts { display: flex; gap: 8px; margin-bottom: 10px; }
@@ -338,7 +344,6 @@ html, body { max-width: 100%; overflow-x: hidden; }
 .history-empty { padding: 48px 20px; text-align: center; color: var(--text-3); font-size: 0.85rem; }
 .history-clear-btn { margin: 8px 16px; padding: 10px; background: rgba(230,57,70,0.08); border: 1.5px solid rgba(230,57,70,0.25); border-radius: var(--radius-sm); color: var(--danger); font-family: inherit; font-size: 0.82rem; font-weight: 600; cursor: pointer; width: calc(100% - 32px); }
 .history-clear-btn:active { transform: scale(0.98); }
-.credit-item.swipeable .swipe-content { transition: transform 0.2s ease; }
 .biometric-btn { width: 100%; padding: 14px; background: var(--surface-2); border: 1.5px solid var(--border); border-radius: 14px; font-family: inherit; font-size: 0.95rem; font-weight: 600; color: var(--text); cursor: pointer; margin-top: 4px; display: flex; align-items: center; justify-content: center; gap: 8px; }
 .biometric-btn:active { transform: scale(0.97); background: var(--border); }
 .biometric-btn:disabled { opacity: 0.5; pointer-events: none; }
@@ -348,7 +353,7 @@ html, body { max-width: 100%; overflow-x: hidden; }
 <div class="splash" id="splash">
 <img src="logo.png" alt="" style="width:100%;max-width:280px;height:auto;display:block;margin-bottom:16px;" onerror="this.style.display='none'">
 <div class="splash-tagline">Думай о более важном!</div>
-<div class="splash-version">Версия 1.2.04</div>
+<div class="splash-version">Версия 1.2.06</div>
 </div>
 <script>
 setTimeout(function() {
@@ -403,6 +408,14 @@ if (auth) auth.style.display = 'flex';
 </div>
 </div>
 <div id="resetMsg" style="margin:8px 16px 0">Новый месяц — статусы платежей сброшены</div>
+<div class="toolbar">
+<input type="text" id="searchInput" placeholder="🔍 Поиск по названию" oninput="onSearch()">
+<select id="sortSelect" onchange="onSort()">
+<option value="day">По дате</option>
+<option value="amount">По сумме</option>
+<option value="name">По имени</option>
+</select>
+</div>
 </div>
 <div class="scrollable-content">
 <div class="section">
@@ -461,6 +474,7 @@ if (auth) auth.style.display = 'flex';
 <div class="form-row"><input type="number" id="amountInput" placeholder="Сумма, ₽" inputmode="decimal" style="flex:2"><input type="number" id="dayInput" placeholder="День" min="1" max="31" inputmode="numeric" style="flex:1"></div>
 </div>
 <div class="form-group"><label class="form-label">День сброса <span class="form-optional-tag">(необязательно)</span></label><input type="number" id="resetDayInput" placeholder="По умолчанию — 1-е число" min="1" max="31" inputmode="numeric"><span class="form-hint">С какого числа считается новый расчётный период</span></div>
+<div class="form-group"><label class="form-label">Заметка <span class="form-optional-tag">(необязательно)</span></label><input type="text" id="noteInput" placeholder="Например: платёж в приложении банка"></div>
 <div class="form-group"><label class="form-label">Дата окончания</label>
 <div class="date-toggle"><button class="date-toggle-btn active" id="dtBtnCal" onclick="setDateMode('cal')">Календарь</button><button class="date-toggle-btn" id="dtBtnMan" onclick="setDateMode('man')">Вручную</button></div>
 <div class="date-inputs active" id="calInput"><input type="date" id="endDateCal"></div>
@@ -525,7 +539,7 @@ if (auth) auth.style.display = 'flex';
 <div class="sheet action-sheet">
 <div class="sheet-handle"></div>
 <div class="sheet-title"><span>Действия с кредитом</span><button class="sheet-close" onclick="closeAction()">✕</button></div>
-<div class="action-credit-name"><div id="actionNameText"></div><div class="action-credit-sub" id="actionSub"></div></div>
+<div class="action-credit-name"><div id="actionNameText"></div><div class="action-credit-sub" id="actionSub"></div><div class="note-box" id="actionNote" style="display:none"></div></div>
 <div class="partial-section" id="partialSection">
 <div class="partial-label">Частичная оплата</div>
 <div class="partial-info">
@@ -554,7 +568,6 @@ if (auth) auth.style.display = 'flex';
 <div class="confirm-body"><div class="confirm-text">Вы уверены, что хотите удалить этот кредит? Это действие нельзя отменить.</div><button class="btn" style="background:var(--danger);color:#fff;margin-bottom:10px;width:100%" onclick="doDelete()">Удалить</button></div>
 </div>
 </div>
-<!-- ========== НАСТРОЙКИ: ПОЛНОЭКРАННОЕ ОКНО ========== -->
 <div class="overlay settings-full" id="settingsOverlay">
 <div class="settings-page">
 <div class="settings-page-header">
@@ -606,24 +619,39 @@ if (auth) auth.style.display = 'flex';
 </div>
 </div>
 <div class="settings-card">
-<div class="settings-card-label">Звуки и вибрация</div>
+<div class="settings-card-label">Вибрация</div>
 <div class="settings-two-controls">
-<div class="settings-control-item"><span class="settings-control-label">Звуки</span>
-<div class="theme-toggle-row"><span class="theme-icon-label">🔇</span><div class="theme-switch-track" id="soundSwitchTrack" onclick="toggleSoundFromSettings();event.stopPropagation()"><div class="theme-switch-thumb"></div></div><span class="theme-icon-label">🔊</span></div>
+<div class="settings-control-item" style="flex:1;align-items:flex-start;gap:6px">
+<span class="settings-control-label">Виброотклик</span>
+<span style="font-size:0.7rem;color:var(--text-3);line-height:1.3">Отклик на нажатия и оплату</span>
 </div>
-<div class="settings-control-item"><span class="settings-control-label">Вибро</span>
-<div class="theme-toggle-row"><span class="theme-icon-label">📵</span><div class="theme-switch-track" id="hapticSwitchTrack" onclick="toggleHapticFromSettings();event.stopPropagation()"><div class="theme-switch-thumb"></div></div><span class="theme-icon-label">📳</span></div>
+<div class="theme-switch-track" id="hapticSwitchTrack" onclick="toggleHapticFromSettings();event.stopPropagation()"><div class="theme-switch-thumb"></div></div>
 </div>
-</div>
+<button class="account-btn" id="vibroTestBtn" onclick="testVibro()" style="width:100%;margin-top:12px">📳 Проверить вибрацию</button>
 </div>
 <div class="settings-card">
 <div class="settings-card-label">Уведомления</div>
 <div class="settings-two-controls">
 <div class="settings-control-item" style="flex:1;align-items:flex-start;gap:6px">
 <span class="settings-control-label">Напоминать о платежах</span>
-<span style="font-size:0.7rem;color:var(--text-3);line-height:1.3" id="notifStatus">За 1 день до платежа</span>
+<span style="font-size:0.7rem;color:var(--text-3);line-height:1.3" id="notifStatus">Выключено</span>
 </div>
 <div class="theme-switch-track" id="notifSwitchTrack" onclick="toggleNotifFromSettings();event.stopPropagation()"><div class="theme-switch-thumb"></div></div>
+</div>
+<div style="margin-top:12px">
+<span class="settings-control-label">За сколько дней напоминать</span>
+<div class="seg-row" style="margin-top:8px">
+<button class="seg-btn" data-days="1" onclick="setNotifDays(1)">1 день</button>
+<button class="seg-btn" data-days="3" onclick="setNotifDays(3)">3 дня</button>
+<button class="seg-btn" data-days="7" onclick="setNotifDays(7)">7 дней</button>
+</div>
+</div>
+<div class="settings-two-controls" style="margin-top:12px">
+<div class="settings-control-item" style="flex:1;align-items:flex-start;gap:6px">
+<span class="settings-control-label">Напоминать о просрочке</span>
+<span style="font-size:0.7rem;color:var(--text-3);line-height:1.3">Если платёж просрочен</span>
+</div>
+<div class="theme-switch-track" id="overdueTrack" onclick="toggleOverdueFromSettings();event.stopPropagation()"><div class="theme-switch-thumb"></div></div>
 </div>
 </div>
 <div class="settings-card">
