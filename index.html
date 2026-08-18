@@ -250,9 +250,10 @@ input:focus, select:focus { border-color: var(--accent-dark); }
 .card-ctrl-btn.plus { background: var(--accent); border-color: var(--accent-dark); color: #1A1A1A; }
 .card-ctrl-btn.plus:active { background: var(--accent-dark); }
 .card-ctrl-count { font-size: 0.78rem; font-weight: 700; color: var(--text-2); min-width: 44px; text-align: center; }
-.settings-sheet { padding-bottom: max(20px, env(safe-area-inset-bottom)); }
+.settings-sheet { padding-bottom: 0; max-height: 92vh; }
+.settings-footer { position: sticky; bottom: 0; background: var(--surface); display: flex; gap: 10px; padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); border-top: 1px solid var(--border); z-index: 5; }
 .settings-section { padding: 16px 20px; border-bottom: 1px solid var(--border); }
-.settings-section:last-child { border-bottom: none; }
+.settings-section:last-of-type { border-bottom: none; }
 .settings-section-label { font-size: 0.72rem; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 14px; }
 .account-main-row { display: flex; align-items: center; gap: 14px; background: var(--surface-2); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 16px; border: 1px solid var(--border); }
 .account-info { flex: 1; overflow: hidden; }
@@ -392,7 +393,7 @@ cursor: pointer; transition: all 0.15s;
 <div class="splash" id="splash">
 <img src="logo.png" alt="" style="width:100%;max-width:280px;height:auto;display:block;margin-bottom:16px;" onerror="this.style.display='none'">
 <div class="splash-tagline">Думай о более важном!</div>
-<div class="splash-version">Версия 1.5</div>
+<div class="splash-version">Версия 1.6</div>
 </div>
 <script>
 setTimeout(function() {
@@ -602,10 +603,10 @@ if (auth) auth.style.display = 'flex';
 <div class="confirm-body"><div class="confirm-text">Вы уверены, что хотите удалить этот кредит?</div><button class="btn" style="background:var(--danger);color:#fff;margin-bottom:10px;width:100%" onclick="doDelete()">Удалить</button></div>
 </div>
 </div>
-<div class="overlay" id="settingsOverlay" onclick="if(event.target===this)closeSettings()">
+<div class="overlay" id="settingsOverlay" onclick="if(event.target===this)cancelSettings()">
 <div class="sheet settings-sheet">
 <div class="sheet-handle"></div>
-<div class="sheet-title">Настройки <button class="sheet-close" onclick="closeSettings()">✕</button></div>
+<div class="sheet-title">Настройки <button class="sheet-close" onclick="cancelSettings()">✕</button></div>
 <div class="settings-section">
 <div class="settings-section-label">Аккаунт</div>
 <div class="account-main-row">
@@ -687,6 +688,10 @@ if (auth) auth.style.display = 'flex';
 <button class="lock-btn" id="biometricBtn" onclick="toggleBiometric()" style="display:none">🔐 Биометрия</button>
 <button class="lock-btn lock-btn-remove" id="removeLockBtn" onclick="doRemoveLock()" style="display:none">🗑 Убрать защиту</button>
 </div>
+</div>
+<div class="settings-footer">
+<button class="btn" style="background:var(--surface-2);color:var(--text);border:1.5px solid var(--border)" onclick="cancelSettings()">Отмена</button>
+<button class="btn btn-primary" onclick="saveSettings()">💾 Сохранить</button>
 </div>
 </div>
 </div>
@@ -832,6 +837,8 @@ let creditsUnsubscribe = null;
 let historyUnsubscribe = null;
 let paymentHistory = [];
 let monthResetDone = false;
+let settingsSnapshot = null;
+let _bioAutoTried = false;
 const ls = { get:k=>{try{return localStorage.getItem(k);}catch(e){return null;}}, set:(k,v)=>{try{localStorage.setItem(k,v);return true;}catch(e){return false;}}, rm:k=>{try{localStorage.removeItem(k);}catch(e){}} };
 
 // ========== ЗВУКИ (WebAudio) ==========
@@ -850,10 +857,11 @@ try {
 const ctx = _getAudioCtx();
 if (!ctx) return;
 const now = ctx.currentTime;
-function note(freq, t0, dur, vol) {
+function note(freq, t0, dur, vol, wave) {
 const o = ctx.createOscillator();
 const g = ctx.createGain();
-o.type = 'sine'; o.frequency.value = freq;
+o.type = wave || 'sine';
+o.frequency.value = freq;
 g.gain.setValueAtTime(0, now + t0);
 g.gain.linearRampToValueAtTime(vol, now + t0 + 0.01);
 g.gain.exponentialRampToValueAtTime(0.0001, now + t0 + dur);
@@ -861,10 +869,19 @@ o.connect(g); g.connect(ctx.destination);
 o.start(now + t0); o.stop(now + t0 + dur + 0.05);
 }
 if (type === 'pay') { note(880, 0, 0.18, 0.25); note(1318.5, 0.09, 0.22, 0.22); }
+else if (type === 'tick') { note(1200, 0, 0.05, 0.07, 'square'); }
+else if (type === 'unlock') { note(523.25, 0, 0.12, 0.2); note(783.99, 0.08, 0.16, 0.2); note(1046.5, 0.16, 0.28, 0.22); }
+else if (type === 'coins') {
+const seq = [2093, 2349, 2637, 2093, 2794, 2349, 3136];
+for (let i = 0; i < seq.length; i++) {
+note(seq[i] * (0.99 + Math.random() * 0.02), i * 0.055, 0.09, 0.18, 'triangle');
+}
+note(1568, 0.42, 0.3, 0.15);
+}
+else if (type === 'error') { note(220, 0, 0.15, 0.18, 'sawtooth'); note(180, 0.12, 0.2, 0.18, 'sawtooth'); }
 else { note(520, 0, 0.08, 0.15); }
 } catch(e) {}
 }
-// Прогрев звука при первом касании — чтобы не было задержки
 document.addEventListener('touchstart', function(){ try { _getAudioCtx(); } catch(e) {} }, { once: true, passive: true });
 
 // ========== ВИБРАЦИЯ ==========
@@ -1210,8 +1227,8 @@ e.stopPropagation();
 if (!c.completed) {
 const newPaid = !c.paid;
 await updateCreditField(c.id, { paid: newPaid, partial: newPaid ? c.amount : 0 });
-if (newPaid) { await logPayment(c.id, c.name, 'paid_full', c.amount, ''); playSound('pay'); haptic(30); }
-else { await logPayment(c.id, c.name, 'unpaid', c.amount, ''); haptic(10); }
+if (newPaid) { await logPayment(c.id, c.name, 'paid_full', c.amount, ''); playSound('coins'); haptic([30, 50, 30]); }
+else { await logPayment(c.id, c.name, 'unpaid', c.amount, ''); playSound('swipe'); haptic(10); }
 }
 });
 wrap.appendChild(item);
@@ -1244,7 +1261,7 @@ const everythingPaid = creditsAllPaid && cardsAllPaid;
 if (everythingPaid && !allPaidShown && !allPaidAlreadyShown) {
 allPaidShown = true;
 sessionStorage.setItem('all_paid_shown', '1');
-playSound('pay'); haptic([50, 50, 50]);
+playSound('coins'); haptic([50, 50, 50]);
 setTimeout(() => document.getElementById('allPaidOverlay').classList.add('active'), 400);
 } else if (!everythingPaid) { allPaidShown = false; }
 }
@@ -1284,7 +1301,7 @@ const c = credits.find(x => x.id === creditId);
 if (c && !c.completed && !c.paid) {
 await updateCreditField(creditId, { paid: true, partial: c.amount });
 await logPayment(creditId, c.name, 'paid_full', c.amount, 'Оплачено свайпом');
-playSound('pay'); haptic(30);
+playSound('coins'); haptic([30, 50, 30]);
 showToast('✅ Оплачено');
 }
 } else if (direction === 'left' && currentX < -80) {
@@ -1346,7 +1363,7 @@ const newPaid = newPartial >= c.amount;
 await updateCreditField(c.id, { partial: newPartial, paid: newPaid });
 await logPayment(c.id, c.name, 'partial', inp, newPaid ? 'Доплачено до конца' : '');
 closeAction();
-playSound('pay'); haptic(30);
+if (newPaid) { playSound('coins'); haptic([30, 50, 30]); } else { playSound('pay'); haptic(20); }
 }
 function openEdit(){
 const c = credits.find(x => x.id === selectedCreditId);
@@ -1565,7 +1582,7 @@ await db.collection('credits').doc(cardId).update({ donePayments: newDone });
 const c = cards.find(x => x.id === cardId);
 if (newDone > currentDone) {
 await logPayment(cardId, c ? c.name : 'Карта', 'card_payment', c ? c.amount : 0, `Платёж ${newDone} из ${total}`);
-playSound('pay'); haptic(20);
+if (newDone >= total) { playSound('coins'); haptic([30, 50, 30]); } else { playSound('pay'); haptic(20); }
 }
 closeCardAction();
 }
@@ -1664,10 +1681,10 @@ await db.collection('credits').doc(cardId).update({ donePayments: newDone });
 const c = cards.find(x => x.id === cardId);
 if (newDone > currentDone) {
 await logPayment(cardId, c ? c.name : 'Карта', 'card_payment', c ? c.amount : 0, 'Отмечено как оплачено');
-playSound('pay'); haptic(30);
+playSound('coins'); haptic([30, 50, 30]);
 } else {
 await logPayment(cardId, c ? c.name : 'Карта', 'unpaid', c ? c.amount : 0, 'Отменена оплата');
-haptic(10);
+playSound('swipe'); haptic(10);
 }
 }
 async function cardPaymentStep(cardId, currentDone, total, delta) {
@@ -1678,7 +1695,7 @@ await db.collection('credits').doc(cardId).update({ donePayments: newDone });
 const c = cards.find(x => x.id === cardId);
 if (delta > 0) {
 await logPayment(cardId, c ? c.name : 'Карта', 'card_payment', c ? c.amount : 0, `Платёж ${newDone} из ${total}`);
-playSound('pay'); haptic(20);
+if (newDone >= total) { playSound('coins'); haptic([30, 50, 30]); } else { playSound('pay'); haptic(20); }
 } else {
 await logPayment(cardId, c ? c.name : 'Карта', 'unpaid', c ? c.amount : 0, 'Отменён платёж');
 haptic(10);
@@ -1686,7 +1703,7 @@ haptic(10);
 } catch(e) { console.error(e); showToast('Ошибка обновления'); }
 }
 
-// ========== НАСТРОЙКИ ==========
+// ========== НАСТРОЙКИ (С СОХРАНЕНИЕМ/ОТМЕНОЙ) ==========
 function gearClick(e) {
 e.stopPropagation();
 const btn = document.getElementById('settingsBtn');
@@ -1705,26 +1722,56 @@ document.getElementById('settingsDisplayName').textContent = display;
 document.getElementById('settingsEmail').textContent = authUser.email || '—';
 updateEmailStatusUI();
 }
+takeSettingsSnapshot();
 updateSettingsUI();
 document.getElementById('settingsOverlay').classList.add('active');
 }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('active'); }
+function takeSettingsSnapshot(){
+settingsSnapshot = { theme, amountsVisible, fontSize, collapseEnabled, soundEnabled, hapticEnabled, notifEnabled };
+}
+function saveSettings(){
+ls.set(THEME_K, theme);
+ls.set(AMT_K, amountsVisible);
+ls.set(FONT_K, fontSize);
+ls.set(COLLAPSE_K, collapseEnabled);
+ls.set(SOUND_K, soundEnabled);
+ls.set(HAPTIC_K, hapticEnabled);
+ls.set(NOTIF_K, notifEnabled);
+showToast('✅ Настройки сохранены');
+playSound('pay');
+haptic(20);
+closeSettings();
+}
+function cancelSettings(){
+if (settingsSnapshot) {
+theme = settingsSnapshot.theme;
+amountsVisible = settingsSnapshot.amountsVisible;
+fontSize = settingsSnapshot.fontSize;
+collapseEnabled = settingsSnapshot.collapseEnabled;
+soundEnabled = settingsSnapshot.soundEnabled;
+hapticEnabled = settingsSnapshot.hapticEnabled;
+notifEnabled = settingsSnapshot.notifEnabled;
+applyTheme(); applyAmounts(); applyFont(); applyCollapseUI();
+updateSettingsUI();
+}
+closeSettings();
+}
 function loadTheme(){ const t = ls.get(THEME_K); if (t) theme = t; applyTheme(); }
 function applyTheme(){ document.documentElement.setAttribute('data-theme', theme); if (!amountsVisible) { stopSpoilers(); startSpoilers(); } }
-function toggleThemeFromSettings(){ theme = theme === 'light' ? 'dark' : 'light'; applyTheme(); ls.set(THEME_K, theme); updateSettingsUI(); haptic(10); }
+function toggleThemeFromSettings(){ theme = theme === 'light' ? 'dark' : 'light'; applyTheme(); updateSettingsUI(); haptic(10); }
 function loadAmounts(){ const v = ls.get(AMT_K); if (v !== null) amountsVisible = v === 'true'; applyAmounts(); }
 function applyAmounts(){ document.body.classList.toggle('amounts-hidden', !amountsVisible); if (!amountsVisible) startSpoilers(); else stopSpoilers(); }
-function toggleAmountsFromSettings(){ amountsVisible = !amountsVisible; ls.set(AMT_K, amountsVisible); applyAmounts(); updateSettingsUI(); haptic(10); }
+function toggleAmountsFromSettings(){ amountsVisible = !amountsVisible; applyAmounts(); updateSettingsUI(); haptic(10); }
 const fontScales = { s:0.87, m:1, l:1.14 };
 function loadFontSize(){ const f = ls.get(FONT_K); if (f && fontScales[f]) fontSize = f; applyFont(); }
 function applyFont(){ document.documentElement.style.fontSize = (16 * fontScales[fontSize]) + 'px'; }
-function setFontSize(s){ fontSize = s; applyFont(); ls.set(FONT_K, s); if (!amountsVisible) { stopSpoilers(); startSpoilers(); } updateSettingsUI(); haptic(10); }
+function setFontSize(s){ fontSize = s; applyFont(); if (!amountsVisible) { stopSpoilers(); startSpoilers(); } updateSettingsUI(); haptic(10); }
 function loadSound(){ const v = ls.get(SOUND_K); if (v !== null) soundEnabled = v === 'true'; }
-function toggleSoundFromSettings(){ soundEnabled = !soundEnabled; ls.set(SOUND_K, soundEnabled); if (soundEnabled) playSound('pay'); updateSettingsUI(); haptic(10); }
+function toggleSoundFromSettings(){ soundEnabled = !soundEnabled; if (soundEnabled) playSound('pay'); updateSettingsUI(); haptic(10); }
 function loadHaptic(){ const v = ls.get(HAPTIC_K); if (v !== null) hapticEnabled = v === 'true'; }
 function toggleHapticFromSettings(){
 hapticEnabled = !hapticEnabled;
-ls.set(HAPTIC_K, hapticEnabled);
 if (hapticEnabled) {
 if (!('vibrate' in navigator)) showToast('Вибрация не поддерживается в этом браузере');
 else haptic([20, 40, 20]);
@@ -1736,11 +1783,9 @@ async function toggleNotifFromSettings(){
 if (!notifEnabled) {
 const ok = await requestNotificationPermission();
 notifEnabled = ok;
-ls.set(NOTIF_K, ok ? 'true' : 'false');
-if (ok) { showToast('Уведомления включены'); checkUpcomingNotifications(); }
+if (ok) { showToast('Уведомления включены (сохраните настройки)'); checkUpcomingNotifications(); }
 } else {
 notifEnabled = false;
-ls.set(NOTIF_K, 'false');
 showToast('Уведомления выключены');
 }
 updateSettingsUI();
@@ -1791,81 +1836,6 @@ bioBtn.textContent = biometricEnabled ? '🔐 Биометрия ✓' : '🔐 В
 }
 }
 
-// ========== БИОМЕТРИЯ ==========
-async function isBiometricAvailable() {
-if (!window.PublicKeyCredential) return false;
-try { return await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable(); } catch(e) { return false; }
-}
-async function registerBiometric() {
-try {
-const challenge = new Uint8Array(32);
-crypto.getRandomValues(challenge);
-const userId = new Uint8Array(16);
-crypto.getRandomValues(userId);
-const credential = await navigator.credentials.create({
-publicKey: {
-challenge: challenge,
-rp: { name: 'Мои Кредиты' },
-user: { id: userId, name: authUser ? authUser.email : 'user', displayName: authUser ? (authUser.displayName || authUser.email) : 'User' },
-pubKeyCredParams: [{ alg: -7, type: 'public-key' }, { alg: -257, type: 'public-key' }],
-authenticatorSelection: { userVerification: 'preferred' },
-timeout: 60000
-}
-});
-if (credential) {
-const credId = btoa(String.fromCharCode(...new Uint8Array(credential.rawId)));
-ls.set('crt_bio_cred_id', credId);
-return true;
-}
-return false;
-} catch(e) {
-console.warn('Biometric registration failed:', e);
-showToast('Не удалось зарегистрировать биометрию');
-return false;
-}
-}
-async function verifyBiometric() {
-const credId = ls.get('crt_bio_cred_id');
-if (!credId) return false;
-try {
-const rawId = Uint8Array.from(atob(credId), c => c.charCodeAt(0));
-const challenge = new Uint8Array(32);
-crypto.getRandomValues(challenge);
-await navigator.credentials.get({
-publicKey: {
-challenge: challenge,
-allowCredentials: [{ id: rawId, type: 'public-key' }],
-userVerification: 'preferred',
-timeout: 60000
-}
-});
-return true;
-} catch(e) { return false; }
-}
-async function doBiometricLogin() {
-const btn = document.getElementById('biometricLoginBtn');
-btn.disabled = true;
-const ok = await verifyBiometric();
-btn.disabled = false;
-if (ok) {
-sessionStorage.setItem('pin_ok', '1'); sessionStorage.setItem('session_started', '1');
-document.getElementById('pinLockOverlay').classList.remove('active');
-document.getElementById('app').classList.add('visible');
-loadCredits();
-showToast('✅ Вход выполнен');
-playSound('pay'); haptic([30, 50, 30]);
-} else {
-showToast('Биометрия не распознана');
-haptic([15, 30, 15, 30, 15]);
-}
-}
-async function checkShowBiometricLogin() {
-const btn = document.getElementById('biometricLoginBtn');
-if (!btn) return;
-if (biometricEnabled && ls.get('crt_bio_cred_id') && (await isBiometricAvailable())) btn.style.display = '';
-else btn.style.display = 'none';
-}
-
 // ========== СВОРАЧИВАНИЕ ==========
 let collapseEnabled = false;
 let activeCollapsed = false;
@@ -1880,7 +1850,6 @@ applyCollapseUI();
 }
 function toggleCollapseFromSettings() {
 collapseEnabled = !collapseEnabled;
-ls.set(COLLAPSE_K, collapseEnabled);
 if (!collapseEnabled) {
 activeCollapsed = false; cardsCollapsed = false;
 ls.set(COLLAPSE_ACTIVE_K, false);
@@ -2014,6 +1983,7 @@ if (e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password' || e.co
 else if (e.code === 'auth/invalid-email') msg = 'Некорректный email';
 else msg = e.message;
 showToast(msg);
+playSound('error');
 btn.disabled = false; btn.textContent = 'Войти';
 }
 return;
@@ -2068,6 +2038,7 @@ else if (e.code === 'auth/invalid-email') msg = 'Некорректный email'
 else if (e.code === 'auth/weak-password') msg = 'Слабый пароль';
 else msg = e.message;
 showToast(msg);
+playSound('error');
 btn.disabled = false;
 btn.textContent = 'Зарегистрироваться';
 }
@@ -2213,7 +2184,7 @@ else showToast('Ошибка: ' + e.message);
 }
 }
 
-// ========== ПИН ==========
+// ========== ПИН + БИОМЕТРИЯ ==========
 async function hashPin(pin) {
 const encoder = new TextEncoder();
 const data = encoder.encode(pin + PIN_SALT);
@@ -2224,11 +2195,18 @@ return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 function buildPinDots(cId, count, pfx){ const el = document.getElementById(cId); el.innerHTML = ''; for (let i = 0; i < count; i++) { const d = document.createElement('div'); d.className = 'pin-dot'; d.id = pfx + i; el.appendChild(d); } }
 function fillPinDots(cId, pfx, filled, count){ for (let i = 0; i < count; i++) { const d = document.getElementById(pfx + i); if (d) { d.classList.toggle('filled', i < filled); d.classList.remove('error'); } } }
 function shakePinDots(cId, pfx, count){ for (let i = 0; i < count; i++) { const d = document.getElementById(pfx + i); if (d) d.classList.add('error'); } const el = document.getElementById(cId); el.classList.add('shake'); setTimeout(() => el.classList.remove('shake'), 400); }
+function unlockSuccess(){
+sessionStorage.setItem('pin_ok', '1'); sessionStorage.setItem('session_started', '1');
+document.getElementById('pinLockOverlay').classList.remove('active');
+document.getElementById('app').classList.add('visible');
+playSound('unlock'); haptic([30, 50, 30]);
+loadCredits();
+}
 function selectPinLen(n){ pinSetLen = n; document.querySelectorAll('.pin-len-btn').forEach(b => b.classList.toggle('active', parseInt(b.textContent) === n)); pinSetBuf = ''; buildPinDots('pinSetDots', n, 'sd'); fillPinDots('pinSetDots', 'sd', 0, n); }
 async function pinSetKey(v) {
 if (pinSetBuf.length >= pinSetLen) return;
 pinSetBuf += v;
-haptic(5);
+playSound('tick'); haptic(5);
 fillPinDots('pinSetDots', 'sd', pinSetBuf.length, pinSetLen);
 if (pinSetBuf.length === pinSetLen) {
 setTimeout(async () => {
@@ -2240,7 +2218,7 @@ else { pinSetBuf = ''; pinSetStep = 0; pinSetVerifyMode = null; document.getElem
 } else {
 document.getElementById('pinSetSub').textContent = 'Неверный ПИН-код';
 shakePinDots('pinSetDots', 'sd', pinSetLen);
-haptic([20, 50, 20, 50, 20]);
+playSound('error'); haptic([20, 50, 20, 50, 20]);
 pinSetBuf = '';
 setTimeout(() => fillPinDots('pinSetDots', 'sd', 0, pinSetLen), 400);
 }
@@ -2258,14 +2236,14 @@ ls.set(PIN_LEN_K, String(pinSetLen));
 document.getElementById('pinSetOverlay').classList.remove('active');
 updateSettingsUI();
 showToast('ПИН-код установлен');
-playSound('pay'); haptic([30, 50, 30]);
+playSound('unlock'); haptic([30, 50, 30]);
 lockPanelOpen = false;
 document.getElementById('lockButtons').style.display = 'none';
 document.getElementById('lockStatusRow').classList.remove('open');
 } else {
 document.getElementById('pinSetSub').textContent = 'Коды не совпадают';
 shakePinDots('pinSetDots', 'sd', pinSetLen);
-haptic([20, 50, 20, 50, 20]);
+playSound('error'); haptic([20, 50, 20, 50, 20]);
 pinSetBuf = ''; pinSetStep = 0; pinSetFirst = '';
 document.getElementById('pinLenRow').style.display = '';
 buildPinDots('pinSetDots', pinSetLen, 'sd');
@@ -2275,7 +2253,7 @@ setTimeout(() => fillPinDots('pinSetDots', 'sd', 0, pinSetLen), 400);
 }, 100);
 }
 }
-function pinSetDel(){ pinSetBuf = pinSetBuf.slice(0, -1); fillPinDots('pinSetDots', 'sd', pinSetBuf.length, pinSetLen); haptic(5); }
+function pinSetDel(){ pinSetBuf = pinSetBuf.slice(0, -1); playSound('tick'); fillPinDots('pinSetDots', 'sd', pinSetBuf.length, pinSetLen); }
 function openNewPin(){ pinSetBuf = ''; pinSetStep = 0; pinSetFirst = ''; pinSetLen = 4; pinSetVerifyMode = null; document.getElementById('pinSetTitle').textContent = 'Создайте ПИН-код'; document.getElementById('pinSetSub').textContent = 'Выберите длину и введите цифры'; document.getElementById('pinLenRow').style.display = ''; buildPinDots('pinSetDots', pinSetLen, 'sd'); document.getElementById('pinSetOverlay').classList.add('active'); }
 function openPinVerify(title, sub){ pinSetBuf = ''; pinSetStep = 2; const len = parseInt(ls.get(PIN_LEN_K)) || 4; pinSetLen = len; document.getElementById('pinSetTitle').textContent = title; document.getElementById('pinSetSub').textContent = sub; document.getElementById('pinLenRow').style.display = 'none'; buildPinDots('pinSetDots', len, 'sd'); document.getElementById('pinSetOverlay').classList.add('active'); }
 function cancelPinSet(){ document.getElementById('pinSetOverlay').classList.remove('active'); pinSetBuf = ''; pinSetStep = 0; pinSetVerifyMode = null; }
@@ -2286,36 +2264,116 @@ buildPinDots('pinLockDots', pinLockLen, 'ld');
 fillPinDots('pinLockDots', 'ld', 0, pinLockLen);
 document.getElementById('pinLockOverlay').classList.add('active');
 checkShowBiometricLogin();
+_bioAutoTried = false;
+setTimeout(() => {
+if (!_bioAutoTried && document.getElementById('pinLockOverlay').classList.contains('active')) {
+_bioAutoTried = true;
+tryBiometricUnlock();
+}
+}, 400);
+}
+async function tryBiometricUnlock() {
+if (!(biometricEnabled && ls.get('crt_bio_cred_id'))) return;
+if (!(await isBiometricAvailable())) return;
+const ok = await verifyBiometric();
+if (ok) unlockSuccess();
 }
 async function pinLockKey(v){
 if (pinLockBuf.length >= pinLockLen) return;
 pinLockBuf += v;
-haptic(5);
+playSound('tick'); haptic(5);
 fillPinDots('pinLockDots', 'ld', pinLockBuf.length, pinLockLen);
 if (pinLockBuf.length === pinLockLen) {
 setTimeout(async () => {
 const hashed = await hashPin(pinLockBuf);
 if (hashed === ls.get(PIN_K)) {
-sessionStorage.setItem('pin_ok', '1'); sessionStorage.setItem('session_started', '1');
-document.getElementById('pinLockOverlay').classList.remove('active');
-document.getElementById('app').classList.add('visible');
-loadCredits();
-playSound('pay'); haptic([30, 50, 30]);
+unlockSuccess();
 } else {
 document.getElementById('pinLockSub').textContent = 'Неверный ПИН-код';
 shakePinDots('pinLockDots', 'ld', pinLockLen);
-haptic([20, 50, 20, 50, 20]);
+playSound('error'); haptic([20, 50, 20, 50, 20]);
 pinLockBuf = '';
 setTimeout(() => { document.getElementById('pinLockSub').textContent = 'Для входа в приложение'; fillPinDots('pinLockDots', 'ld', 0, pinLockLen); }, 500);
 }
 }, 100);
 }
 }
-function pinLockDel(){ pinLockBuf = pinLockBuf.slice(0, -1); fillPinDots('pinLockDots', 'ld', pinLockBuf.length, pinLockLen); haptic(5); }
+function pinLockDel(){ pinLockBuf = pinLockBuf.slice(0, -1); playSound('tick'); fillPinDots('pinLockDots', 'ld', pinLockBuf.length, pinLockLen); }
 function startSetPin(){ const s = ls.get(PIN_K); if (s) { pinSetVerifyMode = 'change'; openPinVerify('Введите текущий ПИН', 'Для смены защиты'); } else openNewPin(); }
 function doRemoveLock(){ const s = ls.get(PIN_K); if (s) { pinSetVerifyMode = 'remove'; openPinVerify('Подтвердите удаление', 'Введите текущий ПИН-код'); } else _removeLock(); }
 function _removeLock(){ ls.rm(PIN_K); ls.rm(PIN_LEN_K); ls.rm(BIO_K); ls.rm('crt_bio_cred_id'); biometricEnabled = false; lockPanelOpen = false; document.getElementById('lockButtons').style.display = 'none'; document.getElementById('lockStatusRow').classList.remove('open'); updateSettingsUI(); showToast('Защита снята'); }
 function toggleLockPanel(){ lockPanelOpen = !lockPanelOpen; document.getElementById('lockButtons').style.display = lockPanelOpen ? '' : 'none'; document.getElementById('lockStatusRow').classList.toggle('open', lockPanelOpen); haptic(10); }
+
+// ========== БИОМЕТРИЯ (WebAuthn) ==========
+async function isBiometricAvailable() {
+if (!window.PublicKeyCredential) return false;
+try { return await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable(); } catch(e) { return false; }
+}
+async function registerBiometric() {
+try {
+const challenge = new Uint8Array(32);
+crypto.getRandomValues(challenge);
+const userId = new Uint8Array(16);
+crypto.getRandomValues(userId);
+const credential = await navigator.credentials.create({
+publicKey: {
+challenge: challenge,
+rp: { name: 'Мои Кредиты' },
+user: { id: userId, name: authUser ? authUser.email : 'user', displayName: authUser ? (authUser.displayName || authUser.email) : 'User' },
+pubKeyCredParams: [{ alg: -7, type: 'public-key' }, { alg: -257, type: 'public-key' }],
+authenticatorSelection: { userVerification: 'preferred' },
+timeout: 60000
+}
+});
+if (credential) {
+const credId = btoa(String.fromCharCode(...new Uint8Array(credential.rawId)));
+ls.set('crt_bio_cred_id', credId);
+return true;
+}
+return false;
+} catch(e) {
+console.warn('Biometric registration failed:', e);
+showToast('Не удалось зарегистрировать биометрию');
+return false;
+}
+}
+async function verifyBiometric() {
+const credId = ls.get('crt_bio_cred_id');
+if (!credId) return false;
+try {
+const rawId = Uint8Array.from(atob(credId), c => c.charCodeAt(0));
+const challenge = new Uint8Array(32);
+crypto.getRandomValues(challenge);
+await navigator.credentials.get({
+publicKey: {
+challenge: challenge,
+allowCredentials: [{ id: rawId, type: 'public-key' }],
+userVerification: 'preferred',
+timeout: 60000
+}
+});
+return true;
+} catch(e) { return false; }
+}
+async function doBiometricLogin() {
+const btn = document.getElementById('biometricLoginBtn');
+btn.disabled = true;
+const ok = await verifyBiometric();
+btn.disabled = false;
+if (ok) {
+unlockSuccess();
+showToast('✅ Вход выполнен');
+} else {
+showToast('Биометрия не распознана');
+playSound('error'); haptic([15, 30, 15, 30, 15]);
+}
+}
+async function checkShowBiometricLogin() {
+const btn = document.getElementById('biometricLoginBtn');
+if (!btn) return;
+if (biometricEnabled && ls.get('crt_bio_cred_id') && (await isBiometricAvailable())) btn.style.display = '';
+else btn.style.display = 'none';
+}
 
 // ========== СПОЙЛЕРЫ ==========
 let spoilerRAF = null; const spoilerMap = new Map();
@@ -2359,7 +2417,7 @@ if (document.getElementById('cardFormOverlay').classList.contains('active')) { c
 if (document.getElementById('deleteOverlay').classList.contains('active')) { closeDelete(); return; }
 if (document.getElementById('actionOverlay').classList.contains('active')) { closeAction(); return; }
 if (document.getElementById('formOverlay').classList.contains('active')) { closeForm(); return; }
-if (document.getElementById('settingsOverlay').classList.contains('active')) { closeSettings(); return; }
+if (document.getElementById('settingsOverlay').classList.contains('active')) { cancelSettings(); return; }
 if (document.getElementById('fabMenu').classList.contains('active')) { closeFabMenu(); return; }
 if (backPressedOnce) { navigator.app && navigator.app.exitApp(); return; }
 backPressedOnce = true; showToast('Нажмите ещё раз для выхода'); setTimeout(() => backPressedOnce = false, 2000);
