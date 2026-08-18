@@ -1,0 +1,17 @@
+{
+  "name": "Мои Кредиты",
+  "short_name": "Кредиты",
+  "description": "Учёт кредитов и кредитных карт",
+  "lang": "ru",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FFDD2D",
+  "theme_color": "#FFDD2D",
+  "icons": [
+    { "src": "icon.png", "sizes": "1024x1024", "type": "image/png", "purpose": "any" },
+    { "src": "icon.png", "sizes": "1024x1024", "type": "image/png", "purpose": "maskable" }
+  ]
+}
