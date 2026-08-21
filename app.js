@@ -52,8 +52,12 @@ const ls = { get:k=>{try{return localStorage.getItem(k);}catch(e){return null;}}
 let _userTapped = false, _vibeWarned = false;
 document.addEventListener('touchstart', function(){ _userTapped = true; }, { once: true, passive: true });
 document.addEventListener('pointerdown', function(){ _userTapped = true; }, { passive: true, capture: true });
+function hasUserActivation() {
+if (navigator.userActivation && typeof navigator.userActivation.hasBeenActive === 'boolean') return navigator.userActivation.hasBeenActive;
+return _userTapped;
+}
 function haptic(pattern) {
-if (!hapticEnabled || !_userTapped) return;
+if (!hapticEnabled || !hasUserActivation()) return;
 if (!('vibrate' in navigator)) { if (!_vibeWarned) { _vibeWarned = true; showToast('Вибрация не поддерживается этим браузером'); } return; }
 try { navigator.vibrate(pattern || 20); } catch(e) {}
 }
@@ -61,7 +65,8 @@ function testVibro() {
 _userTapped = true;
 if (!hapticEnabled) { showToast('Сначала включите виброотклик'); return; }
 if (!('vibrate' in navigator)) { showToast('Вибрация не поддерживается этим браузером'); return; }
-try { navigator.vibrate([80,40,80,40,120]); showToast('📳 Вибрация работает'); } catch(e) { showToast('Не удалось вызвать вибрацию'); }
+if (!hasUserActivation()) { showToast('Коснитесь экрана и попробуйте ещё раз'); return; }
+try { const ok = navigator.vibrate([80,40,80,40,120]); showToast(ok !== false ? '📳 Вибрация работает' : 'Не удалось вызвать вибрацию'); } catch(e) { showToast('Не удалось вызвать вибрацию'); }
 }
 // ========== ТАЙМАУТЫ / АНТИ-ОФЛАЙН ==========
 function withTimeout(p, ms, code) { return Promise.race([p, new Promise((_, rej) => setTimeout(() => { const e = new Error('timeout'); e.code = code || 'timeout'; rej(e); }, ms))]); }
@@ -421,7 +426,7 @@ if (!inp || inp <= 0) { showToast('Введите сумму'); return; }
 haptic(20);
 const newPartial = Math.min(c.amount, (c.partial||0) + inp); const newPaid = newPartial >= c.amount;
 await updateCreditField(c.id, { partial: newPartial, paid: newPaid });
-if (newPaid) histUpsert(c.id, c.name, 'paid_full', c.amount); else histPartial(c.id, c.name, inp);
+if (newPaid) histUpsert(c.id, c.name, 'paid_full', c.amount); else histUpsert(c.id, c.name, 'partial', inp);
 closeAction(); haptic([30, 50, 30]);
 }
 function openEditCredit(c){
@@ -660,7 +665,7 @@ function setFontSize(s){ fontSize = s; applyFont(); if (!amountsVisible) { stopS
 function loadHaptic(){ const v = ls.get(HAPTIC_K); if (v !== null) hapticEnabled = v === 'true'; }
 function toggleHapticFromSettings(){
 hapticEnabled = !hapticEnabled; ls.set(HAPTIC_K, hapticEnabled); _userTapped = true;
-if (hapticEnabled) { if (!('vibrate' in navigator)) showToast('Вибрация не поддерживается в этом браузере'); else { try { navigator.vibrate([80,40,80]); } catch(e) {} showToast('Проверьте вибрацию'); } }
+if (hapticEnabled) { if (!('vibrate' in navigator)) showToast('Вибрация не поддерживается в этом браузере'); else { if (hasUserActivation()) { try { navigator.vibrate([80,40,80]); } catch(e) {} } showToast('Проверьте вибрацию'); } }
 updateSettingsUI();
 }
 function loadNotif(){ const v = ls.get(NOTIF_K); if (v !== null) notifEnabled = v === 'true'; const d = parseInt(ls.get(NOTIF_DAYS_K)); if (d) notifDays = d; const o = ls.get(OVERDUE_K); if (o !== null) overdueEnabled = o === 'true'; }
