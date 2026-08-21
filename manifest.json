@@ -11,8 +11,7 @@
   "background_color": "#FFDD2D",
   "theme_color": "#FFDD2D",
   "shortcuts": [
-    { "name": "Добавить платёж", "url": "./?action=add" },
-    { "name": "История платежей", "url": "./?action=history" }
+    { "name": "Добавить платёж", "url": "./?action=add" }
   ],
   "icons": [
     { "src": "icon.png", "sizes": "1024x1024", "type": "image/png", "purpose": "any" },
