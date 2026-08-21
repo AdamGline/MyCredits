@@ -1,5 +1,8 @@
-const CACHE_NAME = 'credits-cache-1.3.00';
-const ASSETS_TO_CACHE = ['./', './index.html', './app.js', './manifest.json', './icon.png', './logo.png', 'https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js', 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js', 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js'];
+/* Версия берётся из version.js — единственного места, где она меняется */
+try { importScripts('./version.js?' + Date.now()); } catch (e) { }
+const V = (typeof APP_VERSION !== 'undefined') ? APP_VERSION : 'dev';
+const CACHE_NAME = 'credits-cache-' + V;
+const ASSETS_TO_CACHE = ['./', './index.html', './app.js', './manifest.json', './version.js', './icon.png', './logo.png', 'https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js', 'https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js', 'https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js'];
 
 self.addEventListener('install', event => {
   self.skipWaiting();

@@ -55,9 +55,7 @@ let _userTapped = false, _vibeWarned = false;
 document.addEventListener('touchstart', function () { _userTapped = true; }, { once: true, passive: true });
 document.addEventListener('pointerdown', function () { _userTapped = true; }, { passive: true, capture: true });
 document.addEventListener('mousedown', function () { _userTapped = true; }, { passive: true, capture: true });
-
 function hasRealTap() {
-  // Chrome разрешает вибрацию ТОЛЬКО после настоящего касания пальцем
   if (navigator.userActivation) return navigator.userActivation.hasBeenActive;
   return _userTapped;
 }
@@ -70,7 +68,7 @@ function vibrateNow(pattern) {
     try { window.Capacitor.Plugins.Haptics.impact({ style: 'MEDIUM' }); return true; } catch (e) { }
   }
   if ('vibrate' in navigator) {
-    if (!hasRealTap()) return false; // не дёргаем API зря — иначе красные ошибки в консоли
+    if (!hasRealTap()) return false;
     try { return navigator.vibrate(p); } catch (e) { return false; }
   }
   return false;
@@ -85,7 +83,7 @@ function testVibro() {
   _userTapped = true;
   if (!hapticEnabled) { showToast('Сначала включите виброотклик'); return; }
   if (!('vibrate' in navigator)) { showToast('⚠️ Браузер не поддерживает вибрацию'); return; }
-  if (!hasRealTap()) { showToast('⚠️ Chrome не видит касаний. Вы в консоли отладки? Откройте сайт в обычном Chrome и нажмите проверку там'); return; }
+  if (!hasRealTap()) { showToast('⚠️ Chrome не видит касаний. Откройте сайт в обычном Chrome и нажмите проверку там'); return; }
   const ok = vibrateNow(1000);
   if (!ok) { showToast('⚠️ Браузер отклонил вибрацию'); return; }
   showToast('📳 Вибрация работает. Если телефон молчит — проверьте в Android: звук/вибрация, «Не беспокоить», энергосбережение');
@@ -963,12 +961,12 @@ function stopSpoilers() { if (spoilerRAF) { cancelAnimationFrame(spoilerRAF); sp
 function toggleCompleted() { const list = document.getElementById('completedList'); const arrow = document.getElementById('completedArrow'); const open = !list.classList.contains('open'); list.classList.toggle('open', open); arrow.classList.toggle('open', open); if (open) { const cm = new Date().getMonth(), cy = new Date().getFullYear(); list.innerHTML = ''; const frag = document.createDocumentFragment(); credits.filter(c => c.completed).forEach(c => frag.appendChild(buildCreditItem(c, cm, cy))); list.appendChild(frag); } }
 function closeAllPaid() { document.getElementById('allPaidOverlay').classList.remove('active'); }
 
-// ========== БЫСТРЫЕ ДЕЙСТВИЯ ==========
+// ========== БЫСТРЫЕ ДЕЙСТВИЯ (ярлыки) ==========
 function runPendingAction() {
   if (!pendingAction) return;
   const a = pendingAction; pendingAction = null;
   try { history.replaceState(null, '', location.pathname); } catch (e) { }
-  setTimeout(() => { if (a === 'add') openCreditForm(); }, 500);
+  setTimeout(() => { if (a === 'add') openCreditForm(); else if (a === 'settings') openSettings(); }, 500);
 }
 
 // ========== ЗАПУСК ==========
@@ -999,7 +997,7 @@ function setupBackBtn() {
   });
 }
 document.addEventListener('DOMContentLoaded', () => {
-  try { const p = new URLSearchParams(location.search); const a = p.get('action'); if (a === 'add') pendingAction = a; } catch (e) { }
+  try { const p = new URLSearchParams(location.search); const a = p.get('action'); if (a === 'add' || a === 'settings') pendingAction = a; } catch (e) { }
   loadTheme(); loadFontSize(); loadAmounts(); loadCollapse(); loadHaptic(); loadNotif(); loadBiometric(); setupBackBtn();
   removeHistoryUI();
   selectCat('mortgage'); setDateMode('cal');
@@ -1020,8 +1018,38 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 window.onerror = function (msg) { console.log('Ошибка: ' + msg); return false; };
 document.getElementById('lockStatusRow').onclick = e => { toggleLockPanel(); e.stopPropagation(); };
+
+// ========== ВЕРСИЯ (из version.js) + SERVICE WORKER + ВЕРСИЯ В НАСТРОЙКАХ ==========
+function applyAppVersion() {
+  const v = window.APP_VERSION || '';
+  const splash = document.getElementById('appVersion');
+  if (splash) splash.textContent = v;
+  let sv = document.getElementById('settingsVersion');
+  if (!sv) {
+    sv = document.createElement('div');
+    sv.id = 'settingsVersion';
+    sv.style.cssText = 'position:fixed;left:0;right:0;bottom:8px;text-align:center;font-size:0.75rem;color:var(--text-2);opacity:0.7;pointer-events:none;z-index:9999;display:none;';
+    document.body.appendChild(sv);
+  }
+  sv.textContent = 'Версия ' + v;
+}
+const _openSettingsBase = openSettings;
+openSettings = function () { _openSettingsBase(); const sv = document.getElementById('settingsVersion'); if (sv) sv.style.display = 'block'; };
+const _closeSettingsBase = closeSettings;
+closeSettings = function () { _closeSettingsBase(); const sv = document.getElementById('settingsVersion'); if (sv) sv.style.display = 'none'; };
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js?v=1.3.00').then(reg => reg.update()).catch(() => { }); });
+  window.addEventListener('load', () => {
+    window.APP_VERSION = (localStorage.getItem('crt_app_version') || '1.3.1');
+    applyAppVersion();
+    fetch('./version.js', { cache: 'no-store' })
+      .then(r => r.text())
+      .then(t => { const m = t.match(/APP_VERSION\s*=\s*['"]([^'"]+)['"]/); if (m) { window.APP_VERSION = m[1]; try { localStorage.setItem('crt_app_version', m[1]); } catch (e) { } } })
+      .catch(() => { })
+      .then(() => {
+        applyAppVersion();
+        navigator.serviceWorker.register('./sw.js?v=' + window.APP_VERSION).then(reg => reg.update()).catch(() => { });
+      });
+  });
 }
 const installBtn = document.getElementById('installBtn');
 let deferredPrompt = null;

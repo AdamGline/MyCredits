@@ -11,7 +11,8 @@
   "background_color": "#FFDD2D",
   "theme_color": "#FFDD2D",
   "shortcuts": [
-    { "name": "Добавить платёж", "url": "./?action=add" }
+    { "name": "Добавить платёж", "url": "./?action=add" },
+    { "name": "Настройки", "url": "./?action=settings" }
   ],
   "icons": [
     { "src": "icon.png", "sizes": "1024x1024", "type": "image/png", "purpose": "any" },
