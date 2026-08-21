@@ -46,17 +46,21 @@ let pinLockBuf = '', pinLockLen = 4;
 let isLoginMode = true, authResolved = false;
 window.authUser = null;
 let splashTimerDone = false, creditsUnsubscribe = null;
-let paymentHistoryRemoved = true; // история отключена
 let monthResetDone = false, settingsSnapshot = null, _bioAutoTried = false;
 let pendingAction = null;
 const ls = { get: k => { try { return localStorage.getItem(k); } catch (e) { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }, rm: k => { try { localStorage.removeItem(k); } catch (e) { } } };
 
-// ========== ВИБРАЦИЯ (РАБОЧАЯ) ==========
+// ========== ВИБРАЦИЯ ==========
 let _userTapped = false, _vibeWarned = false;
 document.addEventListener('touchstart', function () { _userTapped = true; }, { once: true, passive: true });
 document.addEventListener('pointerdown', function () { _userTapped = true; }, { passive: true, capture: true });
 document.addEventListener('mousedown', function () { _userTapped = true; }, { passive: true, capture: true });
 
+function hasRealTap() {
+  // Chrome разрешает вибрацию ТОЛЬКО после настоящего касания пальцем
+  if (navigator.userActivation) return navigator.userActivation.hasBeenActive;
+  return _userTapped;
+}
 function vibrateNow(pattern) {
   const p = pattern || 30;
   if (window.cordova && navigator.notification && typeof navigator.notification.vibrate === 'function') {
@@ -66,24 +70,25 @@ function vibrateNow(pattern) {
     try { window.Capacitor.Plugins.Haptics.impact({ style: 'MEDIUM' }); return true; } catch (e) { }
   }
   if ('vibrate' in navigator) {
-    try { navigator.vibrate(0); return navigator.vibrate(p); } catch (e) { return false; }
+    if (!hasRealTap()) return false; // не дёргаем API зря — иначе красные ошибки в консоли
+    try { return navigator.vibrate(p); } catch (e) { return false; }
   }
   return false;
 }
 function haptic(pattern) {
   if (!hapticEnabled || !_userTapped) return false;
   const ok = vibrateNow(pattern || 20);
-  if (!ok && !_vibeWarned) { _vibeWarned = true; showToast('Вибрация не поддерживается этим браузером'); }
+  if (!ok && !_vibeWarned) { _vibeWarned = true; showToast('Вибрация недоступна: нужно открыть сайт в обычном браузере и коснуться экрана'); }
   return ok;
 }
 function testVibro() {
   _userTapped = true;
   if (!hapticEnabled) { showToast('Сначала включите виброотклик'); return; }
   if (!('vibrate' in navigator)) { showToast('⚠️ Браузер не поддерживает вибрацию'); return; }
-  let ok = false;
-  try { navigator.vibrate(0); ok = navigator.vibrate(1000); } catch (e) { ok = false; }
+  if (!hasRealTap()) { showToast('⚠️ Chrome не видит касаний. Вы в консоли отладки? Откройте сайт в обычном Chrome и нажмите проверку там'); return; }
+  const ok = vibrateNow(1000);
   if (!ok) { showToast('⚠️ Браузер отклонил вибрацию'); return; }
-  showToast('📳 Команда принята. Если телефон не вибрирует — проверьте в Android: звук/вибрация, «Не беспокоить», энергосбережение');
+  showToast('📳 Вибрация работает. Если телефон молчит — проверьте в Android: звук/вибрация, «Не беспокоить», энергосбережение');
 }
 
 // ========== ТАЙМАУТЫ / АНТИ-ОФЛАЙН ==========
@@ -176,7 +181,7 @@ async function checkMonthReset() {
   ls.set(MONTH_K, `${new Date().getMonth()}-${new Date().getFullYear()}`);
 }
 
-// ========== УВЕДОМЛЕНИЯ (РАБОЧИЕ) ==========
+// ========== УВЕДОМЛЕНИЯ ==========
 async function requestNotificationPermission() {
   if (!('Notification' in window)) { showToast('Уведомления не поддерживаются в этом браузере'); return false; }
   if (Notification.permission === 'granted') return true;
@@ -368,7 +373,6 @@ function attachSwipeHandlers() {
         if (acted) haptic(20);
       } else if (direction === 'left' && currentX < -80) {
         if (confirm('Удалить этот элемент?')) {
-          const src = creditType === 'card' ? cards : credits; const found = src.find(x => x.id === creditId);
           await db.collection('credits').doc(creditId).delete().catch(() => { });
           haptic([15, 30, 15]); showToast('Удалено'); acted = true;
         }
@@ -643,7 +647,7 @@ function toggleHapticFromSettings() {
   hapticEnabled = !hapticEnabled; ls.set(HAPTIC_K, hapticEnabled); _userTapped = true;
   if (hapticEnabled) {
     const ok = vibrateNow([80, 40, 80]);
-    showToast(ok ? 'Проверьте вибрацию' : 'Вибрация не поддерживается в этом браузере');
+    showToast(ok ? 'Проверьте вибрацию' : 'Вибрация включена. Проверьте её в обычном Chrome (не в консоли)');
   }
   updateSettingsUI();
 }
@@ -1004,9 +1008,10 @@ document.addEventListener('DOMContentLoaded', () => {
   buildPinDots('pinSetDots', 4, 'sd');
   function bindPad(padId, keyFn, delId, delFn) {
     const pad = document.getElementById(padId); if (!pad) return;
-    const handle = (btn, e) => { e.preventDefault(); btn.classList.add('pressed'); setTimeout(() => btn.classList.remove('pressed'), 100); const v = btn.getAttribute('data-v'); if (v !== null) keyFn(v); else if (btn.id === delId) delFn(); };
-    pad.addEventListener('touchstart', e => { const btn = e.target.closest('.pin-key'); if (!btn || btn.classList.contains('empty')) return; handle(btn, e); }, { passive: false });
-    pad.addEventListener('mousedown', e => { const btn = e.target.closest('.pin-key'); if (!btn || btn.classList.contains('empty')) return; handle(btn, e); });
+    let lastTouch = 0;
+    const handle = (btn) => { btn.classList.add('pressed'); setTimeout(() => btn.classList.remove('pressed'), 100); const v = btn.getAttribute('data-v'); if (v !== null) keyFn(v); else if (btn.id === delId) delFn(); };
+    pad.addEventListener('touchstart', e => { const btn = e.target.closest('.pin-key'); if (!btn || btn.classList.contains('empty')) return; if (e.cancelable) e.preventDefault(); lastTouch = Date.now(); handle(btn); }, { passive: false });
+    pad.addEventListener('mousedown', e => { if (Date.now() - lastTouch < 700) return; const btn = e.target.closest('.pin-key'); if (!btn || btn.classList.contains('empty')) return; handle(btn); });
   }
   bindPad('pinSetPad', pinSetKey, 'pinSetDel', pinSetDel);
   bindPad('pinLockPad', pinLockKey, 'pinLockDel', pinLockDel);
