@@ -714,15 +714,6 @@ if (auth) auth.style.display = 'flex';
 </div>
 </div>
 </div>
-<div class="overlay" id="historyOverlay" onclick="if(event.target===this)closeHistory()">
-<div class="sheet" style="padding-bottom:max(16px,env(safe-area-inset-bottom))">
-<div class="sheet-handle"></div>
-<div class="sheet-title">📜 История платежей <button class="sheet-close" onclick="closeHistory()">✕</button></div>
-<div id="historyList" style="max-height:60vh;overflow-y:auto"></div>
-<button class="history-clear-btn" id="historyClearBtn" onclick="clearHistory()" style="display:none">🗑 Очистить историю</button>
-<div style="height:8px"></div>
-</div>
-</div>
 <script src="app.js"></script>
 </body>
 </html>

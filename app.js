@@ -148,10 +148,10 @@ function loadCredits() {
     .onSnapshot(snapshot => {
       credits = []; cards = [];
       snapshot.forEach(doc => { const d = doc.data(); if (d.type === 'creditcard') cards.push({ id: doc.id, ...d }); else credits.push({ id: doc.id, ...d }); });
-      render(); renderCards();
+      render(); renderCards(); updateAppBadge();
       if (!monthResetDone) { monthResetDone = true; checkMonthReset(); }
       showGlobalLoader(false);
-      checkUpcomingNotifications(false);
+      checkUpcomingNotifications(false, 120000);
     }, e => { showGlobalLoader(false); guardNetwork(e); });
 }
 async function deleteCredit(id) { if (!db) return; await withTimeout(db.collection('credits').doc(id).delete(), 8000).catch(() => { }); }
@@ -179,7 +179,7 @@ async function checkMonthReset() {
   ls.set(MONTH_K, `${new Date().getMonth()}-${new Date().getFullYear()}`);
 }
 
-// ========== УВЕДОМЛЕНИЯ ==========
+// ========== УВЕДОМЛЕНИЯ (при каждом входе + периодически) ==========
 async function requestNotificationPermission() {
   if (!('Notification' in window)) { showToast('Уведомления не поддерживаются в этом браузере'); return false; }
   if (Notification.permission === 'granted') return true;
@@ -199,11 +199,16 @@ async function showAppNotification(title, body, tag) {
   } catch (e) { console.warn('SW-уведомление не удалось:', e); }
   try { new Notification(title, { body: body, tag: tag || 'default' }); return true; } catch (e) { return false; }
 }
-async function checkUpcomingNotifications(force) {
+function notifCooldownOk(key, minMs) {
+  const last = parseInt(ls.get(key)) || 0;
+  return (Date.now() - last) >= minMs;
+}
+async function checkUpcomingNotifications(force, minInterval) {
   if (!notifEnabled || !('Notification' in window) || Notification.permission !== 'granted') return false;
-  const now = new Date(); const todayKey = now.toDateString(); const today = now.getDate();
+  const minMs = (typeof minInterval === 'number') ? minInterval : 120000;
+  const now = new Date(); const today = now.getDate();
   let shown = false;
-  if (force || ls.get('crt_last_notif_date') !== todayKey) {
+  if (force || notifCooldownOk('crt_last_notif_ts', minMs)) {
     const upcoming = [];
     credits.forEach(c => { if (c.completed || c.paid) return; const diff = (c.day || 1) - today; if (diff >= 0 && diff <= notifDays) upcoming.push({ name: c.name, amount: c.amount, when: diff === 0 ? 'сегодня' : `через ${diff} дн.` }); });
     cards.forEach(c => { const done = c.donePayments || 0; const eff = (c.payments || 0) > 0 ? c.payments : 1; if (done >= eff) return; const diff = (c.day || 1) - today; if (diff >= 0 && diff <= notifDays) upcoming.push({ name: c.name, amount: c.amount, when: diff === 0 ? 'сегодня' : `через ${diff} дн.` }); });
@@ -212,22 +217,22 @@ async function checkUpcomingNotifications(force) {
       const names = upcoming.slice(0, 3).map(u => `${u.name} (${u.when})`).join(', ');
       const more = upcoming.length > 3 ? ` и ещё ${upcoming.length - 3}` : '';
       shown = await showAppNotification('💰 Напоминание о платежах', `${names}${more}${total ? `\nВсего: ${fmt(total)} ₽` : ''}`, 'daily-reminder');
-      if (shown) ls.set('crt_last_notif_date', todayKey);
+      if (shown) ls.set('crt_last_notif_ts', String(Date.now()));
     }
   }
-  if (overdueEnabled && (force || ls.get('crt_last_overdue_date') !== todayKey)) {
+  if (overdueEnabled && (force || notifCooldownOk('crt_last_overdue_ts', minMs))) {
     const od = [];
     credits.forEach(c => { const d = getOverdueDays(c); if (d > 0) od.push({ name: c.name, d: d }); });
     cards.forEach(c => { const done = c.donePayments || 0; const eff = (c.payments || 0) > 0 ? c.payments : 1; if (done < eff) { const d = getOverdueDays(c); if (d > 0) od.push({ name: c.name, d: d }); } });
     if (od.length) {
       const ok2 = await showAppNotification('⚠️ Просрочка', od.slice(0, 3).map(x => `${x.name}: ${x.d} дн.`).join(', ') + (od.length > 3 ? ` и ещё ${od.length - 3}` : ''), 'overdue');
-      if (ok2) { shown = true; ls.set('crt_last_overdue_date', todayKey); }
+      if (ok2) { shown = true; ls.set('crt_last_overdue_ts', String(Date.now())); }
     }
   }
   return shown;
 }
-setInterval(() => checkUpcomingNotifications(false), 900000);
-document.addEventListener('visibilitychange', () => { if (!document.hidden) checkUpcomingNotifications(false); });
+setInterval(() => checkUpcomingNotifications(false, 3 * 3600000), 900000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) checkUpcomingNotifications(false, 120000); });
 async function testNotification() {
   if (!('Notification' in window)) { showToast('Уведомления не поддерживаются'); return; }
   if (Notification.permission !== 'granted') { const ok = await requestNotificationPermission(); if (!ok) return; }
@@ -235,7 +240,7 @@ async function testNotification() {
   showToast(ok ? 'Уведомление отправлено' : 'Не удалось показать уведомление');
   haptic(10);
 }
-function setNotifDays(n) { notifDays = n; ls.set(NOTIF_DAYS_K, n); updateSettingsUI(); haptic(10); }
+function setNotifDays(n) { notifDays = n; ls.set(NOTIF_DAYS_K, n); updateSettingsUI(); updateAppBadge(); haptic(10); }
 function toggleOverdueFromSettings() { overdueEnabled = !overdueEnabled; ls.set(OVERDUE_K, overdueEnabled); updateSettingsUI(); haptic(10); }
 async function toggleNotifFromSettings() {
   if (!notifEnabled) {
@@ -249,6 +254,19 @@ async function toggleNotifFromSettings() {
   } else { notifEnabled = false; showToast('Уведомления выключены'); }
   ls.set(NOTIF_K, notifEnabled);
   updateSettingsUI(); haptic(10);
+}
+
+// ========== ЦИФРА НА ЯРЛЫКЕ (кол-во предстоящих платежей) ==========
+function updateAppBadge() {
+  if (!navigator.setAppBadge && !navigator.clearAppBadge) return;
+  const today = new Date().getDate();
+  let n = 0;
+  credits.forEach(c => { if (c.completed || c.paid) return; if (((c.day || 1) - today) <= notifDays) n++; });
+  cards.forEach(c => { const done = c.donePayments || 0; const eff = (c.payments || 0) > 0 ? c.payments : 1; if (done >= eff) return; if (((c.day || 1) - today) <= notifDays) n++; });
+  try {
+    if (n > 0) { if (navigator.setAppBadge) navigator.setAppBadge(n); }
+    else { if (navigator.clearAppBadge) navigator.clearAppBadge(); }
+  } catch (e) { }
 }
 
 // ========== ПОИСК И СОРТИРОВКА ==========
@@ -786,7 +804,7 @@ async function doLogout() {
   await auth.signOut(); closeSettings();
   sessionStorage.removeItem('pin_ok'); sessionStorage.removeItem('session_started'); sessionStorage.removeItem('all_paid_shown');
   monthResetDone = false; credits = []; cards = []; allPaidShown = false;
-  render(); renderCards();
+  render(); renderCards(); updateAppBadge();
   document.getElementById('authEmailOrNick').value = ''; document.getElementById('authPassword').value = ''; document.getElementById('authConfirmPassword').value = ''; document.getElementById('authName').value = '';
   isLoginMode = true;
   document.getElementById('authTitle').textContent = 'Войти в аккаунт'; document.getElementById('authBtn').textContent = 'Войти'; document.getElementById('authBtn').disabled = false;
@@ -1020,23 +1038,23 @@ window.onerror = function (msg) { console.log('Ошибка: ' + msg); return fa
 document.getElementById('lockStatusRow').onclick = e => { toggleLockPanel(); e.stopPropagation(); };
 
 // ========== ВЕРСИЯ (из version.js) + SERVICE WORKER + ВЕРСИЯ В НАСТРОЙКАХ ==========
+/* Версия показывается ВНЕ сетки настроек (прикреплена к низу экрана),
+   поэтому она НИКОГДА не может сдвинуть или сломать карточки настроек. */
 function applyAppVersion() {
   const v = window.APP_VERSION || '';
   const splash = document.getElementById('appVersion');
   if (splash) splash.textContent = v;
-  let sv = document.getElementById('settingsVersion');
-  if (!sv) {
-    sv = document.createElement('div');
-    sv.id = 'settingsVersion';
-    sv.style.cssText = 'position:fixed;left:0;right:0;bottom:8px;text-align:center;font-size:0.75rem;color:var(--text-2);opacity:0.7;pointer-events:none;z-index:9999;display:none;';
-    document.body.appendChild(sv);
-  }
+  if (document.getElementById('settingsVersion')) return;
+  const row = document.getElementById('lockStatusRow');
+  const card = row ? row.parentElement : null;
+  const sv = document.createElement('div');
+  sv.id = 'settingsVersion';
+  if (card) sv.className = card.className;
+  sv.style.cssText = 'text-align:center;padding:14px 10px;color:var(--text-2);font-size:0.8rem;opacity:0.85;';
+  if (card) card.insertAdjacentElement('afterend', sv);
+  else (document.getElementById('settingsOverlay') || document.body).appendChild(sv);
   sv.textContent = 'Версия ' + v;
 }
-const _openSettingsBase = openSettings;
-openSettings = function () { _openSettingsBase(); const sv = document.getElementById('settingsVersion'); if (sv) sv.style.display = 'block'; };
-const _closeSettingsBase = closeSettings;
-closeSettings = function () { _closeSettingsBase(); const sv = document.getElementById('settingsVersion'); if (sv) sv.style.display = 'none'; };
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     window.APP_VERSION = (localStorage.getItem('crt_app_version') || '1.3.1');
