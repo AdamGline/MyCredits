@@ -115,7 +115,8 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
 [data-theme="dark"] .credit-item.partial-complete .swipe-content::before { background-color: rgba(0,0,0,0.35); }
 .swipe-content > * { position: relative; z-index: 1; }
 .credit-item.swipeable .swipe-content { transition: transform 0.2s ease; }
-.credit-icon-wrap { width: 40px; height: 40px; border-radius: 12px; background: var(--surface-2); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; border: 1px solid var(--border); }
+.credit-icon-wrap { width: 40px; height: 40px; border-radius: 12px; background: var(--surface-2); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; border: 1px solid var(--border); overflow: hidden; }
+.bank-logo-img { width: 100%; height: 100%; object-fit: contain; border-radius: 10px; background: #ffffff; padding: 2px; }
 .credit-main { flex: 1; min-width: 0; }
 .credit-name { font-size: 0.95rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
 .credit-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
@@ -329,24 +330,29 @@ input:focus, select:focus { border-color: var(--accent-dark); }
 .partial-quick-btn:active { background: var(--border); transform: scale(0.96); }
 .shake { animation: shake 0.4s ease; }
 @keyframes shake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-8px); } 40% { transform: translateX(8px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(4px); } }
-.history-group-label { font-size: 0.72rem; font-weight: 700; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.06em; padding: 14px 20px 8px; background: var(--surface); position: sticky; top: 0; z-index: 2; border-bottom: 1px solid var(--border); }
-.history-item { display: flex; gap: 12px; padding: 12px 20px; border-bottom: 1px solid var(--border); background: var(--surface); }
-.history-item:last-child { border-bottom: none; }
-.history-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--surface-2); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; border: 1px solid var(--border); }
-.history-main { flex: 1; min-width: 0; }
-.history-title { font-size: 0.9rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
-.history-sub { font-size: 0.75rem; color: var(--text-2); }
-.history-right { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0; }
-.history-amount { font-size: 0.9rem; font-weight: 700; }
-.history-amount.plus { color: var(--success); }
-.history-amount.minus { color: var(--danger); }
-.history-time { font-size: 0.7rem; color: var(--text-3); }
-.history-empty { padding: 48px 20px; text-align: center; color: var(--text-3); font-size: 0.85rem; }
-.history-clear-btn { margin: 8px 16px; padding: 10px; background: rgba(230,57,70,0.08); border: 1.5px solid rgba(230,57,70,0.25); border-radius: var(--radius-sm); color: var(--danger); font-family: inherit; font-size: 0.82rem; font-weight: 600; cursor: pointer; width: calc(100% - 32px); }
-.history-clear-btn:active { transform: scale(0.98); }
 .biometric-btn { width: 100%; padding: 14px; background: var(--surface-2); border: 1.5px solid var(--border); border-radius: 14px; font-family: inherit; font-size: 0.95rem; font-weight: 600; color: var(--text); cursor: pointer; margin-top: 4px; display: flex; align-items: center; justify-content: center; gap: 8px; }
 .biometric-btn:active { transform: scale(0.97); background: var(--border); }
 .biometric-btn:disabled { opacity: 0.5; pointer-events: none; }
+
+.credit-icon-wrap.has-logo { border: none; background: transparent; }
+.bank-logo { width: 40px; height: 40px; border-radius: 12px; overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.bank-logo svg, .credit-icon-wrap svg { width: 100%; height: 100%; display: block; }
+.bank-logo-none { background: var(--surface-2); border: 1px solid var(--border); font-size: 1.2rem; }
+.bank-picker { display: flex; flex-direction: column; gap: 6px; }
+.bank-picker-btn { display: flex; align-items: center; gap: 12px; width: 100%; padding: 6px 12px 6px 6px; background: var(--surface-2); border: 1.5px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-family: inherit; font-size: 1rem; text-align: left; cursor: pointer; }
+.bank-picker.open .bank-picker-btn { border-color: var(--accent-dark); }
+.bank-picker-btn .bank-logo { width: 36px; height: 36px; border-radius: 10px; }
+.bank-picker-label { flex: 1; }
+.bank-picker-arrow { width: 18px; height: 18px; color: var(--text-2); transition: transform 0.2s; flex-shrink: 0; }
+.bank-picker.open .bank-picker-arrow { transform: rotate(180deg); }
+.bank-picker-list { display: none; max-height: 260px; overflow-y: auto; -webkit-overflow-scrolling: touch; background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: 4px; }
+.bank-picker.open .bank-picker-list { display: block; }
+.bank-picker-row { display: flex; align-items: center; gap: 12px; padding: 6px 8px; border-radius: 8px; cursor: pointer; color: var(--text); font-size: 0.95rem; }
+.bank-picker-row.selected { background: var(--surface-2); font-weight: 600; }
+.bank-picker-row .bank-logo { width: 36px; height: 36px; border-radius: 10px; }
+.credit-icon-wrap.has-logo { position: relative; overflow: visible; }
+.credit-icon-wrap.has-logo > svg { border-radius: 12px; }
+.type-badge { position: absolute; right: -6px; bottom: -6px; width: 20px; height: 20px; border-radius: 50%; background: var(--surface-2); border: 2px solid var(--surface); display: flex; align-items: center; justify-content: center; font-size: 11px; line-height: 1; }
 </style>
 </head>
 <body>
@@ -457,11 +463,27 @@ if (auth) auth.style.display = 'flex';
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
 </button>
 <div class="overlay" id="formOverlay" onclick="if(event.target===this)closeForm()">
-<div class="sheet">
+<div class="sheet" id="creditSheet">
 <div class="sheet-handle"></div>
 <div class="sheet-title"><span id="formTitleText">Новый кредит</span><button class="sheet-close" onclick="closeForm()">✕</button></div>
 <div class="form-body">
-<div class="form-group"><label class="form-label">Название</label><input type="text" id="nameInput" placeholder="Например: Ипотека Сбербанк" autocomplete="off"></div>
+<div class="form-group"><label class="form-label">Название</label><input type="text" id="nameInput" placeholder="Например: Ипотека Сбербанк" autocomplete="off" oninput="autoDetectBank(this.value)"></div>
+<div class="form-group"><label class="form-label">Банк <span class="form-optional-tag">(необязательно)</span></label>
+<select id="bankSelect">
+<option value="">Без банка (по умолчанию)</option>
+<option value="sber">Сбербанк</option>
+<option value="tbank">Т-Банк</option>
+<option value="vtb">ВТБ</option>
+<option value="alfabank">Альфа-Банк</option>
+<option value="rshb">Россельхозбанк</option>
+<option value="gazprom">Газпромбанк</option>
+<option value="ozon">Ozon Банк</option>
+<option value="sovcom">Совкомбанк</option>
+<option value="raiff">Райффайзенбанк</option>
+<option value="mts">МТС Банк</option>
+<option value="pochta">Почта Банк</option>
+</select>
+</div>
 <div class="form-group"><label class="form-label">Тип</label>
 <div class="cat-grid">
 <div class="cat-item" data-cat="mortgage" onclick="selectCat('mortgage')"><span>🏠</span><span class="cat-label">Ипотека</span></div>
@@ -492,11 +514,27 @@ if (auth) auth.style.display = 'flex';
 </div>
 </div>
 <div class="overlay" id="cardFormOverlay" onclick="if(event.target===this)closeCardForm()">
-<div class="sheet">
+<div class="sheet" id="cardSheet">
 <div class="sheet-handle"></div>
 <div class="sheet-title"><span id="cardFormTitle">Кредитная карта</span><button class="sheet-close" onclick="closeCardForm()">✕</button></div>
 <div class="form-body">
-<div class="form-group"><label class="form-label">Название</label><input type="text" id="cardNameInput" placeholder="Например: Тинькофф Платинум" autocomplete="off"></div>
+<div class="form-group"><label class="form-label">Название</label><input type="text" id="cardNameInput" placeholder="Например: Тинькофф Платинум" autocomplete="off" oninput="autoDetectCardBank(this.value)"></div>
+<div class="form-group"><label class="form-label">Банк <span class="form-optional-tag">(необязательно)</span></label>
+<select id="cardBankSelect">
+<option value="">Без банка (по умолчанию)</option>
+<option value="sber">Сбербанк</option>
+<option value="tbank">Т-Банк</option>
+<option value="vtb">ВТБ</option>
+<option value="alfabank">Альфа-Банк</option>
+<option value="rshb">Россельхозбанк</option>
+<option value="gazprom">Газпромбанк</option>
+<option value="ozon">Ozon Банк</option>
+<option value="sovcom">Совкомбанк</option>
+<option value="raiff">Райффайзенбанк</option>
+<option value="mts">МТС Банк</option>
+<option value="pochta">Почта Банк</option>
+</select>
+</div>
 <div class="form-group"><label class="form-label">Сумма <span class="form-optional-tag">(необязательно)</span></label><input type="number" id="cardAmountInput" placeholder="Минимальный платёж, ₽" inputmode="decimal"></div>
 <div class="form-group"><label class="form-label">Количество платежей <span class="form-optional-tag">(необязательно)</span></label><input type="number" id="cardPaymentsInput" placeholder="Например: 10" min="1" max="99" inputmode="numeric" oninput="updateCardPaymentDots()"><span class="form-hint">Платежи которые надо провести за месяц</span></div>
 <div class="form-group" id="cardDotsPreview" style="display:none"><label class="form-label">Предпросмотр прогресса</label><div class="payment-dots-wrap" id="cardDotsWrap"><span class="payment-dot-empty">Укажите количество платежей</span></div></div>

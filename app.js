@@ -33,6 +33,42 @@ const MONTH_K = 'crt_month_v4', THEME_K = 'crt_theme_v4', AMT_K = 'crt_amounts_v
 const PIN_K = 'crt_pin_v5', PIN_LEN_K = 'crt_pin_len_v4', PIN_SALT = 'mycredits_salt_2025';
 const COLLAPSE_K = 'crt_collapse_v1', HAPTIC_K = 'crt_haptic_v1', NOTIF_K = 'crt_notif_v1', NOTIF_DAYS_K = 'crt_notif_days_v1', OVERDUE_K = 'crt_overdue_v1', BIO_K = 'crt_biometric_v1';
 const CATS = { mortgage: { emoji: '🏠', label: 'Ипотека' }, auto: { emoji: '🚗', label: 'Автокредит' }, consumer: { emoji: '💰', label: 'Потребительский' }, card: { emoji: '💳', label: 'Карта' }, other: { emoji: '📄', label: 'Прочее' } };
+
+// ========== ВСТРОЕННЫЕ SVG-ЛОГОТИПЫ БАНКОВ (НЕ ТРЕБУЮТ СЕТИ) ==========
+const BANK_SVGS = {
+  sber: `<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="8" fill="#21A038"/><path d="M8.5 16.8l4.9 4.9L23.5 10.8" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  tbank: `<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="8" fill="#FFDD2D"/><path d="M7.5 8.5h17v4.6h-6.2v9.4L16 25.5l-2.3-3V13.1H7.5z" fill="#000"/></svg>`,
+  vtb: `<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="8" fill="#0A2896"/><text x="16" y="20.1" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="11.5" fill="#fff">ВТБ</text></svg>`,
+  alfabank: `<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="8" fill="#EF3124"/><path fill-rule="evenodd" d="M16 5L26 27h-4.4l-1.8-4.2h-7.6L10.4 27H6L16 5zm0 7.6L13.4 19h5.2L16 12.6z" fill="#fff"/></svg>`,
+  rshb: `<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="8" fill="#0B8A3C"/><path d="M16 28V11" stroke="#FFDD2D" stroke-width="1.8" stroke-linecap="round"/><ellipse cx="16" cy="7.5" rx="1.7" ry="3.3" fill="#FFDD2D"/><ellipse cx="12.4" cy="12.5" rx="1.6" ry="3.2" fill="#FFDD2D" transform="rotate(-38 12.4 12.5)"/><ellipse cx="19.6" cy="12.5" rx="1.6" ry="3.2" fill="#FFDD2D" transform="rotate(38 19.6 12.5)"/><ellipse cx="12.4" cy="17.5" rx="1.6" ry="3.2" fill="#FFDD2D" transform="rotate(-38 12.4 17.5)"/><ellipse cx="19.6" cy="17.5" rx="1.6" ry="3.2" fill="#FFDD2D" transform="rotate(38 19.6 17.5)"/><ellipse cx="12.4" cy="22.5" rx="1.6" ry="3.2" fill="#FFDD2D" transform="rotate(-38 12.4 22.5)"/><ellipse cx="19.6" cy="22.5" rx="1.6" ry="3.2" fill="#FFDD2D" transform="rotate(38 19.6 22.5)"/></svg>`,
+  gazprom: `<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="8" fill="#0079C1"/><path fill-rule="evenodd" d="M16 5.5l10.5 10.5L16 26.5 5.5 16 16 5.5zm0 5.2L10.7 16 16 21.3 21.3 16 16 10.7z" fill="#fff"/></svg>`,
+  ozon: `<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="8" fill="#005BFF"/><text x="16" y="19.4" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="9.5" fill="#fff">ozon</text></svg>`,
+  sovcom: `<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="8" fill="#E31E24"/><path d="M22.5 11.3A8 8 0 1 0 22.5 20.7" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round"/></svg>`,
+  raiff: `<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="8" fill="#FFE600"/><path d="M16 5L27 16 16 27 5 16z" fill="#000"/><path d="M16 11l5 5-5 5-5-5z" fill="#FFE600"/></svg>`,
+  mts: `<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="8" fill="#E30611"/><text x="16" y="20.0" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="11" fill="#fff">МТС</text></svg>`,
+  pochta: `<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="8" fill="#00529B"/><rect x="6.5" y="9.5" width="19" height="13" rx="2" fill="#fff"/><path d="M7.5 11l8.5 6.5L24.5 11" fill="none" stroke="#00529B" stroke-width="1.8" stroke-linejoin="round"/></svg>`
+};
+
+// Единый логотип банка: одинаково в списке кредитов и в выборе банка
+function bankLogoHtml(key) {
+  if (key && BANK_SVGS[key]) return '<span class="bank-logo">' + BANK_SVGS[key] + '</span>';
+  return '<span class="bank-logo bank-logo-none">💳</span>';
+}
+
+const BANKS = {
+  sber: { label: 'Сбербанк' },
+  tbank: { label: 'Т-Банк' },
+  vtb: { label: 'ВТБ' },
+  alfabank: { label: 'Альфа-Банк' },
+  rshb: { label: 'Россельхозбанк' },
+  gazprom: { label: 'Газпромбанк' },
+  ozon: { label: 'Ozon Банк' },
+  sovcom: { label: 'Совкомбанк' },
+  raiff: { label: 'Райффайзенбанк' },
+  mts: { label: 'МТС Банк' },
+  pochta: { label: 'Почта Банк' }
+};
+
 let credits = [], cards = [];
 let editMode = false, editId = null;
 let selectedCreditId = null, selectedCat = 'mortgage', dateMode = 'cal';
@@ -49,6 +85,38 @@ let splashTimerDone = false, creditsUnsubscribe = null;
 let monthResetDone = false, settingsSnapshot = null, _bioAutoTried = false;
 let pendingAction = null;
 const ls = { get: k => { try { return localStorage.getItem(k); } catch (e) { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }, rm: k => { try { localStorage.removeItem(k); } catch (e) { } } };
+
+// ========== АВТООПРЕДЕЛЕНИЕ БАНКА По НАЗВАНИЮ КРЕДИТА / КАРТЫ ==========
+function detectBankKey(bankField, nameField) {
+  if (bankField && BANK_SVGS[bankField]) return bankField;
+  const text = (nameField || '').toLowerCase();
+  if (text.includes('сбер')) return 'sber';
+  if (text.includes('тиньк') || text.includes('т-банк') || text.includes('tinkoff') || text.includes('t-bank')) return 'tbank';
+  if (text.includes('втб') || text.includes('vtb')) return 'vtb';
+  if (text.includes('альфа') || text.includes('alfa')) return 'alfabank';
+  if (text.includes('россельхоз') || text.includes('ршб') || text.includes('rshb')) return 'rshb';
+  if (text.includes('газпром') || text.includes('гпб')) return 'gazprom';
+  if (text.includes('озон') || text.includes('ozon')) return 'ozon';
+  if (text.includes('совком') || text.includes('халва')) return 'sovcom';
+  if (text.includes('райфф')) return 'raiff';
+  if (text.includes('мтс')) return 'mts';
+  if (text.includes('почта')) return 'pochta';
+  return null;
+}
+
+function autoDetectBank(val) {
+  const select = document.getElementById('bankSelect');
+  if (!select) return;
+  const key = detectBankKey(null, val);
+  if (key) select.value = key;
+}
+
+function autoDetectCardBank(val) {
+  const select = document.getElementById('cardBankSelect');
+  if (!select) return;
+  const key = detectBankKey(null, val);
+  if (key) select.value = key;
+}
 
 // ========== ВИБРАЦИЯ ==========
 let _userTapped = false, _vibeWarned = false;
@@ -86,7 +154,7 @@ function testVibro() {
   if (!hasRealTap()) { showToast('⚠️ Chrome не видит касаний. Откройте сайт в обычном Chrome и нажмите проверку там'); return; }
   const ok = vibrateNow(1000);
   if (!ok) { showToast('⚠️ Браузер отклонил вибрацию'); return; }
-  showToast('📳 Вибрация работает. Если телефон молчит — проверьте в Android: звук/вибрация, «Не беспокоить», энергосбережение');
+  showToast('📳 Вибрация работает');
 }
 
 // ========== ТАЙМАУТЫ / АНТИ-ОФЛАЙН ==========
@@ -128,7 +196,6 @@ function getOverdueDays(c) {
   return today > d ? today - d : 0;
 }
 
-// ========== УДАЛЕНИЕ РАЗДЕЛА ИСТОРИИ ИЗ ИНТЕРФЕЙСА ==========
 function removeHistoryUI() {
   const ho = document.getElementById('historyOverlay'); if (ho) ho.remove();
   document.querySelectorAll('[onclick]').forEach(el => {
@@ -179,12 +246,12 @@ async function checkMonthReset() {
   ls.set(MONTH_K, `${new Date().getMonth()}-${new Date().getFullYear()}`);
 }
 
-// ========== УВЕДОМЛЕНИЯ (при каждом входе + периодически) ==========
+// ========== УВЕДОМЛЕНИЯ ==========
 async function requestNotificationPermission() {
   if (!('Notification' in window)) { showToast('Уведомления не поддерживаются в этом браузере'); return false; }
   if (Notification.permission === 'granted') return true;
   if (Notification.permission === 'denied') { showToast('Уведомления заблокированы в настройках браузера'); return false; }
-  try { return (await Notification.requestPermission()) === 'granted'; } catch (e) { return false; }
+  try { return (await Notification.permission) === 'granted'; } catch (e) { return false; }
 }
 async function showAppNotification(title, body, tag) {
   if (!('Notification' in window) || Notification.permission !== 'granted') return false;
@@ -233,30 +300,8 @@ async function checkUpcomingNotifications(force, minInterval) {
 }
 setInterval(() => checkUpcomingNotifications(false, 3 * 3600000), 900000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) checkUpcomingNotifications(false, 120000); });
-async function testNotification() {
-  if (!('Notification' in window)) { showToast('Уведомления не поддерживаются'); return; }
-  if (Notification.permission !== 'granted') { const ok = await requestNotificationPermission(); if (!ok) return; }
-  const ok = await showAppNotification('🔔 Тест уведомления', 'Уведомления работают!', 'test');
-  showToast(ok ? 'Уведомление отправлено' : 'Не удалось показать уведомление');
-  haptic(10);
-}
-function setNotifDays(n) { notifDays = n; ls.set(NOTIF_DAYS_K, n); updateSettingsUI(); updateAppBadge(); haptic(10); }
-function toggleOverdueFromSettings() { overdueEnabled = !overdueEnabled; ls.set(OVERDUE_K, overdueEnabled); updateSettingsUI(); haptic(10); }
-async function toggleNotifFromSettings() {
-  if (!notifEnabled) {
-    const ok = await requestNotificationPermission();
-    notifEnabled = ok;
-    if (ok) {
-      const shown = await checkUpcomingNotifications(true);
-      const finalShown = shown || (await showAppNotification('🔔 Уведомления включены', 'Напомню о платежах заранее', 'notif-enabled'));
-      showToast(finalShown ? 'Уведомления включены' : 'Включено, но показать уведомление не удалось');
-    } else showToast('Не удалось включить уведомления');
-  } else { notifEnabled = false; showToast('Уведомления выключены'); }
-  ls.set(NOTIF_K, notifEnabled);
-  updateSettingsUI(); haptic(10);
-}
 
-// ========== ЦИФРА НА ЯРЛЫКЕ (кол-во предстоящих платежей) ==========
+// ========== ЦИФРА НА ЯРЛЫКЕ ==========
 function updateAppBadge() {
   if (!navigator.setAppBadge && !navigator.clearAppBadge) return;
   const today = new Date().getDate();
@@ -299,6 +344,7 @@ function render() {
   if (!amountsVisible) setTimeout(startSpoilers, 30);
   applyCollapseUI(); attachSwipeHandlers();
 }
+
 function buildCreditItem(c, cm, cy) {
   const partial = c.partial || 0; const remain = Math.max(0, c.amount - partial);
   const percent = c.amount > 0 ? (partial / c.amount) * 100 : 0;
@@ -307,7 +353,16 @@ function buildCreditItem(c, cm, cy) {
   else termHtml = `<span class="credit-term-tag infinite">Бессрочный</span>`;
   const od = getOverdueDays(c);
   if (od > 0) termHtml += `<span class="credit-term-tag ending">Просрочено ${od} дн.</span>`;
+  
   const cat = CATS[c.category] || CATS.other;
+  
+  // ПРИОРИТЕТ 1: SVG-логотип банка (по явному выбору или автоопределению по имени)
+  const bankKey = detectBankKey(c.bank, c.name);
+  let iconHtml = cat.emoji;
+  if (bankKey && BANK_SVGS[bankKey]) {
+    iconHtml = BANK_SVGS[bankKey];
+  }
+
   const wrap = document.createElement('div'); wrap.style.background = 'var(--surface)';
   const item = document.createElement('div');
   item.className = 'credit-item swipeable' + (c.completed ? ' completed' : c.paid ? ' paid' : '');
@@ -318,7 +373,7 @@ function buildCreditItem(c, cm, cy) {
 <div class="swipe-hint hint-left">Редактировать</div>
 <div class="swipe-hint hint-right">Удалить</div>
 <div class="swipe-content">
-<div class="credit-icon-wrap">${cat.emoji}</div>
+<div class="credit-icon-wrap${bankKey ? ' has-logo' : ''}">${iconHtml}${bankKey ? '<span class="type-badge">' + cat.emoji + '</span>' : ''}</div>
 <div class="credit-main"><div class="credit-name">${esc(c.name)}</div>
 <div class="credit-meta"><span class="credit-date-tag">${formatPaymentDate(c.day)}</span>${termHtml}</div></div>
 <div class="credit-right"><span class="credit-amount">${displayAmount} ₽</span>
@@ -339,6 +394,7 @@ ${c.paid ? '<span class="credit-paid-badge">Оплачено</span>' : (partial 
   wrap.appendChild(item);
   return wrap;
 }
+
 function updateSummary(active) {
   const total = active.reduce((s, c) => s + c.amount, 0);
   const paidTotalSum = active.reduce((s, c) => s + (c.paid ? c.amount : (c.partial || 0)), 0);
@@ -435,6 +491,11 @@ async function savePartial() {
 function openEditCredit(c) {
   editMode = true; editId = c.id;
   document.getElementById('nameInput').value = c.name;
+  
+  // При открытии редактирования подставляем банк из объекта или автоопределяем
+  const detectedBank = detectBankKey(c.bank, c.name);
+  document.getElementById('bankSelect').value = detectedBank || '';
+  
   document.getElementById('amountInput').value = c.amount;
   document.getElementById('dayInput').value = c.day;
   document.getElementById('resetDayInput').value = c.resetDay || '';
@@ -443,6 +504,8 @@ function openEditCredit(c) {
   if (c.endDate) { setDateMode('cal'); document.getElementById('endDateCal').value = c.endDate; }
   document.getElementById('formTitleText').innerText = 'Редактировать';
   document.getElementById('formSaveBtn').innerText = 'Сохранить';
+  const sheet = document.getElementById('creditSheet');
+  if (sheet) sheet.scrollTop = 0;
   document.getElementById('formOverlay').classList.add('active'); updateFab(true);
 }
 function openEdit() { const c = credits.find(x => x.id === selectedCreditId); if (!c) return; closeAction(); openEditCredit(c); }
@@ -451,11 +514,23 @@ function closeDelete() { document.getElementById('deleteOverlay').classList.remo
 async function doDelete() { if (selectedCreditId) { await deleteCredit(selectedCreditId); showToast('Удалено'); haptic(15); } closeDelete(); selectedCreditId = null; }
 
 // ========== ФОРМА ==========
-function toggleForm() { const ov = document.getElementById('formOverlay'); if (!ov.classList.contains('active')) { ov.classList.add('active'); updateFab(true); } else closeForm(); }
-function closeForm() { document.getElementById('formOverlay').classList.remove('active'); updateFab(false); resetForm(); _isSaving = false; }
+function toggleForm() {
+  const ov = document.getElementById('formOverlay');
+  if (!ov.classList.contains('active')) {
+    const sheet = document.getElementById('creditSheet');
+    if (sheet) sheet.scrollTop = 0;
+    ov.classList.add('active'); updateFab(true);
+  } else closeForm();
+}
+function closeForm() {
+  const sheet = document.getElementById('creditSheet');
+  if (sheet) sheet.scrollTop = 0;
+  document.getElementById('formOverlay').classList.remove('active');
+  updateFab(false); resetForm(); _isSaving = false;
+}
 function resetForm() {
   editMode = false; editId = null;
-  document.getElementById('nameInput').value = ''; document.getElementById('amountInput').value = ''; document.getElementById('dayInput').value = ''; document.getElementById('resetDayInput').value = ''; document.getElementById('noteInput').value = ''; document.getElementById('endDateCal').value = '';
+  document.getElementById('nameInput').value = ''; document.getElementById('bankSelect').value = ''; document.getElementById('amountInput').value = ''; document.getElementById('dayInput').value = ''; document.getElementById('resetDayInput').value = ''; document.getElementById('noteInput').value = ''; document.getElementById('endDateCal').value = '';
   document.getElementById('formTitleText').innerText = 'Новый кредит'; document.getElementById('formSaveBtn').innerText = 'Добавить'; document.getElementById('formSaveBtn').disabled = false;
   selectCat('mortgage'); setDateMode('cal');
 }
@@ -463,6 +538,7 @@ async function handleSave() {
   if (_isSaving) return;
   if (!db) { showToast('База данных недоступна'); return; }
   const name = document.getElementById('nameInput').value.trim();
+  const bank = document.getElementById('bankSelect').value || detectBankKey(null, name) || null;
   const amount = parseFloat(document.getElementById('amountInput').value);
   const day = parseInt(document.getElementById('dayInput').value);
   const note = document.getElementById('noteInput').value.trim();
@@ -474,11 +550,11 @@ async function handleSave() {
   _isSaving = true; const saveBtn = document.getElementById('formSaveBtn'); saveBtn.disabled = true; saveBtn.textContent = 'Сохранение...';
   try {
     const currentMonthKey = getPeriodKeyForToday(resetDay || 1);
-    const creditData = { name, amount, day, category: saveCat, endDate, resetDay: resetDay || null, note: note || null };
+    const creditData = { name, bank, amount, day, category: saveCat, endDate, resetDay: resetDay || null, note: note || null };
     if (isEdit && saveId) { creditData.userId = authUser.uid; await withTimeout(db.collection('credits').doc(saveId).update(creditData), 10000); showToast('Кредит обновлён'); }
     else { creditData.paid = false; creditData.completed = false; creditData.partial = 0; creditData.lastResetMonth = currentMonthKey; creditData.createdAt = new Date().toISOString(); creditData.userId = authUser.uid; await withTimeout(db.collection('credits').add(creditData), 10000); showToast('Кредит добавлен'); }
     haptic(20); closeForm(); resetForm();
-  } catch (e) { console.error(e); showToast(e.code === 'timeout' ? 'Сервер не отвечает. Попробуйте ещё раз' : 'Ошибка сохранения'); }
+  } catch (e) { console.error(e); showToast(e.code === 'timeout' ? 'Сервер не отвечает' : 'Ошибка сохранения'); }
   finally { _isSaving = false; saveBtn.disabled = false; saveBtn.textContent = isEdit ? 'Сохранить' : 'Добавить'; }
 }
 function selectCat(cat) { selectedCat = cat; document.querySelectorAll('.cat-item').forEach(el => el.classList.toggle('selected', el.dataset.cat === cat)); }
@@ -504,16 +580,23 @@ function updateCardPaymentDots() {
 }
 function openCardForm() {
   closeFabMenu(); cardEditMode = false; cardEditId = null;
-  document.getElementById('cardNameInput').value = ''; document.getElementById('cardAmountInput').value = ''; document.getElementById('cardPaymentsInput').value = ''; document.getElementById('cardDayInput').value = ''; document.getElementById('cardResetDayInput').value = '';
+  document.getElementById('cardNameInput').value = ''; document.getElementById('cardBankSelect').value = ''; document.getElementById('cardAmountInput').value = ''; document.getElementById('cardPaymentsInput').value = ''; document.getElementById('cardDayInput').value = ''; document.getElementById('cardResetDayInput').value = '';
   document.getElementById('cardDotsPreview').style.display = 'none';
   document.getElementById('cardFormTitle').textContent = 'Кредитная карта'; document.getElementById('cardSaveBtn').textContent = 'Добавить карту';
+  const sheet = document.getElementById('cardSheet');
+  if (sheet) sheet.scrollTop = 0;
   document.getElementById('cardFormOverlay').classList.add('active');
 }
-function closeCardForm() { document.getElementById('cardFormOverlay').classList.remove('active'); _isCardSaving = false; }
+function closeCardForm() {
+  const sheet = document.getElementById('cardSheet');
+  if (sheet) sheet.scrollTop = 0;
+  document.getElementById('cardFormOverlay').classList.remove('active'); _isCardSaving = false;
+}
 async function handleCardSave() {
   if (_isCardSaving) return;
   if (!db || !authUser) { showToast('Нет подключения'); return; }
   const name = document.getElementById('cardNameInput').value.trim();
+  const bank = document.getElementById('cardBankSelect').value || detectBankKey(null, name) || null;
   if (!name) { showToast('Введите название карты'); return; }
   const amount = parseFloat(document.getElementById('cardAmountInput').value) || 0;
   const payments = parseInt(document.getElementById('cardPaymentsInput').value) || 0;
@@ -523,11 +606,11 @@ async function handleCardSave() {
   const wasEditMode = cardEditMode, wasEditId = cardEditId;
   try {
     const effectiveResetDay = resetDay || day || 1; const currentMonthKey = getPeriodKeyForToday(effectiveResetDay);
-    const cardData = { name, amount, payments, day, resetDay: resetDay || null, userId: authUser.uid, type: 'creditcard' };
+    const cardData = { name, bank, amount, payments, day, resetDay: resetDay || null, userId: authUser.uid, type: 'creditcard' };
     if (wasEditMode && wasEditId) { await withTimeout(db.collection('credits').doc(wasEditId).update(cardData), 10000); showToast('Карта обновлена'); }
     else { cardData.donePayments = 0; cardData.lastResetMonth = currentMonthKey; cardData.createdAt = new Date().toISOString(); await withTimeout(db.collection('credits').add(cardData), 10000); showToast('Карта добавлена'); }
     haptic(20); closeCardForm();
-  } catch (e) { console.error(e); showToast(e.code === 'timeout' ? 'Сервер не отвечает' : 'Ошибка: ' + (e.message || 'неизвестная ошибка')); }
+  } catch (e) { console.error(e); showToast(e.code === 'timeout' ? 'Сервер не отвечает' : 'Ошибка'); }
   finally { _isCardSaving = false; btn.disabled = false; btn.textContent = wasEditMode ? 'Сохранить' : 'Добавить карту'; }
 }
 function openCardAction(id) {
@@ -567,15 +650,26 @@ async function resetCardPayments() {
 }
 function openEditCard(c) {
   cardEditMode = true; cardEditId = c.id;
-  document.getElementById('cardNameInput').value = c.name; document.getElementById('cardAmountInput').value = c.amount || ''; document.getElementById('cardPaymentsInput').value = c.payments || ''; document.getElementById('cardDayInput').value = c.day || ''; document.getElementById('cardResetDayInput').value = c.resetDay || '';
+  document.getElementById('cardNameInput').value = c.name;
+  
+  const detectedBank = detectBankKey(c.bank, c.name);
+  document.getElementById('cardBankSelect').value = detectedBank || '';
+  
+  document.getElementById('cardAmountInput').value = c.amount || '';
+  document.getElementById('cardPaymentsInput').value = c.payments || '';
+  document.getElementById('cardDayInput').value = c.day || '';
+  document.getElementById('cardResetDayInput').value = c.resetDay || '';
   document.getElementById('cardFormTitle').textContent = 'Редактировать карту'; document.getElementById('cardSaveBtn').textContent = 'Сохранить';
   updateCardPaymentDots();
+  const sheet = document.getElementById('cardSheet');
+  if (sheet) sheet.scrollTop = 0;
   document.getElementById('cardFormOverlay').classList.add('active');
 }
 function openCardEdit() { const c = cards.find(x => x.id === selectedCardId); if (!c) return; closeCardAction(); openEditCard(c); }
 function showCardDeleteConfirm() { closeCardAction(); setTimeout(() => document.getElementById('cardDeleteOverlay').classList.add('active'), 100); }
 function closeCardDelete() { document.getElementById('cardDeleteOverlay').classList.remove('active'); }
 async function doCardDelete() { if (selectedCardId) { await db.collection('credits').doc(selectedCardId).delete().catch(() => { }); showToast('Карта удалена'); haptic(15); } closeCardDelete(); selectedCardId = null; }
+
 function renderCards() {
   const section = document.getElementById('cardsSection'); const list = document.getElementById('cardList');
   let shown = cards;
@@ -596,11 +690,19 @@ function renderCards() {
     const dueTag = (c.day > 0 ? `<span class="credit-date-tag">${getCardPaymentDate(c)}</span>` : '') + (od > 0 && !isPaid ? `<span class="credit-term-tag ending">Просрочено ${od} дн.</span>` : '');
     const amtHtml = c.amount > 0 ? `<span class="credit-amount">${fmt(c.amount)} ₽</span>` : '';
     const badgeHtml = isPaid ? '<span class="credit-paid-badge">Оплачено</span>' : '';
-    const controlsHtml = hasMultiPayments ? `<div class="card-pay-row" onclick="event.stopPropagation()"><button class="card-ctrl-btn minus" style="visibility:${done > 0 ? 'visible' : 'hidden'}" onclick="cardPaymentStep('${c.id}', ${done}, ${total}, -1)">−</button><span class="card-ctrl-count">${done}/${total}</span><button class="card-ctrl-btn plus" style="visibility:${done < total ? 'visible' : 'hidden'}" onclick="cardPaymentStep('${c.id}', ${done}, ${total}, 1)">+</button></div>` : '';
+    const controlsHtml = hasMultiPayments ? `<div class="card-pay-row" onclick="event.stopPropagation()"><button class="card-ctrl-btn minus" style="visibility:${done > 0 ? 'visible' : 'hidden'}" onclick="cardPaymentStep('${c.id}', ${done}, ${total}, -1)">−</button><span class="card-ctrl-count">${done}/${total}</span><button class="card-ctrl-btn plus" style="visibility:${done < total ? 'visibility' : 'hidden'}" onclick="cardPaymentStep('${c.id}', ${done}, ${total}, 1)">+</button></div>` : '';
+    
+    const bankKey = detectBankKey(c.bank, c.name);
+    let cardIconHtml = '💳';
+    if (bankKey && BANK_SVGS[bankKey]) {
+      cardIconHtml = BANK_SVGS[bankKey];
+    }
+
     item.innerHTML = `
 <div class="swipe-hint hint-left">Редактировать</div>
 <div class="swipe-hint hint-right">Удалить</div>
 <div class="swipe-content">
+<div class="credit-icon-wrap${bankKey ? ' has-logo' : ''}">${cardIconHtml}</div>
 <div class="credit-main card-main-row"><div class="card-name-col"><div class="credit-name">${esc(c.name)}</div><div class="credit-meta">${dueTag}</div></div>${controlsHtml}</div>
 <div class="credit-right">${amtHtml}${badgeHtml}</div>
 <div class="check-wrap ${isPaid ? 'checked' : ''}" data-id="${c.id}"><svg viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="2.5"><polyline points="2,7 6,11 12,3"/></svg></div>
@@ -613,6 +715,7 @@ function renderCards() {
   if (!amountsVisible) setTimeout(startSpoilers, 30);
   attachSwipeHandlers();
 }
+
 async function toggleCardFull(cardId, total, currentDone) {
   haptic(20);
   const effectiveTotal = total > 0 ? total : 1;
@@ -663,7 +766,7 @@ function toggleHapticFromSettings() {
   hapticEnabled = !hapticEnabled; ls.set(HAPTIC_K, hapticEnabled); _userTapped = true;
   if (hapticEnabled) {
     const ok = vibrateNow([80, 40, 80]);
-    showToast(ok ? 'Проверьте вибрацию' : 'Вибрация включена. Проверьте её в обычном Chrome (не в консоли)');
+    showToast(ok ? 'Проверьте вибрацию' : 'Вибрация включена');
   }
   updateSettingsUI();
 }
@@ -979,7 +1082,7 @@ function stopSpoilers() { if (spoilerRAF) { cancelAnimationFrame(spoilerRAF); sp
 function toggleCompleted() { const list = document.getElementById('completedList'); const arrow = document.getElementById('completedArrow'); const open = !list.classList.contains('open'); list.classList.toggle('open', open); arrow.classList.toggle('open', open); if (open) { const cm = new Date().getMonth(), cy = new Date().getFullYear(); list.innerHTML = ''; const frag = document.createDocumentFragment(); credits.filter(c => c.completed).forEach(c => frag.appendChild(buildCreditItem(c, cm, cy))); list.appendChild(frag); } }
 function closeAllPaid() { document.getElementById('allPaidOverlay').classList.remove('active'); }
 
-// ========== БЫСТРЫЕ ДЕЙСТВИЯ (ярлыки) ==========
+// ========== БЫСТРЫЕ ДЕЙСТВИЯ ==========
 function runPendingAction() {
   if (!pendingAction) return;
   const a = pendingAction; pendingAction = null;
@@ -1037,9 +1140,6 @@ document.addEventListener('DOMContentLoaded', () => {
 window.onerror = function (msg) { console.log('Ошибка: ' + msg); return false; };
 document.getElementById('lockStatusRow').onclick = e => { toggleLockPanel(); e.stopPropagation(); };
 
-// ========== ВЕРСИЯ (из version.js) + SERVICE WORKER + ВЕРСИЯ В НАСТРОЙКАХ ==========
-/* Версия показывается ВНЕ сетки настроек (прикреплена к низу экрана),
-   поэтому она НИКОГДА не может сдвинуть или сломать карточки настроек. */
 function applyAppVersion() {
   const v = window.APP_VERSION || '';
   const splash = document.getElementById('appVersion');
@@ -1069,10 +1169,43 @@ if ('serviceWorker' in navigator) {
       });
   });
 }
-const installBtn = document.getElementById('installBtn');
-let deferredPrompt = null;
-if (window.matchMedia('(display-mode: standalone)').matches) installBtn.style.display = 'none';
-else {
-  window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; installBtn.style.display = 'inline-block'; installBtn.onclick = () => { deferredPrompt.prompt(); deferredPrompt.userChoice.then(() => { deferredPrompt = null; }); }; });
-  if (/iPhone|iPad|iPod/.test(navigator.userAgent)) { installBtn.style.display = 'inline-block'; installBtn.onclick = () => { alert('Нажмите «Поделиться» → «На экран «Домой»»'); }; }
+
+
+// ========== ВЫБОР БАНКА С ЛОГОТИПАМИ (вместо обычного списка) ==========
+function initBankPicker(selectId) {
+  const sel = document.getElementById(selectId);
+  if (!sel || sel.dataset.pickerReady) return;
+  sel.dataset.pickerReady = '1';
+  sel.style.display = 'none';
+  const desc = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value');
+  const picker = document.createElement('div');
+  picker.className = 'bank-picker';
+  sel.parentNode.insertBefore(picker, sel.nextSibling);
+
+  function render() {
+    const cur = desc.get.call(sel) || '';
+    const label = BANKS[cur] ? BANKS[cur].label : 'Без банка (по умолчанию)';
+    const arrow = '<svg class="bank-picker-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
+    let rows = '<div class="bank-picker-row' + (cur ? '' : ' selected') + '" data-bank="">' + bankLogoHtml('') + '<span>Без банка (по умолчанию)</span></div>';
+    Object.keys(BANKS).forEach(function (k) {
+      rows += '<div class="bank-picker-row' + (cur === k ? ' selected' : '') + '" data-bank="' + k + '">' + bankLogoHtml(k) + '<span>' + BANKS[k].label + '</span></div>';
+    });
+    picker.innerHTML = '<button type="button" class="bank-picker-btn">' + bankLogoHtml(cur) + '<span class="bank-picker-label">' + label + '</span>' + arrow + '</button><div class="bank-picker-list">' + rows + '</div>';
+  }
+
+  // Когда код приложения меняет sel.value — перерисовываем выбор
+  Object.defineProperty(sel, 'value', {
+    configurable: true,
+    get: function () { return desc.get.call(this); },
+    set: function (v) { desc.set.call(this, v); render(); }
+  });
+
+  picker.addEventListener('click', function (e) {
+    const row = e.target.closest('.bank-picker-row');
+    if (row) { sel.value = row.dataset.bank || ''; picker.classList.remove('open'); return; }
+    if (e.target.closest('.bank-picker-btn')) picker.classList.toggle('open');
+  });
+  render();
 }
+function initBankPickers() { initBankPicker('bankSelect'); initBankPicker('cardBankSelect'); }
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initBankPickers); else initBankPickers();
