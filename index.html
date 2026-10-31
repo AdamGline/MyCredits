@@ -122,7 +122,7 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
 .credit-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .credit-date-tag { font-size: 0.72rem; color: var(--text-2); font-weight: 500; }
 .overdue-tag { background: rgba(230,57,70,0.12); color: var(--danger); }
-.credit-term-tag { font-size: 0.7rem; padding: 1px 6px; border-radius: 4px; font-weight: 500; }
+.credit-term-tag { white-space: nowrap; font-size: 0.7rem; padding: 1px 6px; border-radius: 4px; font-weight: 500; }
 .credit-term-tag.ending { background: rgba(230,57,70,0.1); color: var(--danger); }
 .credit-term-tag.soon { background: rgba(255,159,28,0.1); color: var(--warning); }
 .credit-term-tag.ok { background: var(--surface-2); color: var(--text-2); }
@@ -270,10 +270,10 @@ input:focus, select:focus { border-color: var(--accent-dark); }
 .payment-progress-text { font-size: 0.72rem; color: var(--text-2); font-weight: 500; margin-top: 4px; display: flex; justify-content: space-between; }
 .card-item-wrap { background: var(--surface); display: flex; flex-direction: column; }
 #cardList .credit-item { min-height: 68px; }
-.card-main-row { display: flex; flex-direction: row; align-items: center; gap: 8px; }
+.card-main-row { display: flex; flex-direction: column; align-items: stretch; gap: 6px; }
 .card-name-col { flex: 1; min-width: 0; }
 .card-name-col .credit-name { margin-bottom: 2px; }
-.card-pay-row { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.card-pay-row { display: flex; align-items: center; gap: 4px; flex-shrink: 0; align-self: flex-start; }
 .card-ctrl-btn { width: 32px; height: 32px; border-radius: 9px; border: 1.5px solid var(--border); background: var(--surface-2); color: var(--text); font-size: 1.15rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.12s; line-height: 1; flex-shrink: 0; }
 .card-ctrl-btn:active { transform: scale(0.88); background: var(--border); }
 .card-ctrl-btn.plus { background: var(--accent); border-color: var(--accent-dark); color: #1A1A1A; }
@@ -495,7 +495,6 @@ if (auth) auth.style.display = 'flex';
 <div class="form-group"><label class="form-label">Ежемесячный платёж и день оплаты</label>
 <div class="form-row"><input type="number" id="amountInput" placeholder="Сумма, ₽" inputmode="decimal" style="flex:2"><input type="number" id="dayInput" placeholder="День" min="1" max="31" inputmode="numeric" style="flex:1"></div>
 </div>
-<div class="form-group"><label class="form-label">День сброса <span class="form-optional-tag">(необязательно)</span></label><input type="number" id="resetDayInput" placeholder="По умолчанию — 1-е число" min="1" max="31" inputmode="numeric"><span class="form-hint">С какого числа считается новый расчётный период</span></div>
 <div class="form-group"><label class="form-label">Заметка <span class="form-optional-tag">(необязательно)</span></label><input type="text" id="noteInput" placeholder="Например: платёж в приложении банка"></div>
 <div class="form-group"><label class="form-label">Дата окончания</label>
 <div class="date-toggle"><button class="date-toggle-btn active" id="dtBtnCal" onclick="setDateMode('cal')">Календарь</button><button class="date-toggle-btn" id="dtBtnMan" onclick="setDateMode('man')">Вручную</button></div>
@@ -539,7 +538,7 @@ if (auth) auth.style.display = 'flex';
 <div class="form-group"><label class="form-label">Количество платежей <span class="form-optional-tag">(необязательно)</span></label><input type="number" id="cardPaymentsInput" placeholder="Например: 10" min="1" max="99" inputmode="numeric" oninput="updateCardPaymentDots()"><span class="form-hint">Платежи которые надо провести за месяц</span></div>
 <div class="form-group" id="cardDotsPreview" style="display:none"><label class="form-label">Предпросмотр прогресса</label><div class="payment-dots-wrap" id="cardDotsWrap"><span class="payment-dot-empty">Укажите количество платежей</span></div></div>
 <div class="form-group"><label class="form-label">Дата платежа <span class="form-optional-tag">(необязательно)</span></label><input type="number" id="cardDayInput" placeholder="День месяца (1–31)" min="1" max="31" inputmode="numeric"></div>
-<div class="form-group"><label class="form-label">День сброса <span class="form-optional-tag">(необязательно)</span></label><input type="number" id="cardResetDayInput" placeholder="По умолчанию — день платежа" min="1" max="31" inputmode="numeric"></div>
+<div class="form-group"><label class="form-label">День сброса <span class="form-optional-tag">(необязательно)</span></label><input type="number" id="cardResetDayInput" placeholder="По умолчанию — день после платежа" min="1" max="31" inputmode="numeric"></div>
 </div>
 <div class="form-actions"><button class="btn btn-primary" id="cardSaveBtn" onclick="handleCardSave()">Добавить карту</button></div>
 <div style="height:8px"></div>

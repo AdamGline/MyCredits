@@ -22,7 +22,7 @@ function _initFirebase() {
   auth.onAuthStateChanged(user => {
     clearTimeout(authResolveTimer);
     window.authUser = user || null; authResolved = true; splashTimerDone = true;
-    if (!user && creditsUnsubscribe) { creditsUnsubscribe(); creditsUnsubscribe = null; }
+    if (!user) { if (creditsUnsubscribe) { creditsUnsubscribe(); creditsUnsubscribe = null; } _loadedUid = null; }
     evaluateLaunch();
     if (user) { user.reload().catch(() => {}); db.collection('users').doc(user.uid).set({ email: user.email, displayName: user.displayName, emailVerified: user.emailVerified }, { merge: true }).catch(() => {}); }
   });
@@ -81,7 +81,7 @@ let pinSetBuf = '', pinSetStep = 0, pinSetFirst = '', pinSetLen = 4, pinSetVerif
 let pinLockBuf = '', pinLockLen = 4;
 let isLoginMode = true, authResolved = false;
 window.authUser = null;
-let splashTimerDone = false, creditsUnsubscribe = null;
+let splashTimerDone = false, creditsUnsubscribe = null, _loadedUid = null;
 let monthResetDone = false, settingsSnapshot = null, _bioAutoTried = false;
 let pendingAction = null;
 const ls = { get: k => { try { return localStorage.getItem(k); } catch (e) { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }, rm: k => { try { localStorage.removeItem(k); } catch (e) { } } };
@@ -171,29 +171,51 @@ window.addEventListener('offline', () => { if (db && !_netDisabled) { _netDisabl
 window.addEventListener('online', () => { if (db) { _netDisabled = false; try { db.enableNetwork().catch(() => { }); } catch (e) { } showToast('🟢 Снова в сети'); } });
 
 // ========== ВСПОМОГАТЕЛЬНЫЕ ==========
-function formatPaymentDate(d) { const m = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']; return `до ${d} ${m[new Date().getMonth()]}`; }
-function fmt(n) { return Math.round(n).toLocaleString('ru-RU'); }
+function formatDueLabel(due) { return due ? `до ${due.getDate()} ${MONTHS_GEN[due.getMonth()]}` : ''; }
+function fmt(n) { return Math.round(n || 0).toLocaleString('ru-RU'); }
 function esc(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
 function showToast(msg) { document.querySelectorAll('.toast').forEach(t => t.remove()); const d = document.createElement('div'); d.className = 'toast'; d.textContent = msg; document.body.appendChild(d); setTimeout(() => d.remove(), 2600); }
 function showGlobalLoader(show) { document.getElementById('globalLoader').style.display = show ? 'flex' : 'none'; }
-function getPeriodKeyForToday(resetDay) {
-  const n = new Date(); const today = n.getDate(); const month = n.getMonth(); const year = n.getFullYear();
-  const rd = resetDay || 1;
-  if (today >= rd) return `${month}-${year}`;
-  const pm = month === 0 ? 11 : month - 1; const py = month === 0 ? year - 1 : year;
-  return `${pm}-${py}`;
+// ========== ДАТЫ И РАСЧЁТНЫЕ ПЕРИОДЫ ==========
+const MONTHS_GEN = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+function daysInMonth(y, m) { return new Date(y, m + 1, 0).getDate(); }
+function clampedDate(y, m, d) { const b = new Date(y, m, 1); return new Date(b.getFullYear(), b.getMonth(), Math.min(d, daysInMonth(b.getFullYear(), b.getMonth()))); }
+function todayStart() { const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); }
+function diffDays(date) { return Math.round((date - todayStart()) / 86400000); }
+function isCardPaid(c) { const eff = (c.payments || 0) > 0 ? c.payments : 1; return (c.donePayments || 0) >= eff; }
+// Кредиты сбрасываются 1-го числа. Карты — на следующий день ПОСЛЕ даты платежа (или в указанный вручную день сброса).
+function getResetDayFor(c, isCard) {
+  if (!isCard) return 1;
+  if (c.resetDay) return c.resetDay;
+  const d = c.day || 0;
+  return (d > 0 && d < 28) ? d + 1 : 1;
 }
-function getCardPaymentDate(c) {
-  if (!c.day) return '';
-  const rd = c.resetDay || c.day || 1; const now = new Date();
-  const pm = new Date(now.getFullYear(), now.getMonth() + (now.getDate() >= rd ? 1 : 0), 1);
-  const m = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
-  return `до ${c.day} ${m[pm.getMonth()]}`;
+function getPeriodStart(rd) {
+  const t = todayStart(); const r = rd || 1;
+  let s = clampedDate(t.getFullYear(), t.getMonth(), r);
+  if (s > t) s = clampedDate(t.getFullYear(), t.getMonth() - 1, r);
+  return s;
 }
-function getOverdueDays(c) {
-  if (c.paid || c.completed) return 0;
-  const today = new Date().getDate(); const d = c.day || 1;
-  return today > d ? today - d : 0;
+function getPeriodKeyForToday(rd) { const s = getPeriodStart(rd); return `${s.getMonth()}-${s.getFullYear()}`; }
+function keyOrd(k) {
+  if (!k) return -1;
+  const p = String(k).split('-'); const m = parseInt(p[0]), y = parseInt(p[1]);
+  return (isNaN(m) || isNaN(y)) ? -1 : y * 12 + m;
+}
+function getDueDate(c, isCard) {
+  if (isCard && !c.day) return null;
+  const day = c.day || 1;
+  const s = getPeriodStart(getResetDayFor(c, isCard));
+  let due = clampedDate(s.getFullYear(), s.getMonth(), day);
+  if (due < s) due = clampedDate(s.getFullYear(), s.getMonth() + 1, day);
+  return due;
+}
+function getCardPaymentDate(c) { return c.day ? formatDueLabel(getDueDate(c, true)) : ''; }
+function getOverdueDays(c, isCard) {
+  if (isCard) { if (!c.day || isCardPaid(c)) return 0; }
+  else if (c.paid || c.completed) return 0;
+  const due = getDueDate(c, !!isCard); if (!due) return 0;
+  const d = -diffDays(due); return d > 0 ? d : 0;
 }
 
 function removeHistoryUI() {
@@ -209,6 +231,8 @@ function removeHistoryUI() {
 // ========== ЗАГРУЗКА ==========
 function loadCredits() {
   if (!authUser || !db) return;
+  if (creditsUnsubscribe && _loadedUid === authUser.uid) return;
+  _loadedUid = authUser.uid;
   showGlobalLoader(true);
   if (creditsUnsubscribe) { creditsUnsubscribe(); creditsUnsubscribe = null; }
   creditsUnsubscribe = db.collection('credits').where('userId', '==', authUser.uid)
@@ -223,27 +247,32 @@ function loadCredits() {
 }
 async function deleteCredit(id) { if (!db) return; await withTimeout(db.collection('credits').doc(id).delete(), 8000).catch(() => { }); }
 async function updateCreditField(id, data) { if (!db) return; await withTimeout(db.collection('credits').doc(id).update(data), 8000).catch(() => { }); }
+let _resetRunning = false;
 async function checkMonthReset() {
-  if (!authUser || !db) return;
-  let updatedCount = 0;
-  for (const c of credits) {
-    if (c.completed) continue;
-    const currentKey = getPeriodKeyForToday(c.resetDay || 1);
-    if (c.lastResetMonth === currentKey) continue;
-    const updates = { lastResetMonth: currentKey };
-    if (c.lastResetMonth) { updates.paid = false; updates.partial = 0; updatedCount++; }
-    await updateCreditField(c.id, updates);
-  }
-  for (const c of cards) {
-    const rd = c.resetDay || c.day || 1;
-    const currentKey = getPeriodKeyForToday(rd);
-    if (c.lastResetMonth === currentKey) continue;
-    const updates = { lastResetMonth: currentKey };
-    if (c.lastResetMonth) { updates.donePayments = 0; updatedCount++; }
-    await updateCreditField(c.id, updates);
-  }
-  if (updatedCount > 0) { const m = document.getElementById('resetMsg'); m.style.display = 'block'; setTimeout(() => m.style.display = 'none', 5000); }
-  ls.set(MONTH_K, `${new Date().getMonth()}-${new Date().getFullYear()}`);
+  if (!authUser || !db || _resetRunning) return;
+  _resetRunning = true;
+  try {
+    let updatedCount = 0;
+    for (const c of credits.slice()) {
+      if (c.completed) continue;
+      const currentKey = getPeriodKeyForToday(1);
+      const prev = keyOrd(c.lastResetMonth), cur = keyOrd(currentKey);
+      if (prev >= cur) continue;
+      const updates = { lastResetMonth: currentKey };
+      if (prev >= 0) { updates.paid = false; updates.partial = 0; updatedCount++; }
+      await updateCreditField(c.id, updates);
+    }
+    for (const c of cards.slice()) {
+      const currentKey = getPeriodKeyForToday(getResetDayFor(c, true));
+      const prev = keyOrd(c.lastResetMonth), cur = keyOrd(currentKey);
+      if (prev >= cur) continue;
+      const updates = { lastResetMonth: currentKey };
+      if (prev >= 0) { updates.donePayments = 0; updatedCount++; }
+      await updateCreditField(c.id, updates);
+    }
+    if (updatedCount > 0) { const m = document.getElementById('resetMsg'); m.style.display = 'block'; setTimeout(() => m.style.display = 'none', 5000); }
+    ls.set(MONTH_K, `${new Date().getMonth()}-${new Date().getFullYear()}`);
+  } finally { _resetRunning = false; }
 }
 
 // ========== УВЕДОМЛЕНИЯ ==========
@@ -251,7 +280,7 @@ async function requestNotificationPermission() {
   if (!('Notification' in window)) { showToast('Уведомления не поддерживаются в этом браузере'); return false; }
   if (Notification.permission === 'granted') return true;
   if (Notification.permission === 'denied') { showToast('Уведомления заблокированы в настройках браузера'); return false; }
-  try { return (await Notification.permission) === 'granted'; } catch (e) { return false; }
+  try { return (await Notification.requestPermission()) === 'granted'; } catch (e) { return false; }
 }
 async function showAppNotification(title, body, tag) {
   if (!('Notification' in window) || Notification.permission !== 'granted') return false;
@@ -270,15 +299,25 @@ function notifCooldownOk(key, minMs) {
   const last = parseInt(ls.get(key)) || 0;
   return (Date.now() - last) >= minMs;
 }
+function collectUpcoming() {
+  const list = [];
+  const add = (c, diff) => { if (diff >= 0 && diff <= notifDays) list.push({ name: c.name, amount: c.amount, when: diff === 0 ? 'сегодня' : `через ${diff} дн.` }); };
+  credits.forEach(c => { if (c.completed || c.paid) return; add(c, diffDays(getDueDate(c, false))); });
+  cards.forEach(c => { if (!c.day || isCardPaid(c)) return; add(c, diffDays(getDueDate(c, true))); });
+  return list;
+}
+function collectOverdue() {
+  const list = [];
+  credits.forEach(c => { const d = getOverdueDays(c, false); if (d > 0) list.push({ name: c.name, d: d }); });
+  cards.forEach(c => { const d = getOverdueDays(c, true); if (d > 0) list.push({ name: c.name, d: d }); });
+  return list;
+}
 async function checkUpcomingNotifications(force, minInterval) {
   if (!notifEnabled || !('Notification' in window) || Notification.permission !== 'granted') return false;
   const minMs = (typeof minInterval === 'number') ? minInterval : 120000;
-  const now = new Date(); const today = now.getDate();
   let shown = false;
   if (force || notifCooldownOk('crt_last_notif_ts', minMs)) {
-    const upcoming = [];
-    credits.forEach(c => { if (c.completed || c.paid) return; const diff = (c.day || 1) - today; if (diff >= 0 && diff <= notifDays) upcoming.push({ name: c.name, amount: c.amount, when: diff === 0 ? 'сегодня' : `через ${diff} дн.` }); });
-    cards.forEach(c => { const done = c.donePayments || 0; const eff = (c.payments || 0) > 0 ? c.payments : 1; if (done >= eff) return; const diff = (c.day || 1) - today; if (diff >= 0 && diff <= notifDays) upcoming.push({ name: c.name, amount: c.amount, when: diff === 0 ? 'сегодня' : `через ${diff} дн.` }); });
+    const upcoming = collectUpcoming();
     if (upcoming.length) {
       const total = upcoming.reduce((s, u) => s + (u.amount || 0), 0);
       const names = upcoming.slice(0, 3).map(u => `${u.name} (${u.when})`).join(', ');
@@ -288,9 +327,7 @@ async function checkUpcomingNotifications(force, minInterval) {
     }
   }
   if (overdueEnabled && (force || notifCooldownOk('crt_last_overdue_ts', minMs))) {
-    const od = [];
-    credits.forEach(c => { const d = getOverdueDays(c); if (d > 0) od.push({ name: c.name, d: d }); });
-    cards.forEach(c => { const done = c.donePayments || 0; const eff = (c.payments || 0) > 0 ? c.payments : 1; if (done < eff) { const d = getOverdueDays(c); if (d > 0) od.push({ name: c.name, d: d }); } });
+    const od = collectOverdue();
     if (od.length) {
       const ok2 = await showAppNotification('⚠️ Просрочка', od.slice(0, 3).map(x => `${x.name}: ${x.d} дн.`).join(', ') + (od.length > 3 ? ` и ещё ${od.length - 3}` : ''), 'overdue');
       if (ok2) { shown = true; ls.set('crt_last_overdue_ts', String(Date.now())); }
@@ -298,16 +335,26 @@ async function checkUpcomingNotifications(force, minInterval) {
   }
   return shown;
 }
+async function toggleNotifFromSettings() {
+  if (!notifEnabled) {
+    const ok = await requestNotificationPermission();
+    if (!ok) { updateSettingsUI(); return; }
+    notifEnabled = true; showToast('🔔 Напоминания включены');
+  } else notifEnabled = false;
+  ls.set(NOTIF_K, notifEnabled); updateSettingsUI(); haptic(10);
+  if (notifEnabled) checkUpcomingNotifications(false, 0);
+}
+function setNotifDays(n) { notifDays = n; ls.set(NOTIF_DAYS_K, n); updateSettingsUI(); updateAppBadge(); haptic(10); }
+function toggleOverdueFromSettings() { overdueEnabled = !overdueEnabled; ls.set(OVERDUE_K, overdueEnabled); updateSettingsUI(); haptic(10); }
 setInterval(() => checkUpcomingNotifications(false, 3 * 3600000), 900000);
-document.addEventListener('visibilitychange', () => { if (!document.hidden) checkUpcomingNotifications(false, 120000); });
+function refreshOnResume() { if (!authUser || !db || !creditsUnsubscribe) return; checkMonthReset(); render(); renderCards(); updateAppBadge(); }
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { refreshOnResume(); checkUpcomingNotifications(false, 120000); } });
+setInterval(() => { if (!document.hidden) checkMonthReset(); }, 300000);
 
 // ========== ЦИФРА НА ЯРЛЫКЕ ==========
 function updateAppBadge() {
   if (!navigator.setAppBadge && !navigator.clearAppBadge) return;
-  const today = new Date().getDate();
-  let n = 0;
-  credits.forEach(c => { if (c.completed || c.paid) return; if (((c.day || 1) - today) <= notifDays) n++; });
-  cards.forEach(c => { const done = c.donePayments || 0; const eff = (c.payments || 0) > 0 ? c.payments : 1; if (done >= eff) return; if (((c.day || 1) - today) <= notifDays) n++; });
+  const n = collectUpcoming().length + collectOverdue().length;
   try {
     if (n > 0) { if (navigator.setAppBadge) navigator.setAppBadge(n); }
     else { if (navigator.clearAppBadge) navigator.clearAppBadge(); }
@@ -317,12 +364,13 @@ function updateAppBadge() {
 // ========== ПОИСК И СОРТИРОВКА ==========
 function onSearch() { searchQuery = (document.getElementById('searchInput').value || '').toLowerCase().trim(); render(); renderCards(); }
 function onSort() { sortBy = document.getElementById('sortSelect').value; render(); renderCards(); }
-function sortList(arr) {
+function sortList(arr, isPaidFn) {
   const a = arr.slice();
-  const paidLast = (x, y) => (x.paid ? 1 : 0) - (y.paid ? 1 : 0);
-  if (sortBy === 'day') a.sort((x, y) => paidLast(x, y) || x.day - y.day);
-  else if (sortBy === 'amount') a.sort((x, y) => paidLast(x, y) || y.amount - x.amount);
-  else a.sort((x, y) => paidLast(x, y) || (x.name || '').localeCompare(y.name, 'ru'));
+  const pf = isPaidFn || (x => !!x.paid);
+  const paidLast = (x, y) => (pf(x) ? 1 : 0) - (pf(y) ? 1 : 0);
+  if (sortBy === 'day') a.sort((x, y) => paidLast(x, y) || (x.day || 0) - (y.day || 0));
+  else if (sortBy === 'amount') a.sort((x, y) => paidLast(x, y) || (y.amount || 0) - (x.amount || 0));
+  else a.sort((x, y) => paidLast(x, y) || (x.name || '').localeCompare(y.name || '', 'ru'));
   return a;
 }
 
@@ -340,7 +388,7 @@ function render() {
   if (completed.length) { compSec.style.display = ''; document.getElementById('completedLabel').textContent = `Завершённые (${completed.length})`; const compList = document.getElementById('completedList'); if (compList.classList.contains('open')) { compList.innerHTML = ''; const cfrag = document.createDocumentFragment(); completed.forEach(c => cfrag.appendChild(buildCreditItem(c, cm, cy))); compList.appendChild(cfrag); } }
   else compSec.style.display = 'none';
   document.getElementById('activeCount').textContent = active.length ? `${active.length}` : '';
-  updateSummary(active);
+  updateSummary(credits.filter(c => !c.completed));
   if (!amountsVisible) setTimeout(startSpoilers, 30);
   applyCollapseUI(); attachSwipeHandlers();
 }
@@ -375,7 +423,7 @@ function buildCreditItem(c, cm, cy) {
 <div class="swipe-content">
 <div class="credit-icon-wrap${bankKey ? ' has-logo' : ''}">${iconHtml}${bankKey ? '<span class="type-badge">' + cat.emoji + '</span>' : ''}</div>
 <div class="credit-main"><div class="credit-name">${esc(c.name)}</div>
-<div class="credit-meta"><span class="credit-date-tag">${formatPaymentDate(c.day)}</span>${termHtml}</div></div>
+<div class="credit-meta"><span class="credit-date-tag">${formatDueLabel(getDueDate(c, false))}</span>${termHtml}</div></div>
 <div class="credit-right"><span class="credit-amount">${displayAmount} ₽</span>
 ${c.paid ? '<span class="credit-paid-badge">Оплачено</span>' : (partial > 0 ? `<span style="font-size:0.68rem;color:var(--text-2);font-weight:500">из ${fmt(c.amount)} ₽</span>` : '')}</div>
 <div class="check-wrap ${c.paid || c.completed ? 'checked' : ''}" data-id="${c.id}">
@@ -412,9 +460,9 @@ function updateSummary(active) {
   document.getElementById('summaryCardsPaid').textContent = cardsPaidCount + '/' + cards.length;
   document.getElementById('summaryTotal').textContent = fmt(grandTotal) + ' ₽';
   const allPaidAlreadyShown = sessionStorage.getItem('all_paid_shown') === '1';
-  const creditsAllPaid = paidTotalSum >= total && total > 0 && active.length > 0;
-  const cardsAllPaid = cards.length === 0 || cards.every(c => (c.donePayments || 0) >= ((c.payments || 0) > 1 ? c.payments : 1));
-  const everythingPaid = creditsAllPaid && cardsAllPaid;
+  const creditsAllPaid = active.every(c => c.paid || (c.partial || 0) >= c.amount);
+  const cardsAllPaid = cards.every(isCardPaid);
+  const everythingPaid = (active.length + cards.length) > 0 && creditsAllPaid && cardsAllPaid;
   if (everythingPaid && !allPaidShown && !allPaidAlreadyShown) { allPaidShown = true; sessionStorage.setItem('all_paid_shown', '1'); haptic([50, 50, 50]); setTimeout(() => document.getElementById('allPaidOverlay').classList.add('active'), 400); }
   else if (!everythingPaid) allPaidShown = false;
 }
@@ -434,6 +482,7 @@ function attachSwipeHandlers() {
       if (!isSwiping) { if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) { isSwiping = true; direction = dx > 0 ? 'right' : 'left'; } else if (Math.abs(dy) > 10) return; }
       if (isSwiping) { currentX = dx; const clamped = Math.max(-140, Math.min(140, dx)); content.style.transform = `translateX(${clamped}px)`; const prog = Math.min(1, Math.abs(dx) / 90); if (dx > 0) { hintL.style.opacity = prog; hintR.style.opacity = 0; item.style.background = 'rgba(107,107,107,0.10)'; } else { hintR.style.opacity = prog; hintL.style.opacity = 0; item.style.background = 'rgba(230,57,70,0.10)'; } }
     }, { passive: true });
+    item.addEventListener('touchcancel', () => { isSwiping = false; content.style.transform = ''; hintL.style.opacity = 0; hintR.style.opacity = 0; item.style.background = ''; });
     item.addEventListener('touchend', async () => {
       if (!isSwiping) { content.style.transition = ''; return; }
       content.style.transition = 'transform 0.2s ease';
@@ -462,7 +511,7 @@ function openAction(id) {
   selectedCreditId = id;
   const cat = CATS[c.category] || CATS.other;
   document.getElementById('actionNameText').textContent = cat.emoji + ' ' + c.name;
-  document.getElementById('actionSub').textContent = fmt(c.amount) + ' ₽ · ' + formatPaymentDate(c.day);
+  document.getElementById('actionSub').textContent = fmt(c.amount) + ' ₽ · ' + formatDueLabel(getDueDate(c, false));
   const noteBox = document.getElementById('actionNote');
   if (c.note) { noteBox.style.display = ''; noteBox.textContent = '📝 ' + c.note; } else noteBox.style.display = 'none';
   const partial = c.partial || 0;
@@ -498,7 +547,6 @@ function openEditCredit(c) {
   
   document.getElementById('amountInput').value = c.amount;
   document.getElementById('dayInput').value = c.day;
-  document.getElementById('resetDayInput').value = c.resetDay || '';
   document.getElementById('noteInput').value = c.note || '';
   selectCat(c.category);
   if (c.endDate) { setDateMode('cal'); document.getElementById('endDateCal').value = c.endDate; }
@@ -530,7 +578,7 @@ function closeForm() {
 }
 function resetForm() {
   editMode = false; editId = null;
-  document.getElementById('nameInput').value = ''; document.getElementById('bankSelect').value = ''; document.getElementById('amountInput').value = ''; document.getElementById('dayInput').value = ''; document.getElementById('resetDayInput').value = ''; document.getElementById('noteInput').value = ''; document.getElementById('endDateCal').value = '';
+  document.getElementById('nameInput').value = ''; document.getElementById('bankSelect').value = ''; document.getElementById('amountInput').value = ''; document.getElementById('dayInput').value = ''; document.getElementById('noteInput').value = ''; document.getElementById('endDateCal').value = '';
   document.getElementById('formTitleText').innerText = 'Новый кредит'; document.getElementById('formSaveBtn').innerText = 'Добавить'; document.getElementById('formSaveBtn').disabled = false;
   selectCat('mortgage'); setDateMode('cal');
 }
@@ -546,11 +594,10 @@ async function handleSave() {
   if (!amount || amount <= 0) { showToast('Введите сумму'); return; }
   if (!day || day < 1 || day > 31) { showToast('День оплаты: 1–31'); return; }
   const isEdit = editMode; const saveId = editId; const saveCat = selectedCat; const endDate = getEndDate();
-  const resetDay = parseInt(document.getElementById('resetDayInput').value) || null;
   _isSaving = true; const saveBtn = document.getElementById('formSaveBtn'); saveBtn.disabled = true; saveBtn.textContent = 'Сохранение...';
   try {
-    const currentMonthKey = getPeriodKeyForToday(resetDay || 1);
-    const creditData = { name, bank, amount, day, category: saveCat, endDate, resetDay: resetDay || null, note: note || null };
+    const currentMonthKey = getPeriodKeyForToday(1);
+    const creditData = { name, bank, amount, day, category: saveCat, endDate, resetDay: null, note: note || null };
     if (isEdit && saveId) { creditData.userId = authUser.uid; await withTimeout(db.collection('credits').doc(saveId).update(creditData), 10000); showToast('Кредит обновлён'); }
     else { creditData.paid = false; creditData.completed = false; creditData.partial = 0; creditData.lastResetMonth = currentMonthKey; creditData.createdAt = new Date().toISOString(); creditData.userId = authUser.uid; await withTimeout(db.collection('credits').add(creditData), 10000); showToast('Кредит добавлен'); }
     haptic(20); closeForm(); resetForm();
@@ -605,9 +652,9 @@ async function handleCardSave() {
   _isCardSaving = true; const btn = document.getElementById('cardSaveBtn'); btn.disabled = true; btn.textContent = 'Сохранение...';
   const wasEditMode = cardEditMode, wasEditId = cardEditId;
   try {
-    const effectiveResetDay = resetDay || day || 1; const currentMonthKey = getPeriodKeyForToday(effectiveResetDay);
+    const effectiveResetDay = resetDay || getResetDayFor({ day: day }, true); const currentMonthKey = getPeriodKeyForToday(effectiveResetDay);
     const cardData = { name, bank, amount, payments, day, resetDay: resetDay || null, userId: authUser.uid, type: 'creditcard' };
-    if (wasEditMode && wasEditId) { await withTimeout(db.collection('credits').doc(wasEditId).update(cardData), 10000); showToast('Карта обновлена'); }
+    if (wasEditMode && wasEditId) { cardData.lastResetMonth = currentMonthKey; await withTimeout(db.collection('credits').doc(wasEditId).update(cardData), 10000); showToast('Карта обновлена'); }
     else { cardData.donePayments = 0; cardData.lastResetMonth = currentMonthKey; cardData.createdAt = new Date().toISOString(); await withTimeout(db.collection('credits').add(cardData), 10000); showToast('Карта добавлена'); }
     haptic(20); closeCardForm();
   } catch (e) { console.error(e); showToast(e.code === 'timeout' ? 'Сервер не отвечает' : 'Ошибка'); }
@@ -644,7 +691,7 @@ async function toggleCardPayment(cardId, idx, total, currentDone) {
 async function resetCardPayments() {
   if (!selectedCardId) return;
   const c = cards.find(x => x.id === selectedCardId);
-  const rd = c ? (c.resetDay || c.day || 1) : 1;
+  const rd = c ? getResetDayFor(c, true) : 1;
   await db.collection('credits').doc(selectedCardId).update({ donePayments: 0, lastResetMonth: getPeriodKeyForToday(rd) }).catch(() => { });
   closeCardAction(); haptic(15);
 }
@@ -679,18 +726,18 @@ function renderCards() {
   section.style.display = '';
   list.innerHTML = '';
   const frag = document.createDocumentFragment();
-  shown.forEach(c => {
+  sortList(shown, isCardPaid).forEach(c => {
     const done = c.donePayments || 0; const total = c.payments || 0; const effectiveTotal = total > 0 ? total : 1;
     const isPaid = done >= effectiveTotal; const hasMultiPayments = total > 1;
     const wrap = document.createElement('div'); wrap.style.background = 'var(--surface)';
     const item = document.createElement('div');
     item.className = 'credit-item swipeable' + (isPaid ? ' paid' : '');
     item.dataset.creditId = c.id; item.dataset.creditType = 'card';
-    const od = getOverdueDays(c);
+    const od = getOverdueDays(c, true);
     const dueTag = (c.day > 0 ? `<span class="credit-date-tag">${getCardPaymentDate(c)}</span>` : '') + (od > 0 && !isPaid ? `<span class="credit-term-tag ending">Просрочено ${od} дн.</span>` : '');
     const amtHtml = c.amount > 0 ? `<span class="credit-amount">${fmt(c.amount)} ₽</span>` : '';
     const badgeHtml = isPaid ? '<span class="credit-paid-badge">Оплачено</span>' : '';
-    const controlsHtml = hasMultiPayments ? `<div class="card-pay-row" onclick="event.stopPropagation()"><button class="card-ctrl-btn minus" style="visibility:${done > 0 ? 'visible' : 'hidden'}" onclick="cardPaymentStep('${c.id}', ${done}, ${total}, -1)">−</button><span class="card-ctrl-count">${done}/${total}</span><button class="card-ctrl-btn plus" style="visibility:${done < total ? 'visibility' : 'hidden'}" onclick="cardPaymentStep('${c.id}', ${done}, ${total}, 1)">+</button></div>` : '';
+    const controlsHtml = hasMultiPayments ? `<div class="card-pay-row" onclick="event.stopPropagation()"><button class="card-ctrl-btn minus" style="visibility:${done > 0 ? 'visible' : 'hidden'}" onclick="cardPaymentStep('${c.id}', ${done}, ${total}, -1)">−</button><span class="card-ctrl-count">${done}/${total}</span><button class="card-ctrl-btn plus" style="visibility:${done < total ? 'visible' : 'hidden'}" onclick="cardPaymentStep('${c.id}', ${done}, ${total}, 1)">+</button></div>` : '';
     
     const bankKey = detectBankKey(c.bank, c.name);
     let cardIconHtml = '💳';
@@ -736,7 +783,7 @@ async function cardPaymentStep(cardId, currentDone, total, delta) {
 // ========== НАСТРОЙКИ ==========
 function gearClick(e) { e.stopPropagation(); const btn = document.getElementById('settingsBtn'); const svg = btn.querySelector('svg'); svg.style.animation = 'none'; svg.offsetHeight; svg.style.animation = ''; btn.classList.add('spinning'); haptic(15); setTimeout(() => { btn.classList.remove('spinning'); openSettings(); }, 520); }
 function openSettings() {
-  if (authUser) { const display = authUser.displayName || authUser.email.split('@')[0]; document.getElementById('settingsDisplayName').textContent = display; document.getElementById('settingsEmail').textContent = authUser.email || '—'; updateEmailStatusUI(); }
+  if (authUser) { const display = authUser.displayName || authUser.email.split('@')[0]; document.getElementById('settingsDisplayName').textContent = display; const av = document.getElementById('profileAvatar'); if (av) av.textContent = (display[0] || 'М').toUpperCase(); document.getElementById('settingsEmail').textContent = authUser.email || '—'; updateEmailStatusUI(); }
   takeSettingsSnapshot(); updateSettingsUI();
   document.getElementById('settingsOverlay').classList.add('active');
 }
@@ -847,12 +894,11 @@ async function doAuth() {
     try {
       let email = loginOrEmail;
       if (!loginOrEmail.includes('@')) { const resolved = await resolveEmailFromNick(loginOrEmail); if (!resolved) { showToast('Не найден'); btn.disabled = false; btn.textContent = 'Войти'; return; } email = resolved; }
+      if (!sessionStorage.getItem('session_started')) { ls.rm(PIN_K); ls.rm(PIN_LEN_K); ls.rm(BIO_K); ls.rm('crt_bio_cred_id'); biometricEnabled = false; }
       const userCred = await withTimeout(auth.signInWithEmailAndPassword(email, pass), 20000, 'signin');
       const user = userCred.user;
       db.collection('users').doc(user.uid).set({ email: user.email, displayName: user.displayName, emailVerified: user.emailVerified }, { merge: true }).catch(() => { });
       if (user.displayName) db.collection('usernames').doc(user.displayName.toLowerCase()).set({ uid: user.uid, email: user.email }, { merge: true }).catch(() => { });
-      const isNewDevice = !sessionStorage.getItem('session_started');
-      if (isNewDevice) { ls.rm(PIN_K); ls.rm(PIN_LEN_K); }
     } catch (e) {
       let msg = 'Ошибка';
       if (e.code === 'timeout') msg = 'Сервер не отвечает. Проверьте интернет';
@@ -948,7 +994,7 @@ async function saveAccountChanges() {
     if (existing.exists && existing.data().uid !== authUser.uid) { showToast('Логин занят'); return; }
     if (authUser.displayName) await db.collection('usernames').doc(authUser.displayName.toLowerCase()).delete();
     await db.collection('usernames').doc(newNickLower).set({ uid: authUser.uid, email: authUser.email });
-    updates.push(authUser.updateProfile({ displayName: newNick })); updates.push(db.collection('users').doc(authUser.uid).update({ displayName: newNick }));
+    updates.push(authUser.updateProfile({ displayName: newNick })); updates.push(db.collection('users').doc(authUser.uid).set({ displayName: newNick }, { merge: true }));
   }
   if (newPass) {
     if (newPass.length < 6) { showToast('Мин. 6 символов'); return; }
@@ -970,6 +1016,7 @@ async function doDeleteAccount() {
     const credential = firebase.auth.EmailAuthProvider.credential(authUser.email, pass);
     await authUser.reauthenticateWithCredential(credential);
     const uid = authUser.uid; const displayName = authUser.displayName;
+    if (creditsUnsubscribe) { creditsUnsubscribe(); creditsUnsubscribe = null; } _loadedUid = null;
     const creditsSnap = await db.collection('credits').where('userId', '==', uid).get();
     const batch = db.batch();
     creditsSnap.forEach(doc => batch.delete(doc.ref));
@@ -1157,7 +1204,7 @@ function applyAppVersion() {
 }
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    window.APP_VERSION = (localStorage.getItem('crt_app_version') || '1.3.1');
+    window.APP_VERSION = (localStorage.getItem('crt_app_version') || '1.3.4');
     applyAppVersion();
     fetch('./version.js', { cache: 'no-store' })
       .then(r => r.text())
@@ -1209,3 +1256,16 @@ function initBankPicker(selectId) {
 }
 function initBankPickers() { initBankPicker('bankSelect'); initBankPicker('cardBankSelect'); }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initBankPickers); else initBankPickers();
+
+
+// ========== УСТАНОВКА PWA ==========
+let _deferredInstall = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); _deferredInstall = e; const b = document.getElementById('installBtn'); if (b) b.style.display = 'inline-block'; });
+window.addEventListener('appinstalled', () => { _deferredInstall = null; const b = document.getElementById('installBtn'); if (b) b.style.display = 'none'; });
+document.addEventListener('DOMContentLoaded', () => {
+  const b = document.getElementById('installBtn');
+  if (b) b.addEventListener('click', async () => { if (!_deferredInstall) return; _deferredInstall.prompt(); try { await _deferredInstall.userChoice; } catch (e) { } _deferredInstall = null; b.style.display = 'none'; });
+  const standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone;
+  const ins = document.getElementById('iosInstruction');
+  if (ins && /iphone|ipad|ipod/i.test(navigator.userAgent) && !standalone) ins.style.display = 'block';
+});
