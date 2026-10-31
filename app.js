@@ -341,11 +341,44 @@ async function toggleNotifFromSettings() {
     if (!ok) { updateSettingsUI(); return; }
     notifEnabled = true; showToast('🔔 Напоминания включены');
   } else notifEnabled = false;
-  ls.set(NOTIF_K, notifEnabled); updateSettingsUI(); haptic(10);
+  ls.set(NOTIF_K, notifEnabled); updateSettingsUI(); haptic(10); saveNotifSnapshot(); updatePeriodicSync();
   if (notifEnabled) checkUpcomingNotifications(false, 0);
 }
+async function testNotification() {
+  if (!('Notification' in window)) { showToast('Уведомления не поддерживаются'); return; }
+  if (Notification.permission !== 'granted') { const ok = await requestNotificationPermission(); if (!ok) { showToast('Разрешение не выдано'); return; } }
+  const ok = await showAppNotification('🔔 Проверка', 'Уведомления работают', 'test');
+  showToast(ok ? 'Уведомление отправлено' : 'Не удалось показать уведомление');
+}
+// Снимок данных для сервис-воркера: он проверяет платежи в фоне, даже когда приложение закрыто
+async function saveNotifSnapshot() {
+  try {
+    if (!('caches' in window)) return;
+    const fd = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const items = [];
+    const t = getPeriodStart(1); const nextC = clampedDate(t.getFullYear(), t.getMonth() + 1, 1);
+    credits.forEach(c => { if (c.completed || c.paid) return; items.push({ n: c.name, a: c.amount || 0, day: c.day || 1, card: false, due: fd(getDueDate(c, false)), reset: fd(nextC) }); });
+    cards.forEach(c => {
+      if (!c.day || isCardPaid(c)) return;
+      const rd = getResetDayFor(c, true); const s = getPeriodStart(rd);
+      items.push({ n: c.name, a: c.amount || 0, day: c.day, card: true, due: fd(getDueDate(c, true)), reset: fd(clampedDate(s.getFullYear(), s.getMonth() + 1, rd)) });
+    });
+    const cache = await caches.open('crt-notif-data');
+    await cache.put(new URL('__notif.json', location.href).href, new Response(JSON.stringify({ on: notifEnabled, days: notifDays, overdue: overdueEnabled, items: items }), { headers: { 'Content-Type': 'application/json' } }));
+    if (!window._psTried) { window._psTried = true; updatePeriodicSync(); }
+  } catch (e) { }
+}
+async function updatePeriodicSync() {
+  try {
+    if (!('serviceWorker' in navigator)) return;
+    const reg = await navigator.serviceWorker.ready;
+    if (!reg.periodicSync) return;
+    if (notifEnabled && Notification.permission === 'granted') await reg.periodicSync.register('crt-check', { minInterval: 6 * 3600 * 1000 });
+    else await reg.periodicSync.unregister('crt-check');
+  } catch (e) { }
+}
 function setNotifDays(n) { notifDays = n; ls.set(NOTIF_DAYS_K, n); updateSettingsUI(); updateAppBadge(); haptic(10); }
-function toggleOverdueFromSettings() { overdueEnabled = !overdueEnabled; ls.set(OVERDUE_K, overdueEnabled); updateSettingsUI(); haptic(10); }
+function toggleOverdueFromSettings() { overdueEnabled = !overdueEnabled; ls.set(OVERDUE_K, overdueEnabled); updateSettingsUI(); haptic(10); saveNotifSnapshot(); }
 setInterval(() => checkUpcomingNotifications(false, 3 * 3600000), 900000);
 function refreshOnResume() { if (!authUser || !db || !creditsUnsubscribe) return; checkMonthReset(); render(); renderCards(); updateAppBadge(); }
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { refreshOnResume(); checkUpcomingNotifications(false, 120000); } });
@@ -353,6 +386,7 @@ setInterval(() => { if (!document.hidden) checkMonthReset(); }, 300000);
 
 // ========== ЦИФРА НА ЯРЛЫКЕ ==========
 function updateAppBadge() {
+  saveNotifSnapshot();
   if (!navigator.setAppBadge && !navigator.clearAppBadge) return;
   const n = collectUpcoming().length + collectOverdue().length;
   try {
@@ -1204,7 +1238,7 @@ function applyAppVersion() {
 }
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    window.APP_VERSION = (localStorage.getItem('crt_app_version') || '1.3.5');
+    window.APP_VERSION = (localStorage.getItem('crt_app_version') || '1.3.6');
     applyAppVersion();
     fetch('./version.js', { cache: 'no-store' })
       .then(r => r.text())
