@@ -6,7 +6,7 @@ const ASSETS_TO_CACHE = ['./', './index.html', './app.js', './manifest.json', '.
 
 self.addEventListener('install', event => {
   self.skipWaiting();
-  event.waitUntil(caches.open(CACHE_NAME).then(cache => Promise.allSettled(ASSETS_TO_CACHE.map(url => cache.add(url).catch(err => console.warn('Cache miss:', url, err))))));
+  event.waitUntil(caches.open(CACHE_NAME).then(cache => Promise.allSettled(ASSETS_TO_CACHE.map(url => cache.add(url.indexOf('http') === 0 ? url : new Request(url, { cache: 'reload' })).catch(err => console.warn('Cache miss:', url, err))))));
 });
 self.addEventListener('activate', event => {
   event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key)))).then(() => self.clients.claim()));
@@ -16,8 +16,8 @@ self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
   if (url.hostname === 'www.gstatic.com') { event.respondWith(caches.match(event.request).then(c => c || fetch(event.request).then(r => { if (r.ok) { const cl = r.clone(); caches.open(CACHE_NAME).then(cache => cache.put(event.request, cl)); } return r; }))); return; }
   if (url.hostname.includes('firestore') || url.hostname.includes('googleapis') || url.hostname.includes('firebaseio')) return;
-  if (event.request.mode === 'navigate') { event.respondWith(fetch(event.request).then(r => { if (r && r.status === 200 && r.type === 'basic') { const cl = r.clone(); caches.open(CACHE_NAME).then(c => c.put('./index.html', cl)); } return r; }).catch(() => caches.match('./index.html').then(c => c || caches.match('./')))); return; }
-  event.respondWith(fetch(event.request).then(r => { if (r && r.status === 200 && r.type === 'basic') { const cl = r.clone(); caches.open(CACHE_NAME).then(c => c.put(event.request, cl)); } return r; }).catch(() => caches.match(event.request, { ignoreSearch: true })));
+  if (event.request.mode === 'navigate') { event.respondWith(fetch(event.request.url, { cache: 'no-store' }).then(r => { if (r && r.status === 200 && r.type === 'basic') { const cl = r.clone(); caches.open(CACHE_NAME).then(c => c.put('./index.html', cl)); } return r; }).catch(() => caches.match('./index.html').then(c => c || caches.match('./')))); return; }
+  event.respondWith(fetch(new Request(event.request, { cache: 'no-store' })).then(r => { if (r && r.status === 200 && r.type === 'basic') { const cl = r.clone(); caches.open(CACHE_NAME).then(c => c.put(event.request, cl)); } return r; }).catch(() => caches.match(event.request, { ignoreSearch: true })));
 });
 self.addEventListener('notificationclick', event => {
   event.notification.close();

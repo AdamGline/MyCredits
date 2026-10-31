@@ -482,15 +482,15 @@ function attachSwipeHandlers() {
       if (!isSwiping) { if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) { isSwiping = true; direction = dx > 0 ? 'right' : 'left'; } else if (Math.abs(dy) > 10) return; }
       if (isSwiping) { currentX = dx; const clamped = Math.max(-140, Math.min(140, dx)); content.style.transform = `translateX(${clamped}px)`; const prog = Math.min(1, Math.abs(dx) / 90); if (dx > 0) { hintL.style.opacity = prog; hintR.style.opacity = 0; item.style.background = 'rgba(107,107,107,0.10)'; } else { hintR.style.opacity = prog; hintL.style.opacity = 0; item.style.background = 'rgba(230,57,70,0.10)'; } }
     }, { passive: true });
-    item.addEventListener('touchcancel', () => { isSwiping = false; content.style.transform = ''; hintL.style.opacity = 0; hintR.style.opacity = 0; item.style.background = ''; });
+    item.addEventListener('touchcancel', () => { item.dispatchEvent(new Event('touchend')); });
     item.addEventListener('touchend', async () => {
       if (!isSwiping) { content.style.transition = ''; return; }
-      content.style.transition = 'transform 0.2s ease';
+      content.style.transition = 'transform 0.2s ease'; isSwiping = false;
       const creditId = item.dataset.creditId; const creditType = item.dataset.creditType;
       let acted = false;
       if (direction === 'right' && currentX > 80) {
-        if (creditType === 'card') { const c = cards.find(x => x.id === creditId); if (c) { openEditCard(c); acted = true; } }
-        else { const c = credits.find(x => x.id === creditId); if (c) { openEditCredit(c); acted = true; } }
+        if (creditType === 'card') { const c = cards.find(x => x.id === creditId); if (c) { acted = true; try { openEditCard(c); } catch (e) { console.error(e); } } }
+        else { const c = credits.find(x => x.id === creditId); if (c) { acted = true; try { openEditCredit(c); } catch (e) { console.error(e); } } }
         if (acted) haptic(20);
       } else if (direction === 'left' && currentX < -80) {
         if (confirm('Удалить этот элемент?')) {
@@ -1204,7 +1204,7 @@ function applyAppVersion() {
 }
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    window.APP_VERSION = (localStorage.getItem('crt_app_version') || '1.3.4');
+    window.APP_VERSION = (localStorage.getItem('crt_app_version') || '1.3.5');
     applyAppVersion();
     fetch('./version.js', { cache: 'no-store' })
       .then(r => r.text())

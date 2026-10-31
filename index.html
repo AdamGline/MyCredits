@@ -751,6 +751,20 @@ if (auth) auth.style.display = 'flex';
 </div>
 </div>
 </div>
-<script src="app.js"></script>
+<script>
+(function () {
+  var v = '';
+  try {
+    var x = new XMLHttpRequest();
+    x.open('GET', 'version.js', false);
+    x.setRequestHeader('Cache-Control', 'no-cache');
+    x.send();
+    var m = (x.responseText || '').match(/APP_VERSION\s*=\s*['"]([^'"]+)['"]/);
+    if (m) { v = m[1]; try { localStorage.setItem('crt_app_version', v); } catch (e) { } }
+  } catch (e) { }
+  if (!v) { try { v = localStorage.getItem('crt_app_version') || ''; } catch (e) { } }
+  document.write('<script src="app.js' + (v ? '?v=' + v : '') + '"><\/script>');
+})();
+</script>
 </body>
 </html>
