@@ -298,3 +298,12 @@ html,body{max-width:100%;overflow-x:hidden}
 .loader-spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent-dark);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
 .shake{animation:shake .4s}
+.card-ctrl-btn.is-off,.card-ctrl-btn.plus.is-off{background:var(--surface-2);border-color:var(--border);color:var(--text-3);opacity:.6;cursor:default}
+.card-ctrl-btn.is-off:active{transform:none;background:var(--surface-2)}
+.accent-row { display: flex; justify-content: space-between; gap: 8px; }
+.accent-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; }
+.accent-swatch { width: 44px; height: 44px; border-radius: 50%; border: 3px solid transparent; box-shadow: inset 0 0 0 3px var(--surface); transition: border-color 0.15s, transform 0.15s; }
+.accent-item.active .accent-swatch { border-color: var(--text); }
+.accent-item:active .accent-swatch { transform: scale(0.92); }
+.accent-label { font-size: 0.7rem; font-weight: 600; color: var(--text-2); }
+.accent-item.active .accent-label { color: var(--text); }
