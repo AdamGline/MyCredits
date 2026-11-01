@@ -22,7 +22,7 @@ function _initFirebase() {
   auth.onAuthStateChanged(user => {
     clearTimeout(authResolveTimer);
     window.authUser = user || null; authResolved = true; splashTimerDone = true;
-    if (!user) { if (creditsUnsubscribe) { creditsUnsubscribe(); creditsUnsubscribe = null; } _loadedUid = null; }
+    if (!user && creditsUnsubscribe) { creditsUnsubscribe(); creditsUnsubscribe = null; }
     evaluateLaunch();
     if (user) { user.reload().catch(() => {}); db.collection('users').doc(user.uid).set({ email: user.email, displayName: user.displayName, emailVerified: user.emailVerified }, { merge: true }).catch(() => {}); }
   });
@@ -81,7 +81,7 @@ let pinSetBuf = '', pinSetStep = 0, pinSetFirst = '', pinSetLen = 4, pinSetVerif
 let pinLockBuf = '', pinLockLen = 4;
 let isLoginMode = true, authResolved = false;
 window.authUser = null;
-let splashTimerDone = false, creditsUnsubscribe = null, _loadedUid = null;
+let splashTimerDone = false, creditsUnsubscribe = null;
 let monthResetDone = false, settingsSnapshot = null, _bioAutoTried = false;
 let pendingAction = null;
 const ls = { get: k => { try { return localStorage.getItem(k); } catch (e) { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }, rm: k => { try { localStorage.removeItem(k); } catch (e) { } } };
@@ -171,51 +171,51 @@ window.addEventListener('offline', () => { if (db && !_netDisabled) { _netDisabl
 window.addEventListener('online', () => { if (db) { _netDisabled = false; try { db.enableNetwork().catch(() => { }); } catch (e) { } showToast('🟢 Снова в сети'); } });
 
 // ========== ВСПОМОГАТЕЛЬНЫЕ ==========
-function formatDueLabel(due) { return due ? `до ${due.getDate()} ${MONTHS_GEN[due.getMonth()]}` : ''; }
-function fmt(n) { return Math.round(n || 0).toLocaleString('ru-RU'); }
+function formatPaymentDate(d) { const m = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']; return `до ${d} ${m[new Date().getMonth()]}`; }
+function fmt(n) { return Math.round(n).toLocaleString('ru-RU'); }
 function esc(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
 function showToast(msg) { document.querySelectorAll('.toast').forEach(t => t.remove()); const d = document.createElement('div'); d.className = 'toast'; d.textContent = msg; document.body.appendChild(d); setTimeout(() => d.remove(), 2600); }
 function showGlobalLoader(show) { document.getElementById('globalLoader').style.display = show ? 'flex' : 'none'; }
-// ========== ДАТЫ И РАСЧЁТНЫЕ ПЕРИОДЫ ==========
-const MONTHS_GEN = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
-function daysInMonth(y, m) { return new Date(y, m + 1, 0).getDate(); }
-function clampedDate(y, m, d) { const b = new Date(y, m, 1); return new Date(b.getFullYear(), b.getMonth(), Math.min(d, daysInMonth(b.getFullYear(), b.getMonth()))); }
-function todayStart() { const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); }
-function diffDays(date) { return Math.round((date - todayStart()) / 86400000); }
-function isCardPaid(c) { const eff = (c.payments || 0) > 0 ? c.payments : 1; return (c.donePayments || 0) >= eff; }
-// Кредиты сбрасываются 1-го числа. Карты — на следующий день ПОСЛЕ даты платежа (или в указанный вручную день сброса).
-function getResetDayFor(c, isCard) {
-  if (!isCard) return 1;
-  if (c.resetDay) return c.resetDay;
-  const d = c.day || 0;
-  return (d > 0 && d < 28) ? d + 1 : 1;
+function getPeriodKeyForToday(resetDay) {
+  const n = new Date(); const today = n.getDate(); const month = n.getMonth(); const year = n.getFullYear();
+  const rd = resetDay || 1;
+  if (today >= rd) return `${month}-${year}`;
+  const pm = month === 0 ? 11 : month - 1; const py = month === 0 ? year - 1 : year;
+  return `${pm}-${py}`;
 }
-function getPeriodStart(rd) {
-  const t = todayStart(); const r = rd || 1;
-  let s = clampedDate(t.getFullYear(), t.getMonth(), r);
-  if (s > t) s = clampedDate(t.getFullYear(), t.getMonth() - 1, r);
-  return s;
+function getCardPaymentDate(c) {
+  if (!c.day) return '';
+  const rd = c.resetDay || c.day || 1; const now = new Date();
+  const pm = new Date(now.getFullYear(), now.getMonth() + (now.getDate() >= rd ? 1 : 0), 1);
+  const m = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+  return `до ${c.day} ${m[pm.getMonth()]}`;
 }
-function getPeriodKeyForToday(rd) { const s = getPeriodStart(rd); return `${s.getMonth()}-${s.getFullYear()}`; }
-function keyOrd(k) {
-  if (!k) return -1;
-  const p = String(k).split('-'); const m = parseInt(p[0]), y = parseInt(p[1]);
-  return (isNaN(m) || isNaN(y)) ? -1 : y * 12 + m;
+function getOverdueDays(c) {
+  if (c.paid || c.completed) return 0;
+  const today = new Date().getDate(); const d = c.day || 1;
+  return today > d ? today - d : 0;
 }
-function getDueDate(c, isCard) {
-  if (isCard && !c.day) return null;
-  const day = c.day || 1;
-  const s = getPeriodStart(getResetDayFor(c, isCard));
-  let due = clampedDate(s.getFullYear(), s.getMonth(), day);
-  if (due < s) due = clampedDate(s.getFullYear(), s.getMonth() + 1, day);
-  return due;
+
+// ========== ЛОГИКА КРЕДИТНЫХ КАРТ: платежи + сумма ==========
+function cardNeedPay(c) { const p = c.payments || 0; return p > 0 ? p : 1; }
+function cardPaidSum(c) { const a = c.amount || 0; return (a > 0 && cardIsPaid(c)) ? a : 0; }
+function cardIsPaid(c) {
+  const p = c.payments || 0;
+  // Без количества платежей: старая система — просто галочка
+  if (p <= 0) return (c.donePayments || 0) >= 1;
+  // С платежами: 5 из 5 — лишь выполненное условие, карта закрыта только после галочки
+  return c.paid === true && (c.donePayments || 0) >= p;
 }
-function getCardPaymentDate(c) { return c.day ? formatDueLabel(getDueDate(c, true)) : ''; }
-function getOverdueDays(c, isCard) {
-  if (isCard) { if (!c.day || isCardPaid(c)) return 0; }
-  else if (c.paid || c.completed) return 0;
-  const due = getDueDate(c, !!isCard); if (!due) return 0;
-  const d = -diffDays(due); return d > 0 ? d : 0;
+function plural(n, f) { const m10 = n % 10, m100 = n % 100; if (m10 === 1 && m100 !== 11) return f[0]; if (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return f[1]; return f[2]; }
+function dueSoonHtml(day) {
+  const diff = (day || 1) - new Date().getDate();
+  if (diff === 0) return '<span class="credit-term-tag soon">Сегодня</span>';
+  if (diff > 0 && diff <= 3) return '<span class="credit-term-tag soon">Через ' + diff + ' дн.</span>';
+  return '';
+}
+async function cardUpdate(c, patch) {
+  if (!db) return;
+  await updateCreditField(c.id, patch);
 }
 
 function removeHistoryUI() {
@@ -231,8 +231,6 @@ function removeHistoryUI() {
 // ========== ЗАГРУЗКА ==========
 function loadCredits() {
   if (!authUser || !db) return;
-  if (creditsUnsubscribe && _loadedUid === authUser.uid) return;
-  _loadedUid = authUser.uid;
   showGlobalLoader(true);
   if (creditsUnsubscribe) { creditsUnsubscribe(); creditsUnsubscribe = null; }
   creditsUnsubscribe = db.collection('credits').where('userId', '==', authUser.uid)
@@ -240,39 +238,34 @@ function loadCredits() {
       credits = []; cards = [];
       snapshot.forEach(doc => { const d = doc.data(); if (d.type === 'creditcard') cards.push({ id: doc.id, ...d }); else credits.push({ id: doc.id, ...d }); });
       render(); renderCards(); updateAppBadge();
-      if (!monthResetDone) { monthResetDone = true; checkMonthReset(); }
+      refreshCardAction(); if (!monthResetDone) { monthResetDone = true; checkMonthReset(); }
       showGlobalLoader(false);
       checkUpcomingNotifications(false, 120000);
     }, e => { showGlobalLoader(false); guardNetwork(e); });
 }
 async function deleteCredit(id) { if (!db) return; await withTimeout(db.collection('credits').doc(id).delete(), 8000).catch(() => { }); }
 async function updateCreditField(id, data) { if (!db) return; await withTimeout(db.collection('credits').doc(id).update(data), 8000).catch(() => { }); }
-let _resetRunning = false;
 async function checkMonthReset() {
-  if (!authUser || !db || _resetRunning) return;
-  _resetRunning = true;
-  try {
-    let updatedCount = 0;
-    for (const c of credits.slice()) {
-      if (c.completed) continue;
-      const currentKey = getPeriodKeyForToday(1);
-      const prev = keyOrd(c.lastResetMonth), cur = keyOrd(currentKey);
-      if (prev >= cur) continue;
-      const updates = { lastResetMonth: currentKey };
-      if (prev >= 0) { updates.paid = false; updates.partial = 0; updatedCount++; }
-      await updateCreditField(c.id, updates);
-    }
-    for (const c of cards.slice()) {
-      const currentKey = getPeriodKeyForToday(getResetDayFor(c, true));
-      const prev = keyOrd(c.lastResetMonth), cur = keyOrd(currentKey);
-      if (prev >= cur) continue;
-      const updates = { lastResetMonth: currentKey };
-      if (prev >= 0) { updates.donePayments = 0; updatedCount++; }
-      await updateCreditField(c.id, updates);
-    }
-    if (updatedCount > 0) { const m = document.getElementById('resetMsg'); m.style.display = 'block'; setTimeout(() => m.style.display = 'none', 5000); }
-    ls.set(MONTH_K, `${new Date().getMonth()}-${new Date().getFullYear()}`);
-  } finally { _resetRunning = false; }
+  if (!authUser || !db) return;
+  let updatedCount = 0;
+  for (const c of credits) {
+    if (c.completed) continue;
+    const currentKey = getPeriodKeyForToday(c.resetDay || 1);
+    if (c.lastResetMonth === currentKey) continue;
+    const updates = { lastResetMonth: currentKey };
+    if (c.lastResetMonth) { updates.paid = false; updates.partial = 0; updatedCount++; }
+    await updateCreditField(c.id, updates);
+  }
+  for (const c of cards) {
+    const rd = c.resetDay || c.day || 1;
+    const currentKey = getPeriodKeyForToday(rd);
+    if (c.lastResetMonth === currentKey) continue;
+    const updates = { lastResetMonth: currentKey };
+    if (c.lastResetMonth) { updates.donePayments = 0; updates.paidAmount = 0; updates.paid = false; updatedCount++; }
+    await updateCreditField(c.id, updates);
+  }
+  if (updatedCount > 0) { const m = document.getElementById('resetMsg'); m.style.display = 'block'; setTimeout(() => m.style.display = 'none', 5000); }
+  ls.set(MONTH_K, `${new Date().getMonth()}-${new Date().getFullYear()}`);
 }
 
 // ========== УВЕДОМЛЕНИЯ ==========
@@ -280,7 +273,7 @@ async function requestNotificationPermission() {
   if (!('Notification' in window)) { showToast('Уведомления не поддерживаются в этом браузере'); return false; }
   if (Notification.permission === 'granted') return true;
   if (Notification.permission === 'denied') { showToast('Уведомления заблокированы в настройках браузера'); return false; }
-  try { return (await Notification.requestPermission()) === 'granted'; } catch (e) { return false; }
+  try { return (await Notification.permission) === 'granted'; } catch (e) { return false; }
 }
 async function showAppNotification(title, body, tag) {
   if (!('Notification' in window) || Notification.permission !== 'granted') return false;
@@ -299,25 +292,15 @@ function notifCooldownOk(key, minMs) {
   const last = parseInt(ls.get(key)) || 0;
   return (Date.now() - last) >= minMs;
 }
-function collectUpcoming() {
-  const list = [];
-  const add = (c, diff) => { if (diff >= 0 && diff <= notifDays) list.push({ name: c.name, amount: c.amount, when: diff === 0 ? 'сегодня' : `через ${diff} дн.` }); };
-  credits.forEach(c => { if (c.completed || c.paid) return; add(c, diffDays(getDueDate(c, false))); });
-  cards.forEach(c => { if (!c.day || isCardPaid(c)) return; add(c, diffDays(getDueDate(c, true))); });
-  return list;
-}
-function collectOverdue() {
-  const list = [];
-  credits.forEach(c => { const d = getOverdueDays(c, false); if (d > 0) list.push({ name: c.name, d: d }); });
-  cards.forEach(c => { const d = getOverdueDays(c, true); if (d > 0) list.push({ name: c.name, d: d }); });
-  return list;
-}
 async function checkUpcomingNotifications(force, minInterval) {
   if (!notifEnabled || !('Notification' in window) || Notification.permission !== 'granted') return false;
   const minMs = (typeof minInterval === 'number') ? minInterval : 120000;
+  const now = new Date(); const today = now.getDate();
   let shown = false;
   if (force || notifCooldownOk('crt_last_notif_ts', minMs)) {
-    const upcoming = collectUpcoming();
+    const upcoming = [];
+    credits.forEach(c => { if (c.completed || c.paid) return; const diff = (c.day || 1) - today; if (diff >= 0 && diff <= notifDays) upcoming.push({ name: c.name, amount: c.amount, when: diff === 0 ? 'сегодня' : `через ${diff} дн.` }); });
+    cards.forEach(c => { if (cardIsPaid(c)) return; const diff = (c.day || 1) - today; if (diff >= 0 && diff <= notifDays) upcoming.push({ name: c.name, amount: c.amount, when: diff === 0 ? 'сегодня' : `через ${diff} дн.` }); });
     if (upcoming.length) {
       const total = upcoming.reduce((s, u) => s + (u.amount || 0), 0);
       const names = upcoming.slice(0, 3).map(u => `${u.name} (${u.when})`).join(', ');
@@ -327,7 +310,9 @@ async function checkUpcomingNotifications(force, minInterval) {
     }
   }
   if (overdueEnabled && (force || notifCooldownOk('crt_last_overdue_ts', minMs))) {
-    const od = collectOverdue();
+    const od = [];
+    credits.forEach(c => { const d = getOverdueDays(c); if (d > 0) od.push({ name: c.name, d: d }); });
+    cards.forEach(c => { if (!cardIsPaid(c)) { const d = getOverdueDays(c); if (d > 0) od.push({ name: c.name, d: d }); } });
     if (od.length) {
       const ok2 = await showAppNotification('⚠️ Просрочка', od.slice(0, 3).map(x => `${x.name}: ${x.d} дн.`).join(', ') + (od.length > 3 ? ` и ещё ${od.length - 3}` : ''), 'overdue');
       if (ok2) { shown = true; ls.set('crt_last_overdue_ts', String(Date.now())); }
@@ -335,60 +320,16 @@ async function checkUpcomingNotifications(force, minInterval) {
   }
   return shown;
 }
-async function toggleNotifFromSettings() {
-  if (!notifEnabled) {
-    const ok = await requestNotificationPermission();
-    if (!ok) { updateSettingsUI(); return; }
-    notifEnabled = true; showToast('🔔 Напоминания включены');
-  } else notifEnabled = false;
-  ls.set(NOTIF_K, notifEnabled); updateSettingsUI(); haptic(10); saveNotifSnapshot(); updatePeriodicSync();
-  if (notifEnabled) checkUpcomingNotifications(false, 0);
-}
-async function testNotification() {
-  if (!('Notification' in window)) { showToast('Уведомления не поддерживаются'); return; }
-  if (Notification.permission !== 'granted') { const ok = await requestNotificationPermission(); if (!ok) { showToast('Разрешение не выдано'); return; } }
-  const ok = await showAppNotification('🔔 Проверка', 'Уведомления работают', 'test');
-  showToast(ok ? 'Уведомление отправлено' : 'Не удалось показать уведомление');
-}
-// Снимок данных для сервис-воркера: он проверяет платежи в фоне, даже когда приложение закрыто
-async function saveNotifSnapshot() {
-  try {
-    if (!('caches' in window)) return;
-    const fd = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    const items = [];
-    const t = getPeriodStart(1); const nextC = clampedDate(t.getFullYear(), t.getMonth() + 1, 1);
-    credits.forEach(c => { if (c.completed || c.paid) return; items.push({ n: c.name, a: c.amount || 0, day: c.day || 1, card: false, due: fd(getDueDate(c, false)), reset: fd(nextC) }); });
-    cards.forEach(c => {
-      if (!c.day || isCardPaid(c)) return;
-      const rd = getResetDayFor(c, true); const s = getPeriodStart(rd);
-      items.push({ n: c.name, a: c.amount || 0, day: c.day, card: true, due: fd(getDueDate(c, true)), reset: fd(clampedDate(s.getFullYear(), s.getMonth() + 1, rd)) });
-    });
-    const cache = await caches.open('crt-notif-data');
-    await cache.put(new URL('__notif.json', location.href).href, new Response(JSON.stringify({ on: notifEnabled, days: notifDays, overdue: overdueEnabled, items: items }), { headers: { 'Content-Type': 'application/json' } }));
-    if (!window._psTried) { window._psTried = true; updatePeriodicSync(); }
-  } catch (e) { }
-}
-async function updatePeriodicSync() {
-  try {
-    if (!('serviceWorker' in navigator)) return;
-    const reg = await navigator.serviceWorker.ready;
-    if (!reg.periodicSync) return;
-    if (notifEnabled && Notification.permission === 'granted') await reg.periodicSync.register('crt-check', { minInterval: 6 * 3600 * 1000 });
-    else await reg.periodicSync.unregister('crt-check');
-  } catch (e) { }
-}
-function setNotifDays(n) { notifDays = n; ls.set(NOTIF_DAYS_K, n); updateSettingsUI(); updateAppBadge(); haptic(10); }
-function toggleOverdueFromSettings() { overdueEnabled = !overdueEnabled; ls.set(OVERDUE_K, overdueEnabled); updateSettingsUI(); haptic(10); saveNotifSnapshot(); }
 setInterval(() => checkUpcomingNotifications(false, 3 * 3600000), 900000);
-function refreshOnResume() { if (!authUser || !db || !creditsUnsubscribe) return; checkMonthReset(); render(); renderCards(); updateAppBadge(); }
-document.addEventListener('visibilitychange', () => { if (!document.hidden) { refreshOnResume(); checkUpcomingNotifications(false, 120000); } });
-setInterval(() => { if (!document.hidden) checkMonthReset(); }, 300000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) checkUpcomingNotifications(false, 120000); });
 
 // ========== ЦИФРА НА ЯРЛЫКЕ ==========
 function updateAppBadge() {
-  saveNotifSnapshot();
   if (!navigator.setAppBadge && !navigator.clearAppBadge) return;
-  const n = collectUpcoming().length + collectOverdue().length;
+  const today = new Date().getDate();
+  let n = 0;
+  credits.forEach(c => { if (c.completed || c.paid) return; if (((c.day || 1) - today) <= notifDays) n++; });
+  cards.forEach(c => { if (cardIsPaid(c)) return; if (((c.day || 1) - today) <= notifDays) n++; });
   try {
     if (n > 0) { if (navigator.setAppBadge) navigator.setAppBadge(n); }
     else { if (navigator.clearAppBadge) navigator.clearAppBadge(); }
@@ -398,13 +339,12 @@ function updateAppBadge() {
 // ========== ПОИСК И СОРТИРОВКА ==========
 function onSearch() { searchQuery = (document.getElementById('searchInput').value || '').toLowerCase().trim(); render(); renderCards(); }
 function onSort() { sortBy = document.getElementById('sortSelect').value; render(); renderCards(); }
-function sortList(arr, isPaidFn) {
+function sortList(arr) {
   const a = arr.slice();
-  const pf = isPaidFn || (x => !!x.paid);
-  const paidLast = (x, y) => (pf(x) ? 1 : 0) - (pf(y) ? 1 : 0);
-  if (sortBy === 'day') a.sort((x, y) => paidLast(x, y) || (x.day || 0) - (y.day || 0));
-  else if (sortBy === 'amount') a.sort((x, y) => paidLast(x, y) || (y.amount || 0) - (x.amount || 0));
-  else a.sort((x, y) => paidLast(x, y) || (x.name || '').localeCompare(y.name || '', 'ru'));
+  const paidLast = (x, y) => (x.paid ? 1 : 0) - (y.paid ? 1 : 0);
+  if (sortBy === 'day') a.sort((x, y) => paidLast(x, y) || x.day - y.day);
+  else if (sortBy === 'amount') a.sort((x, y) => paidLast(x, y) || y.amount - x.amount);
+  else a.sort((x, y) => paidLast(x, y) || (x.name || '').localeCompare(y.name, 'ru'));
   return a;
 }
 
@@ -422,7 +362,7 @@ function render() {
   if (completed.length) { compSec.style.display = ''; document.getElementById('completedLabel').textContent = `Завершённые (${completed.length})`; const compList = document.getElementById('completedList'); if (compList.classList.contains('open')) { compList.innerHTML = ''; const cfrag = document.createDocumentFragment(); completed.forEach(c => cfrag.appendChild(buildCreditItem(c, cm, cy))); compList.appendChild(cfrag); } }
   else compSec.style.display = 'none';
   document.getElementById('activeCount').textContent = active.length ? `${active.length}` : '';
-  updateSummary(credits.filter(c => !c.completed));
+  updateSummary(active);
   if (!amountsVisible) setTimeout(startSpoilers, 30);
   applyCollapseUI(); attachSwipeHandlers();
 }
@@ -434,7 +374,7 @@ function buildCreditItem(c, cm, cy) {
   if (c.endDate) { const ed = new Date(c.endDate); const ml = (ed.getFullYear() - cy) * 12 + (ed.getMonth() - cm); if (ml <= 0) termHtml = `<span class="credit-term-tag ending">Завершается</span>`; else if (ml <= 3) termHtml = `<span class="credit-term-tag soon">Ещё ${ml} мес.</span>`; else termHtml = `<span class="credit-term-tag ok">${ml} мес.</span>`; }
   else termHtml = `<span class="credit-term-tag infinite">Бессрочный</span>`;
   const od = getOverdueDays(c);
-  if (od > 0) termHtml += `<span class="credit-term-tag ending">Просрочено ${od} дн.</span>`;
+  if (od > 0) termHtml += `<span class="credit-term-tag ending">Просрочено ${od} дн.</span>`; else if (!c.paid && !c.completed) termHtml += dueSoonHtml(c.day);
   
   const cat = CATS[c.category] || CATS.other;
   
@@ -457,7 +397,7 @@ function buildCreditItem(c, cm, cy) {
 <div class="swipe-content">
 <div class="credit-icon-wrap${bankKey ? ' has-logo' : ''}">${iconHtml}${bankKey ? '<span class="type-badge">' + cat.emoji + '</span>' : ''}</div>
 <div class="credit-main"><div class="credit-name">${esc(c.name)}</div>
-<div class="credit-meta"><span class="credit-date-tag">${formatDueLabel(getDueDate(c, false))}</span>${termHtml}</div></div>
+<div class="credit-meta"><span class="credit-date-tag">${formatPaymentDate(c.day)}</span>${termHtml}</div></div>
 <div class="credit-right"><span class="credit-amount">${displayAmount} ₽</span>
 ${c.paid ? '<span class="credit-paid-badge">Оплачено</span>' : (partial > 0 ? `<span style="font-size:0.68rem;color:var(--text-2);font-weight:500">из ${fmt(c.amount)} ₽</span>` : '')}</div>
 <div class="check-wrap ${c.paid || c.completed ? 'checked' : ''}" data-id="${c.id}">
@@ -481,8 +421,8 @@ function updateSummary(active) {
   const total = active.reduce((s, c) => s + c.amount, 0);
   const paidTotalSum = active.reduce((s, c) => s + (c.paid ? c.amount : (c.partial || 0)), 0);
   const cardsTotal = cards.reduce((s, c) => s + (c.amount || 0), 0);
-  const cardsPaidCount = cards.filter(c => (c.donePayments || 0) >= ((c.payments || 0) > 0 ? c.payments : 1)).length;
-  const cardsPaidSum = cards.reduce((s, c) => { const eff = (c.payments || 0) > 0 ? c.payments : 1; return s + ((c.donePayments || 0) >= eff ? (c.amount || 0) : 0); }, 0);
+  const cardsPaidCount = cards.filter(cardIsPaid).length;
+  const cardsPaidSum = cards.reduce((s, c) => s + cardPaidSum(c), 0);
   const grandTotal = total + cardsTotal; const grandPaid = paidTotalSum + cardsPaidSum;
   const grandRemain = Math.max(0, grandTotal - grandPaid);
   const pct = grandTotal > 0 ? Math.floor((grandPaid / grandTotal) * 100) : 0;
@@ -494,9 +434,9 @@ function updateSummary(active) {
   document.getElementById('summaryCardsPaid').textContent = cardsPaidCount + '/' + cards.length;
   document.getElementById('summaryTotal').textContent = fmt(grandTotal) + ' ₽';
   const allPaidAlreadyShown = sessionStorage.getItem('all_paid_shown') === '1';
-  const creditsAllPaid = active.every(c => c.paid || (c.partial || 0) >= c.amount);
-  const cardsAllPaid = cards.every(isCardPaid);
-  const everythingPaid = (active.length + cards.length) > 0 && creditsAllPaid && cardsAllPaid;
+  const creditsAllPaid = paidTotalSum >= total && total > 0 && active.length > 0;
+  const cardsAllPaid = cards.length === 0 || cards.every(cardIsPaid);
+  const everythingPaid = creditsAllPaid && cardsAllPaid;
   if (everythingPaid && !allPaidShown && !allPaidAlreadyShown) { allPaidShown = true; sessionStorage.setItem('all_paid_shown', '1'); haptic([50, 50, 50]); setTimeout(() => document.getElementById('allPaidOverlay').classList.add('active'), 400); }
   else if (!everythingPaid) allPaidShown = false;
 }
@@ -516,15 +456,14 @@ function attachSwipeHandlers() {
       if (!isSwiping) { if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) { isSwiping = true; direction = dx > 0 ? 'right' : 'left'; } else if (Math.abs(dy) > 10) return; }
       if (isSwiping) { currentX = dx; const clamped = Math.max(-140, Math.min(140, dx)); content.style.transform = `translateX(${clamped}px)`; const prog = Math.min(1, Math.abs(dx) / 90); if (dx > 0) { hintL.style.opacity = prog; hintR.style.opacity = 0; item.style.background = 'rgba(107,107,107,0.10)'; } else { hintR.style.opacity = prog; hintL.style.opacity = 0; item.style.background = 'rgba(230,57,70,0.10)'; } }
     }, { passive: true });
-    item.addEventListener('touchcancel', () => { item.dispatchEvent(new Event('touchend')); });
     item.addEventListener('touchend', async () => {
       if (!isSwiping) { content.style.transition = ''; return; }
-      content.style.transition = 'transform 0.2s ease'; isSwiping = false;
+      content.style.transition = 'transform 0.2s ease';
       const creditId = item.dataset.creditId; const creditType = item.dataset.creditType;
       let acted = false;
       if (direction === 'right' && currentX > 80) {
-        if (creditType === 'card') { const c = cards.find(x => x.id === creditId); if (c) { acted = true; try { openEditCard(c); } catch (e) { console.error(e); } } }
-        else { const c = credits.find(x => x.id === creditId); if (c) { acted = true; try { openEditCredit(c); } catch (e) { console.error(e); } } }
+        if (creditType === 'card') { const c = cards.find(x => x.id === creditId); if (c) { openEditCard(c); acted = true; } }
+        else { const c = credits.find(x => x.id === creditId); if (c) { openEditCredit(c); acted = true; } }
         if (acted) haptic(20);
       } else if (direction === 'left' && currentX < -80) {
         if (confirm('Удалить этот элемент?')) {
@@ -545,7 +484,7 @@ function openAction(id) {
   selectedCreditId = id;
   const cat = CATS[c.category] || CATS.other;
   document.getElementById('actionNameText').textContent = cat.emoji + ' ' + c.name;
-  document.getElementById('actionSub').textContent = fmt(c.amount) + ' ₽ · ' + formatDueLabel(getDueDate(c, false));
+  document.getElementById('actionSub').textContent = fmt(c.amount) + ' ₽ · ' + formatPaymentDate(c.day);
   const noteBox = document.getElementById('actionNote');
   if (c.note) { noteBox.style.display = ''; noteBox.textContent = '📝 ' + c.note; } else noteBox.style.display = 'none';
   const partial = c.partial || 0;
@@ -581,6 +520,7 @@ function openEditCredit(c) {
   
   document.getElementById('amountInput').value = c.amount;
   document.getElementById('dayInput').value = c.day;
+  document.getElementById('resetDayInput').value = c.resetDay || '';
   document.getElementById('noteInput').value = c.note || '';
   selectCat(c.category);
   if (c.endDate) { setDateMode('cal'); document.getElementById('endDateCal').value = c.endDate; }
@@ -612,7 +552,7 @@ function closeForm() {
 }
 function resetForm() {
   editMode = false; editId = null;
-  document.getElementById('nameInput').value = ''; document.getElementById('bankSelect').value = ''; document.getElementById('amountInput').value = ''; document.getElementById('dayInput').value = ''; document.getElementById('noteInput').value = ''; document.getElementById('endDateCal').value = '';
+  document.getElementById('nameInput').value = ''; document.getElementById('bankSelect').value = ''; document.getElementById('amountInput').value = ''; document.getElementById('dayInput').value = ''; document.getElementById('resetDayInput').value = ''; document.getElementById('noteInput').value = ''; document.getElementById('endDateCal').value = '';
   document.getElementById('formTitleText').innerText = 'Новый кредит'; document.getElementById('formSaveBtn').innerText = 'Добавить'; document.getElementById('formSaveBtn').disabled = false;
   selectCat('mortgage'); setDateMode('cal');
 }
@@ -628,10 +568,11 @@ async function handleSave() {
   if (!amount || amount <= 0) { showToast('Введите сумму'); return; }
   if (!day || day < 1 || day > 31) { showToast('День оплаты: 1–31'); return; }
   const isEdit = editMode; const saveId = editId; const saveCat = selectedCat; const endDate = getEndDate();
+  const resetDay = parseInt(document.getElementById('resetDayInput').value) || null;
   _isSaving = true; const saveBtn = document.getElementById('formSaveBtn'); saveBtn.disabled = true; saveBtn.textContent = 'Сохранение...';
   try {
-    const currentMonthKey = getPeriodKeyForToday(1);
-    const creditData = { name, bank, amount, day, category: saveCat, endDate, resetDay: null, note: note || null };
+    const currentMonthKey = getPeriodKeyForToday(resetDay || 1);
+    const creditData = { name, bank, amount, day, category: saveCat, endDate, resetDay: resetDay || null, note: note || null };
     if (isEdit && saveId) { creditData.userId = authUser.uid; await withTimeout(db.collection('credits').doc(saveId).update(creditData), 10000); showToast('Кредит обновлён'); }
     else { creditData.paid = false; creditData.completed = false; creditData.partial = 0; creditData.lastResetMonth = currentMonthKey; creditData.createdAt = new Date().toISOString(); creditData.userId = authUser.uid; await withTimeout(db.collection('credits').add(creditData), 10000); showToast('Кредит добавлен'); }
     haptic(20); closeForm(); resetForm();
@@ -686,47 +627,62 @@ async function handleCardSave() {
   _isCardSaving = true; const btn = document.getElementById('cardSaveBtn'); btn.disabled = true; btn.textContent = 'Сохранение...';
   const wasEditMode = cardEditMode, wasEditId = cardEditId;
   try {
-    const effectiveResetDay = resetDay || getResetDayFor({ day: day }, true); const currentMonthKey = getPeriodKeyForToday(effectiveResetDay);
+    const effectiveResetDay = resetDay || day || 1; const currentMonthKey = getPeriodKeyForToday(effectiveResetDay);
     const cardData = { name, bank, amount, payments, day, resetDay: resetDay || null, userId: authUser.uid, type: 'creditcard' };
-    if (wasEditMode && wasEditId) { cardData.lastResetMonth = currentMonthKey; await withTimeout(db.collection('credits').doc(wasEditId).update(cardData), 10000); showToast('Карта обновлена'); }
-    else { cardData.donePayments = 0; cardData.lastResetMonth = currentMonthKey; cardData.createdAt = new Date().toISOString(); await withTimeout(db.collection('credits').add(cardData), 10000); showToast('Карта добавлена'); }
+    if (wasEditMode && wasEditId) { await withTimeout(db.collection('credits').doc(wasEditId).update(cardData), 10000); showToast('Карта обновлена'); }
+    else { cardData.donePayments = 0; cardData.paidAmount = 0; cardData.lastResetMonth = currentMonthKey; cardData.createdAt = new Date().toISOString(); await withTimeout(db.collection('credits').add(cardData), 10000); showToast('Карта добавлена'); }
     haptic(20); closeCardForm();
   } catch (e) { console.error(e); showToast(e.code === 'timeout' ? 'Сервер не отвечает' : 'Ошибка'); }
   finally { _isCardSaving = false; btn.disabled = false; btn.textContent = wasEditMode ? 'Сохранить' : 'Добавить карту'; }
 }
+async function cardPaymentStep(cardId, delta) {
+  const c = cards.find(x => x.id === cardId); if (!c) return;
+  const need = c.payments || 0; const cur = c.donePayments || 0;
+  const nd = Math.max(0, Math.min(need, cur + delta));
+  if (nd === cur) return;
+  haptic(10);
+  await cardUpdate(c, nd < need ? { donePayments: nd, paid: false } : { donePayments: nd });
+}
 function openCardAction(id) {
   const c = cards.find(x => x.id === id); if (!c) return;
   selectedCardId = id;
+  document.getElementById('cardActionOverlay').classList.add('active');
+  renderCardAction(c);
+}
+function closeCardAction() { document.getElementById('cardActionOverlay').classList.remove('active'); }
+function refreshCardAction() {
+  if (!selectedCardId) return;
+  const ov = document.getElementById('cardActionOverlay');
+  if (!ov || !ov.classList.contains('active')) return;
+  const c = cards.find(x => x.id === selectedCardId);
+  if (c) renderCardAction(c);
+}
+function renderCardAction(c) {
+  const need = c.payments || 0, done = c.donePayments || 0;
   document.getElementById('cardActionName').textContent = '💳 ' + c.name;
   const subs = []; if (c.amount > 0) subs.push(fmt(c.amount) + ' ₽'); if (c.day > 0) subs.push(getCardPaymentDate(c));
   document.getElementById('cardActionSub').textContent = subs.join(' · ');
-  renderCardActionDots(c);
-  document.getElementById('cardActionOverlay').classList.add('active');
-}
-function closeCardAction() { document.getElementById('cardActionOverlay').classList.remove('active'); }
-function renderCardActionDots(c) {
   const wrap = document.getElementById('cardActionDots'); const progressWrap = document.getElementById('cardActionProgressWrap');
   wrap.innerHTML = '';
-  if (!c.payments || c.payments < 1) { wrap.innerHTML = '<span class="payment-dot-empty">Количество платежей не задано</span>'; progressWrap.style.display = 'none'; return; }
-  const done = c.donePayments || 0;
-  for (let i = 0; i < c.payments; i++) { const d = document.createElement('div'); d.className = 'payment-dot' + (i < done ? ' done' : ''); d.onclick = () => toggleCardPayment(c.id, i, c.payments, c.donePayments || 0); wrap.appendChild(d); }
+  if (need < 1) { wrap.innerHTML = '<span class="payment-dot-empty">Количество платежей не задано</span>'; progressWrap.style.display = 'none'; return; }
+  for (let i = 0; i < need; i++) { const d = document.createElement('div'); d.className = 'payment-dot' + (i < done ? ' done' : ''); d.onclick = () => toggleCardPayment(c.id, i, need, done); wrap.appendChild(d); }
   progressWrap.style.display = '';
-  const pct = Math.round((done / c.payments) * 100);
+  const pct = Math.round((done / need) * 100);
   document.getElementById('cardActionProgressFill').style.width = pct + '%';
-  document.getElementById('cardActionProgressText').textContent = `Выполнено ${done} из ${c.payments}`;
+  document.getElementById('cardActionProgressText').textContent = `Выполнено ${done} из ${need}`;
   document.getElementById('cardActionProgressPct').textContent = pct + '%';
 }
 async function toggleCardPayment(cardId, idx, total, currentDone) {
+  const c = cards.find(x => x.id === cardId); if (!c) return;
   haptic(10);
-  const newDone = idx < currentDone ? idx : idx + 1;
-  await db.collection('credits').doc(cardId).update({ donePayments: newDone }).catch(() => { });
-  closeCardAction(); if (newDone >= total) haptic([30, 50, 30]);
+  const nd = idx < currentDone ? idx : idx + 1;
+  await cardUpdate(c, nd < total ? { donePayments: nd, paid: false } : { donePayments: nd });
 }
 async function resetCardPayments() {
   if (!selectedCardId) return;
   const c = cards.find(x => x.id === selectedCardId);
-  const rd = c ? getResetDayFor(c, true) : 1;
-  await db.collection('credits').doc(selectedCardId).update({ donePayments: 0, lastResetMonth: getPeriodKeyForToday(rd) }).catch(() => { });
+  const rd = c ? (c.resetDay || c.day || 1) : 1;
+  await updateCreditField(selectedCardId, { donePayments: 0, paidAmount: 0, paid: false, lastResetMonth: getPeriodKeyForToday(rd) });
   closeCardAction(); haptic(15);
 }
 function openEditCard(c) {
@@ -760,35 +716,31 @@ function renderCards() {
   section.style.display = '';
   list.innerHTML = '';
   const frag = document.createDocumentFragment();
-  sortList(shown, isCardPaid).forEach(c => {
-    const done = c.donePayments || 0; const total = c.payments || 0; const effectiveTotal = total > 0 ? total : 1;
-    const isPaid = done >= effectiveTotal; const hasMultiPayments = total > 1;
+  shown.forEach(c => {
+    const isPaid = cardIsPaid(c);
+    const done = c.donePayments || 0; const total = c.payments || 0; const hasMulti = total > 1;
     const wrap = document.createElement('div'); wrap.style.background = 'var(--surface)';
     const item = document.createElement('div');
     item.className = 'credit-item swipeable' + (isPaid ? ' paid' : '');
     item.dataset.creditId = c.id; item.dataset.creditType = 'card';
-    const od = getOverdueDays(c, true);
-    const dueTag = (c.day > 0 ? `<span class="credit-date-tag">${getCardPaymentDate(c)}</span>` : '') + (od > 0 && !isPaid ? `<span class="credit-term-tag ending">Просрочено ${od} дн.</span>` : '');
+    const od = getOverdueDays(c);
+    const dueTag = (c.day > 0 ? `<span class="credit-date-tag">${getCardPaymentDate(c)}</span>` : '') + (od > 0 && !isPaid ? `<span class="credit-term-tag ending">Просрочено ${od} дн.</span>` : (!isPaid && c.day > 0 ? dueSoonHtml(c.day) : ''));
     const amtHtml = c.amount > 0 ? `<span class="credit-amount">${fmt(c.amount)} ₽</span>` : '';
     const badgeHtml = isPaid ? '<span class="credit-paid-badge">Оплачено</span>' : '';
-    const controlsHtml = hasMultiPayments ? `<div class="card-pay-row" onclick="event.stopPropagation()"><button class="card-ctrl-btn minus" style="visibility:${done > 0 ? 'visible' : 'hidden'}" onclick="cardPaymentStep('${c.id}', ${done}, ${total}, -1)">−</button><span class="card-ctrl-count">${done}/${total}</span><button class="card-ctrl-btn plus" style="visibility:${done < total ? 'visible' : 'hidden'}" onclick="cardPaymentStep('${c.id}', ${done}, ${total}, 1)">+</button></div>` : '';
-    
+    const controlsHtml = hasMulti ? `<div class="card-pay-row"><button type="button" class="card-ctrl-btn minus" data-act="-1"${done > 0 ? '' : ' disabled'}>−</button><span class="card-ctrl-count">${done}/${total}</span><button type="button" class="card-ctrl-btn plus" data-act="1"${done < total ? '' : ' disabled'}>+</button></div>` : '';
     const bankKey = detectBankKey(c.bank, c.name);
-    let cardIconHtml = '💳';
-    if (bankKey && BANK_SVGS[bankKey]) {
-      cardIconHtml = BANK_SVGS[bankKey];
-    }
-
+    const cardIconHtml = (bankKey && BANK_SVGS[bankKey]) ? BANK_SVGS[bankKey] : '💳';
     item.innerHTML = `
 <div class="swipe-hint hint-left">Редактировать</div>
 <div class="swipe-hint hint-right">Удалить</div>
 <div class="swipe-content">
 <div class="credit-icon-wrap${bankKey ? ' has-logo' : ''}">${cardIconHtml}</div>
-<div class="credit-main card-main-row"><div class="card-name-col"><div class="credit-name">${esc(c.name)}</div><div class="credit-meta">${dueTag}</div></div>${controlsHtml}</div>
+<div class="credit-main"><div class="credit-name">${esc(c.name)}</div><div class="credit-meta">${dueTag}</div>${controlsHtml}</div>
 <div class="credit-right">${amtHtml}${badgeHtml}</div>
 <div class="check-wrap ${isPaid ? 'checked' : ''}" data-id="${c.id}"><svg viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="2.5"><polyline points="2,7 6,11 12,3"/></svg></div>
 </div>`;
-    item.querySelector('.check-wrap').addEventListener('click', e => { e.stopPropagation(); if (item.dataset.suppressClick === '1') return; toggleCardFull(c.id, total, done); });
+    item.querySelectorAll('.card-ctrl-btn').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); if (item.dataset.suppressClick === '1') return; cardPaymentStep(c.id, parseInt(b.dataset.act)); }));
+    item.querySelector('.check-wrap').addEventListener('click', e => { e.stopPropagation(); if (item.dataset.suppressClick === '1') return; onCardCheck(c.id); });
     item.addEventListener('click', () => { if (item.dataset.suppressClick === '1') return; openCardAction(c.id); });
     wrap.appendChild(item); frag.appendChild(wrap);
   });
@@ -797,27 +749,19 @@ function renderCards() {
   attachSwipeHandlers();
 }
 
-async function toggleCardFull(cardId, total, currentDone) {
+// Галочка: одно нажатие закрывает карту полностью (все платежи заполняются), повторное — снимает
+async function onCardCheck(cardId) {
+  const c = cards.find(x => x.id === cardId); if (!c) return;
   haptic(20);
-  const effectiveTotal = total > 0 ? total : 1;
-  const newDone = currentDone >= effectiveTotal ? 0 : effectiveTotal;
-  await db.collection('credits').doc(cardId).update({ donePayments: newDone }).catch(() => { });
+  if (cardIsPaid(c)) await cardUpdate(c, { donePayments: 0, paid: false });
+  else await cardUpdate(c, { donePayments: cardNeedPay(c), paid: true });
   haptic([30, 50, 30]);
-}
-async function cardPaymentStep(cardId, currentDone, total, delta) {
-  const newDone = Math.max(0, Math.min(total, currentDone + delta));
-  if (newDone === currentDone) return;
-  haptic(10);
-  try {
-    await db.collection('credits').doc(cardId).update({ donePayments: newDone });
-    if (newDone >= total) haptic([30, 50, 30]);
-  } catch (e) { console.error(e); showToast('Ошибка обновления'); }
 }
 
 // ========== НАСТРОЙКИ ==========
 function gearClick(e) { e.stopPropagation(); const btn = document.getElementById('settingsBtn'); const svg = btn.querySelector('svg'); svg.style.animation = 'none'; svg.offsetHeight; svg.style.animation = ''; btn.classList.add('spinning'); haptic(15); setTimeout(() => { btn.classList.remove('spinning'); openSettings(); }, 520); }
 function openSettings() {
-  if (authUser) { const display = authUser.displayName || authUser.email.split('@')[0]; document.getElementById('settingsDisplayName').textContent = display; const av = document.getElementById('profileAvatar'); if (av) av.textContent = (display[0] || 'М').toUpperCase(); document.getElementById('settingsEmail').textContent = authUser.email || '—'; updateEmailStatusUI(); }
+  if (authUser) { const display = authUser.displayName || authUser.email.split('@')[0]; document.getElementById('settingsDisplayName').textContent = display; document.getElementById('settingsEmail').textContent = authUser.email || '—'; updateEmailStatusUI(); }
   takeSettingsSnapshot(); updateSettingsUI();
   document.getElementById('settingsOverlay').classList.add('active');
 }
@@ -928,11 +872,12 @@ async function doAuth() {
     try {
       let email = loginOrEmail;
       if (!loginOrEmail.includes('@')) { const resolved = await resolveEmailFromNick(loginOrEmail); if (!resolved) { showToast('Не найден'); btn.disabled = false; btn.textContent = 'Войти'; return; } email = resolved; }
-      if (!sessionStorage.getItem('session_started')) { ls.rm(PIN_K); ls.rm(PIN_LEN_K); ls.rm(BIO_K); ls.rm('crt_bio_cred_id'); biometricEnabled = false; }
       const userCred = await withTimeout(auth.signInWithEmailAndPassword(email, pass), 20000, 'signin');
       const user = userCred.user;
       db.collection('users').doc(user.uid).set({ email: user.email, displayName: user.displayName, emailVerified: user.emailVerified }, { merge: true }).catch(() => { });
       if (user.displayName) db.collection('usernames').doc(user.displayName.toLowerCase()).set({ uid: user.uid, email: user.email }, { merge: true }).catch(() => { });
+      const isNewDevice = !sessionStorage.getItem('session_started');
+      if (isNewDevice) { ls.rm(PIN_K); ls.rm(PIN_LEN_K); }
     } catch (e) {
       let msg = 'Ошибка';
       if (e.code === 'timeout') msg = 'Сервер не отвечает. Проверьте интернет';
@@ -1028,7 +973,7 @@ async function saveAccountChanges() {
     if (existing.exists && existing.data().uid !== authUser.uid) { showToast('Логин занят'); return; }
     if (authUser.displayName) await db.collection('usernames').doc(authUser.displayName.toLowerCase()).delete();
     await db.collection('usernames').doc(newNickLower).set({ uid: authUser.uid, email: authUser.email });
-    updates.push(authUser.updateProfile({ displayName: newNick })); updates.push(db.collection('users').doc(authUser.uid).set({ displayName: newNick }, { merge: true }));
+    updates.push(authUser.updateProfile({ displayName: newNick })); updates.push(db.collection('users').doc(authUser.uid).update({ displayName: newNick }));
   }
   if (newPass) {
     if (newPass.length < 6) { showToast('Мин. 6 символов'); return; }
@@ -1050,7 +995,6 @@ async function doDeleteAccount() {
     const credential = firebase.auth.EmailAuthProvider.credential(authUser.email, pass);
     await authUser.reauthenticateWithCredential(credential);
     const uid = authUser.uid; const displayName = authUser.displayName;
-    if (creditsUnsubscribe) { creditsUnsubscribe(); creditsUnsubscribe = null; } _loadedUid = null;
     const creditsSnap = await db.collection('credits').where('userId', '==', uid).get();
     const batch = db.batch();
     creditsSnap.forEach(doc => batch.delete(doc.ref));
@@ -1238,7 +1182,7 @@ function applyAppVersion() {
 }
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    window.APP_VERSION = (localStorage.getItem('crt_app_version') || '1.3.6');
+    window.APP_VERSION = (localStorage.getItem('crt_app_version') || '1.3.1');
     applyAppVersion();
     fetch('./version.js', { cache: 'no-store' })
       .then(r => r.text())
@@ -1290,16 +1234,3 @@ function initBankPicker(selectId) {
 }
 function initBankPickers() { initBankPicker('bankSelect'); initBankPicker('cardBankSelect'); }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initBankPickers); else initBankPickers();
-
-
-// ========== УСТАНОВКА PWA ==========
-let _deferredInstall = null;
-window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); _deferredInstall = e; const b = document.getElementById('installBtn'); if (b) b.style.display = 'inline-block'; });
-window.addEventListener('appinstalled', () => { _deferredInstall = null; const b = document.getElementById('installBtn'); if (b) b.style.display = 'none'; });
-document.addEventListener('DOMContentLoaded', () => {
-  const b = document.getElementById('installBtn');
-  if (b) b.addEventListener('click', async () => { if (!_deferredInstall) return; _deferredInstall.prompt(); try { await _deferredInstall.userChoice; } catch (e) { } _deferredInstall = null; b.style.display = 'none'; });
-  const standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone;
-  const ins = document.getElementById('iosInstruction');
-  if (ins && /iphone|ipad|ipod/i.test(navigator.userAgent) && !standalone) ins.style.display = 'block';
-});
