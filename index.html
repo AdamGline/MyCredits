@@ -122,7 +122,7 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
 .credit-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .credit-date-tag { font-size: 0.72rem; color: var(--text-2); font-weight: 500; }
 .overdue-tag { background: rgba(230,57,70,0.12); color: var(--danger); }
-.credit-term-tag { font-size: 0.7rem; padding: 1px 6px; border-radius: 4px; font-weight: 500; }
+.credit-term-tag { white-space: nowrap; font-size: 0.7rem; padding: 1px 6px; border-radius: 4px; font-weight: 500; }
 .credit-term-tag.ending { background: rgba(230,57,70,0.1); color: var(--danger); }
 .credit-term-tag.soon { background: rgba(255,159,28,0.1); color: var(--warning); }
 .credit-term-tag.ok { background: var(--surface-2); color: var(--text-2); }
@@ -270,10 +270,10 @@ input:focus, select:focus { border-color: var(--accent-dark); }
 .payment-progress-text { font-size: 0.72rem; color: var(--text-2); font-weight: 500; margin-top: 4px; display: flex; justify-content: space-between; }
 .card-item-wrap { background: var(--surface); display: flex; flex-direction: column; }
 #cardList .credit-item { min-height: 68px; }
-.card-main-row { display: flex; flex-direction: row; align-items: center; gap: 8px; }
+.card-main-row { display: flex; flex-direction: column; align-items: stretch; gap: 6px; }
 .card-name-col { flex: 1; min-width: 0; }
 .card-name-col .credit-name { margin-bottom: 2px; }
-.card-pay-row { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.card-pay-row { display: flex; align-items: center; gap: 4px; flex-shrink: 0; align-self: flex-start; }
 .card-ctrl-btn { width: 32px; height: 32px; border-radius: 9px; border: 1.5px solid var(--border); background: var(--surface-2); color: var(--text); font-size: 1.15rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.12s; line-height: 1; flex-shrink: 0; }
 .card-ctrl-btn:active { transform: scale(0.88); background: var(--border); }
 .card-ctrl-btn.plus { background: var(--accent); border-color: var(--accent-dark); color: #1A1A1A; }
@@ -353,50 +353,6 @@ input:focus, select:focus { border-color: var(--accent-dark); }
 .credit-icon-wrap.has-logo { position: relative; overflow: visible; }
 .credit-icon-wrap.has-logo > svg { border-radius: 12px; }
 .type-badge { position: absolute; right: -6px; bottom: -6px; width: 20px; height: 20px; border-radius: 50%; background: var(--surface-2); border: 2px solid var(--surface); display: flex; align-items: center; justify-content: center; font-size: 11px; line-height: 1; }
-.card-prog{margin-top:7px}
-.card-prog-top{display:flex;justify-content:space-between;gap:8px;font-size:0.7rem;color:var(--text-2);font-weight:500;margin-bottom:3px}
-.card-prog-top b{font-weight:700;color:var(--text);position:relative}
-.card-prog-bar{height:5px;background:var(--border);border-radius:3px;overflow:hidden}
-.card-prog-bar i{display:block;height:100%;background:var(--accent-dark);border-radius:3px;transition:width .3s ease}
-.card-prog.full .card-prog-bar i{background:var(--success)}
-.card-status{margin:0 16px 12px;padding:12px 14px;border-radius:var(--radius-sm);font-size:0.88rem;font-weight:700;text-align:center;background:var(--surface-2);border:1px solid var(--border);color:var(--text)}
-.card-status.done{background:rgba(44,182,125,0.12);border-color:rgba(44,182,125,0.35);color:var(--success)}
-.card-block{margin:0 16px 12px;padding:14px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm)}
-.card-block-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.card-block-title{font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-2)}
-.card-block-badge{font-size:0.7rem;font-weight:700;padding:2px 8px;border-radius:6px;background:var(--surface-2);color:var(--text-2)}
-.card-block-badge.ok{background:rgba(44,182,125,0.15);color:var(--success)}
-.card-stepper{display:flex;align-items:center;justify-content:center;gap:18px;margin-bottom:12px}
-.card-step-btn{width:48px;height:48px;border-radius:14px;border:1.5px solid var(--border);background:var(--surface-2);color:var(--text);font-size:1.5rem;font-weight:700;cursor:pointer;font-family:inherit;line-height:1}
-.card-step-btn.plus{background:var(--accent);border-color:var(--accent-dark);color:#1A1A1A}
-.card-step-btn:active{transform:scale(0.92)}
-.card-step-btn:disabled{opacity:0.35;pointer-events:none}
-.card-step-val{font-size:1.5rem;font-weight:800;min-width:96px;text-align:center;color:var(--text)}
-.card-step-val small{font-size:0.8rem;font-weight:600;color:var(--text-2)}
-.card-quick-row{display:flex;gap:10px;margin:0 16px 12px}
-.card-quick-main{flex:1;height:56px;border-radius:14px;border:none;background:var(--accent);color:#1A1A1A;font-size:1.05rem;font-weight:800;font-family:inherit;cursor:pointer}
-.card-quick-main:active{transform:scale(0.97)}
-.card-quick-main:disabled{opacity:0.45;pointer-events:none}
-.card-quick-row .card-step-btn{width:56px;height:56px}
-.card-quick-btn{width:40px;height:40px;border-radius:12px;border:none;background:var(--accent);color:#1A1A1A;font-size:1.3rem;font-weight:800;cursor:pointer;font-family:inherit;line-height:1}
-.card-quick-btn:active{transform:scale(0.9)}
-.action-row{display:flex;gap:8px;padding:0 16px}
-.action-row button{flex:1;padding:13px 6px;border-radius:var(--radius-sm);border:none;background:var(--surface-2);color:var(--text);font-family:inherit;font-weight:600;font-size:0.82rem;cursor:pointer}
-.action-row button:active{transform:scale(0.97);background:var(--border)}
-.action-row button.danger{color:var(--danger)}
-.card-prog.full .card-prog-bar i{background:var(--accent-dark)}
-.card-status.done{background:var(--accent);border-color:var(--accent-dark);color:#1A1A1A}
-.card-block-badge.ok{background:var(--accent);color:#1A1A1A}
-.payment-dot.done{background:var(--accent);border-color:var(--accent-dark)}
-.payment-dot.done::after{border-color:#1A1A1A}
-.payment-progress-fill{background:var(--accent-dark)}
-.credit-item.partial-complete .swipe-content::before{background-color:rgba(255,221,45,0.35)}
-.card-pay-ctrl{display:inline-flex;align-items:center;gap:6px}
-.card-prog .card-ctrl-btn{width:28px;height:28px;border-radius:8px;font-size:1rem}
-.card-prog-top{align-items:center}
-.card-pay-row{margin-top:8px;gap:14px}
-.card-ctrl-count{min-width:56px;font-size:0.9rem}
-.card-ctrl-btn:disabled,.card-ctrl-btn.plus:disabled{background:var(--surface-2);border-color:var(--border);color:var(--text-3);opacity:.6;pointer-events:none}
 </style>
 </head>
 <body>
@@ -539,7 +495,6 @@ if (auth) auth.style.display = 'flex';
 <div class="form-group"><label class="form-label">Ежемесячный платёж и день оплаты</label>
 <div class="form-row"><input type="number" id="amountInput" placeholder="Сумма, ₽" inputmode="decimal" style="flex:2"><input type="number" id="dayInput" placeholder="День" min="1" max="31" inputmode="numeric" style="flex:1"></div>
 </div>
-<div class="form-group"><label class="form-label">День сброса <span class="form-optional-tag">(необязательно)</span></label><input type="number" id="resetDayInput" placeholder="По умолчанию — 1-е число" min="1" max="31" inputmode="numeric"><span class="form-hint">С какого числа считается новый расчётный период</span></div>
 <div class="form-group"><label class="form-label">Заметка <span class="form-optional-tag">(необязательно)</span></label><input type="text" id="noteInput" placeholder="Например: платёж в приложении банка"></div>
 <div class="form-group"><label class="form-label">Дата окончания</label>
 <div class="date-toggle"><button class="date-toggle-btn active" id="dtBtnCal" onclick="setDateMode('cal')">Календарь</button><button class="date-toggle-btn" id="dtBtnMan" onclick="setDateMode('man')">Вручную</button></div>
@@ -583,7 +538,7 @@ if (auth) auth.style.display = 'flex';
 <div class="form-group"><label class="form-label">Количество платежей <span class="form-optional-tag">(необязательно)</span></label><input type="number" id="cardPaymentsInput" placeholder="Например: 10" min="1" max="99" inputmode="numeric" oninput="updateCardPaymentDots()"><span class="form-hint">Платежи которые надо провести за месяц</span></div>
 <div class="form-group" id="cardDotsPreview" style="display:none"><label class="form-label">Предпросмотр прогресса</label><div class="payment-dots-wrap" id="cardDotsWrap"><span class="payment-dot-empty">Укажите количество платежей</span></div></div>
 <div class="form-group"><label class="form-label">Дата платежа <span class="form-optional-tag">(необязательно)</span></label><input type="number" id="cardDayInput" placeholder="День месяца (1–31)" min="1" max="31" inputmode="numeric"></div>
-<div class="form-group"><label class="form-label">День сброса <span class="form-optional-tag">(необязательно)</span></label><input type="number" id="cardResetDayInput" placeholder="По умолчанию — день платежа" min="1" max="31" inputmode="numeric"></div>
+<div class="form-group"><label class="form-label">День сброса <span class="form-optional-tag">(необязательно)</span></label><input type="number" id="cardResetDayInput" placeholder="По умолчанию — день после платежа" min="1" max="31" inputmode="numeric"></div>
 </div>
 <div class="form-actions"><button class="btn btn-primary" id="cardSaveBtn" onclick="handleCardSave()">Добавить карту</button></div>
 <div style="height:8px"></div>
@@ -635,7 +590,8 @@ if (auth) auth.style.display = 'flex';
 </div>
 <div class="partial-input-wrap"><input type="number" id="partialInput" placeholder="Сумма взноса, ₽" inputmode="decimal"><button class="btn btn-primary" onclick="savePartial()" style="flex:0 0 auto;min-width:90px;padding:13px 16px">Внести</button></div>
 </div>
-<div class="action-row"><button id="resetPartialBtn" style="display:none" onclick="resetPartial()">↺ Сброс</button><button onclick="openEdit()">✎ Изменить</button><button class="danger" onclick="showDeleteConfirm()">🗑 Удалить</button></div>Редактировать</button>
+<div style="padding:0 12px">
+<button class="action-btn" onclick="openEdit()"><div class="action-btn-icon">✎</div>Редактировать</button>
 <button class="action-btn" id="resetPartialBtn" style="display:none" onclick="resetPartial()"><div class="action-btn-icon">↺</div>Сбросить частичную оплату</button>
 <button class="action-btn danger" onclick="showDeleteConfirm()"><div class="action-btn-icon">🗑</div>Удалить кредит</button>
 </div>
@@ -734,6 +690,7 @@ if (auth) auth.style.display = 'flex';
 </div>
 <div class="theme-switch-track" id="overdueTrack" onclick="toggleOverdueFromSettings();event.stopPropagation()"><div class="theme-switch-thumb"></div></div>
 </div>
+<button class="account-btn" onclick="testNotification()" style="width:100%;margin-top:12px">🔔 Проверить уведомление</button>
 </div>
 <div class="settings-card">
 <div class="settings-card-label">История и данные</div>
@@ -795,6 +752,20 @@ if (auth) auth.style.display = 'flex';
 </div>
 </div>
 </div>
-<script src="app.js"></script>
+<script>
+(function () {
+  var v = '';
+  try {
+    var x = new XMLHttpRequest();
+    x.open('GET', 'version.js', false);
+    x.setRequestHeader('Cache-Control', 'no-cache');
+    x.send();
+    var m = (x.responseText || '').match(/APP_VERSION\s*=\s*['"]([^'"]+)['"]/);
+    if (m) { v = m[1]; try { localStorage.setItem('crt_app_version', v); } catch (e) { } }
+  } catch (e) { }
+  if (!v) { try { v = localStorage.getItem('crt_app_version') || ''; } catch (e) { } }
+  document.write('<script src="app.js' + (v ? '?v=' + v : '') + '"><\/script>');
+})();
+</script>
 </body>
 </html>
