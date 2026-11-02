@@ -13,13 +13,14 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Мои Кредиты">
 <link rel="apple-touch-icon" href="icon.png">
-<meta name="theme-color" id="metaTheme" content="#FFDD2D">
+<meta name="theme-color" id="metaTheme" content="#FFFFFF">
+<link rel="preload" as="image" href="logo.png">
 <link rel="preconnect" href="https://www.gstatic.com">
 <link rel="dns-prefetch" href="https://www.gstatic.com">
 <script defer src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
 <script defer src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
 <script defer src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
-<script>if(sessionStorage.getItem('session_started')=='1'){document.documentElement.classList.add('no-splash');}try{var _a=localStorage.getItem('crt_accent_v1');if(_a){document.documentElement.setAttribute('data-accent',_a);var _m={yellow:'#FFDD2D',red:'#E31E24',blue:'#0A2896',green:'#21A038'}[_a];var _t=document.getElementById('metaTheme');if(_m&&_t)_t.setAttribute('content',_m);}}catch(e){}</script>
+<script>if(sessionStorage.getItem('session_started')=='1'){document.documentElement.classList.add('no-splash');}try{var _a=localStorage.getItem('crt_accent_v1');if(_a){document.documentElement.setAttribute('data-accent',_a);}}catch(e){}</script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
@@ -45,11 +46,15 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe 
 .sticky-header { flex-shrink: 0; background: var(--bg); }
 .scrollable-content { flex: 1; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; touch-action: pan-y; padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
 input, textarea, select { -webkit-user-select: text; user-select: text; }
-.splash { position: fixed; inset: 0; background: var(--accent); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000; transition: opacity 0.4s ease, visibility 0.4s ease; }
+.splash { position: fixed; inset: 0; background: #FFFFFF; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000; transition: opacity 0.4s ease, visibility 0.4s ease, background-color 0.9s ease; }
+.splash.tinted { background: var(--accent); }
+.splash-logo { width: 100%; max-width: 280px; height: auto; display: block; margin-bottom: 16px; opacity: 0; transition: opacity 0.35s ease; }
+.splash-logo.ready { opacity: 1; }
+.splash.tinted .splash-tagline, .splash.tinted .splash-version { color: var(--on-accent); }
 .splash.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 .no-splash .splash { display: none !important; }
-.splash-tagline { color: var(--on-accent); font-size: 1.5rem; font-weight: 800; letter-spacing: -0.3px; text-align: center; padding: 0 24px; }
-.splash-version { position: absolute; bottom: 30px; left: 0; right: 0; text-align: center; color: var(--on-accent); opacity: 0.75; font-size: 0.75rem; font-weight: 500; }
+.splash-tagline { color: #1A1A1A; transition: color 0.9s ease; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.3px; text-align: center; padding: 0 24px; }
+.splash-version { position: absolute; bottom: 30px; left: 0; right: 0; text-align: center; color: #1A1A1A; transition: color 0.9s ease; opacity: 0.75; font-size: 0.75rem; font-weight: 500; }
 .auth-screen { position: fixed; inset: 0; background: var(--accent); display: none; flex-direction: column; align-items: center; justify-content: flex-end; z-index: 1000; padding: 0; padding-bottom: max(0px, env(safe-area-inset-bottom)); }
 .auth-logo-area { position: absolute; top: 0; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding-top: max(60px, env(safe-area-inset-top)); bottom: 420px; }
 .auth-logo-img { width: 100%; max-width: 280px; height: auto; object-fit: contain; border-radius: 26px; margin-bottom: 20px; display: block; }
@@ -373,10 +378,14 @@ input:focus, select:focus { border-color: var(--accent-dark); }
 </head>
 <body>
 <div class="splash" id="splash">
-<img src="logo.png" alt="" style="width:100%;max-width:280px;height:auto;display:block;margin-bottom:16px;" onerror="this.style.display='none'">
+<img class="splash-logo" src="logo.png" alt="" decoding="async" onload="this.classList.add('ready')" onerror="this.style.display='none'">
 <div class="splash-tagline">Думай о более важном!</div>
 <div class="splash-version">Версия <span id="appVersion"></span></div>
 </div>
+<script>
+(function(){var s=document.getElementById('splash');if(!s)return;var im=s.querySelector('.splash-logo');if(im&&im.complete&&im.naturalWidth)im.classList.add('ready');
+setTimeout(function(){s.classList.add('tinted');var c=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();var m=document.getElementById('metaTheme');if(m&&c)m.setAttribute('content',c);},450);})();
+</script>
 <script>
 setTimeout(function() {
 var splash = document.getElementById('splash');

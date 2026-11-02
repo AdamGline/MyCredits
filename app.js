@@ -856,7 +856,9 @@ function applyAccent() {
   root.setAttribute('data-accent', accent);
   s.setProperty('--accent', P.a); s.setProperty('--accent-dark', P.d); s.setProperty('--accent-rgb', P.rgb);
   s.setProperty('--on-accent', P.on); s.setProperty('--accent-text', theme === 'dark' ? P.td : P.t);
-  const mt = document.getElementById('metaTheme'); if (mt) mt.setAttribute('content', P.a);
+  const mt = document.getElementById('metaTheme'); const sp = document.getElementById('splash');
+  const splashDone = !sp || root.classList.contains('no-splash') || sp.classList.contains('tinted') || sp.classList.contains('hidden');
+  if (mt && splashDone) mt.setAttribute('content', P.a);
   document.querySelectorAll('.accent-item').forEach(el => {
     el.classList.toggle('active', el.dataset.accent === accent);
     const sw = el.querySelector('.accent-swatch'); const q = ACCENT_PALETTE[el.dataset.accent]; if (sw && q) sw.style.background = q.a;
