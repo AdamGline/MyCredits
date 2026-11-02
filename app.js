@@ -843,11 +843,28 @@ function cancelSettings() {
 const ACCENT_K = 'crt_accent_v1', ACCENTS = ['yellow', 'red', 'blue', 'green'];
 let accent = 'yellow';
 function loadAccent() { const a = ls.get(ACCENT_K); if (a && ACCENTS.includes(a)) accent = a; applyAccent(); }
-const ACCENT_HEX = { yellow: '#FFDD2D', red: '#C9494F', blue: '#4472C4', green: '#35996B' };
-function applyAccent() { document.documentElement.setAttribute('data-accent', accent); const mt = document.getElementById('metaTheme'); if (mt) mt.setAttribute('content', ACCENT_HEX[accent] || '#FFDD2D'); document.querySelectorAll('.accent-item').forEach(el => el.classList.toggle('active', el.dataset.accent === accent)); }
+// Единый источник цветов акцента: JS задаёт переменные CSS, поэтому статус-бар, загрузка и интерфейс всегда одного цвета
+const ACCENT_PALETTE = {
+  yellow: { a: '#FFDD2D', d: '#F0C800', rgb: '255,221,45', on: '#1A1A1A', t: '#b38f00', td: '#b38f00' },
+  red: { a: '#E31E24', d: '#C4171D', rgb: '227,30,36', on: '#FFFFFF', t: '#C4171D', td: '#FF6B70' },
+  blue: { a: '#0A2896', d: '#071C6E', rgb: '10,40,150', on: '#FFFFFF', t: '#071C6E', td: '#7C9BFF' },
+  green: { a: '#21A038', d: '#188028', rgb: '33,160,56', on: '#FFFFFF', t: '#188028', td: '#5FD07A' }
+};
+function applyAccent() {
+  const P = ACCENT_PALETTE[accent] || ACCENT_PALETTE.yellow;
+  const root = document.documentElement; const s = root.style;
+  root.setAttribute('data-accent', accent);
+  s.setProperty('--accent', P.a); s.setProperty('--accent-dark', P.d); s.setProperty('--accent-rgb', P.rgb);
+  s.setProperty('--on-accent', P.on); s.setProperty('--accent-text', theme === 'dark' ? P.td : P.t);
+  const mt = document.getElementById('metaTheme'); if (mt) mt.setAttribute('content', P.a);
+  document.querySelectorAll('.accent-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.accent === accent);
+    const sw = el.querySelector('.accent-swatch'); const q = ACCENT_PALETTE[el.dataset.accent]; if (sw && q) sw.style.background = q.a;
+  });
+}
 function setAccent(a) { if (!ACCENTS.includes(a)) return; accent = a; applyAccent(); haptic(10); }
 function loadTheme() { const t = ls.get(THEME_K); if (t) theme = t; applyTheme(); }
-function applyTheme() { document.documentElement.setAttribute('data-theme', theme); if (!amountsVisible) { stopSpoilers(); startSpoilers(); } }
+function applyTheme() { document.documentElement.setAttribute('data-theme', theme); if (typeof applyAccent === 'function') applyAccent(); if (!amountsVisible) { stopSpoilers(); startSpoilers(); } }
 function toggleThemeFromSettings() { theme = theme === 'light' ? 'dark' : 'light'; applyTheme(); updateSettingsUI(); haptic(10); }
 function loadAmounts() { const v = ls.get(AMT_K); if (v !== null) amountsVisible = v === 'true'; applyAmounts(); }
 function applyAmounts() { document.body.classList.toggle('amounts-hidden', !amountsVisible); if (!amountsVisible) startSpoilers(); else stopSpoilers(); }

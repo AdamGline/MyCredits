@@ -19,7 +19,7 @@
 <script defer src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
 <script defer src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
 <script defer src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
-<script>if(sessionStorage.getItem('session_started')=='1'){document.documentElement.classList.add('no-splash');}try{var _a=localStorage.getItem('crt_accent_v1');if(_a){document.documentElement.setAttribute('data-accent',_a);var _m={yellow:'#FFDD2D',red:'#C9494F',blue:'#4472C4',green:'#35996B'}[_a];var _t=document.getElementById('metaTheme');if(_m&&_t)_t.setAttribute('content',_m);}}catch(e){}</script>
+<script>if(sessionStorage.getItem('session_started')=='1'){document.documentElement.classList.add('no-splash');}try{var _a=localStorage.getItem('crt_accent_v1');if(_a){document.documentElement.setAttribute('data-accent',_a);var _m={yellow:'#FFDD2D',red:'#E31E24',blue:'#0A2896',green:'#21A038'}[_a];var _t=document.getElementById('metaTheme');if(_m&&_t)_t.setAttribute('content',_m);}}catch(e){}</script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
@@ -34,12 +34,12 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 --text-3: #4A4A4A; --border: #2A2A2A; --shadow: 0 2px 12px rgba(0,0,0,0.4); --shadow-md: 0 4px 24px rgba(0,0,0,0.5);
 }
 :root { --accent-rgb: 255,221,45; --on-accent: #1A1A1A; --accent-text: #b38f00; }
-[data-accent="red"] { --accent: #C9494F; --accent-dark: #B13C42; --accent-rgb: 201,73,79; --on-accent: #FFFFFF; --accent-text: #B13C42; }
-[data-accent="blue"] { --accent: #4472C4; --accent-dark: #365FA8; --accent-rgb: 68,114,196; --on-accent: #FFFFFF; --accent-text: #365FA8; }
-[data-accent="green"] { --accent: #35996B; --accent-dark: #2A7F58; --accent-rgb: 53,153,107; --on-accent: #FFFFFF; --accent-text: #2A7F58; }
-[data-theme="dark"][data-accent="red"] { --accent-text: #E8797E; }
-[data-theme="dark"][data-accent="blue"] { --accent-text: #7AA2E8; }
-[data-theme="dark"][data-accent="green"] { --accent-text: #6CC79B; }
+[data-accent="red"] { --accent: #E31E24; --accent-dark: #C4171D; --accent-rgb: 227,30,36; --on-accent: #FFFFFF; --accent-text: #C4171D; }
+[data-accent="blue"] { --accent: #0A2896; --accent-dark: #071C6E; --accent-rgb: 10,40,150; --on-accent: #FFFFFF; --accent-text: #071C6E; }
+[data-accent="green"] { --accent: #21A038; --accent-dark: #188028; --accent-rgb: 33,160,56; --on-accent: #FFFFFF; --accent-text: #188028; }
+[data-theme="dark"][data-accent="red"] { --accent-text: #FF6B70; }
+[data-theme="dark"][data-accent="blue"] { --accent-text: #7C9BFF; }
+[data-theme="dark"][data-accent="green"] { --accent-text: #5FD07A; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; transition: background 0.3s, color 0.3s; }
 .app { position: fixed; inset: 0; display: flex; flex-direction: column; padding-top: env(safe-area-inset-top); padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); overflow: hidden; }
 .sticky-header { flex-shrink: 0; background: var(--bg); }
@@ -373,7 +373,7 @@ input:focus, select:focus { border-color: var(--accent-dark); }
 </head>
 <body>
 <div class="splash" id="splash">
-<img src="logo-t.png" alt="" style="width:100%;max-width:280px;height:auto;display:block;margin-bottom:16px;" onerror="this.style.display='none'">
+<img src="logo.png" alt="" style="width:100%;max-width:280px;height:auto;display:block;margin-bottom:16px;" onerror="this.style.display='none'">
 <div class="splash-tagline">Думай о более важном!</div>
 <div class="splash-version">Версия <span id="appVersion"></span></div>
 </div>
@@ -394,7 +394,7 @@ if (auth) auth.style.display = 'flex';
 <div class="global-loader" id="globalLoader" style="display: none;"><div class="loader-spinner"></div><div>Загрузка данных...</div></div>
 <div class="auth-screen" id="authScreen">
 <div class="auth-logo-area">
-<img class="auth-logo-img" src="logo-t.png" alt="" onerror="this.style.display='none'">
+<img class="auth-logo-img" src="logo.png" alt="" onerror="this.style.display='none'">
 <div class="auth-logo-sub">Думай о более важном!</div>
 </div>
 <div class="auth-sheet">
@@ -657,9 +657,9 @@ if (auth) auth.style.display = 'flex';
 <div class="settings-card-label">Цвет акцента</div>
 <div class="accent-row">
 <div class="accent-item" data-accent="yellow" onclick="setAccent('yellow')"><span class="accent-swatch" style="background:#FFDD2D"></span><span class="accent-label">Жёлтый</span></div>
-<div class="accent-item" data-accent="red" onclick="setAccent('red')"><span class="accent-swatch" style="background:#C9494F"></span><span class="accent-label">Красный</span></div>
-<div class="accent-item" data-accent="blue" onclick="setAccent('blue')"><span class="accent-swatch" style="background:#4472C4"></span><span class="accent-label">Синий</span></div>
-<div class="accent-item" data-accent="green" onclick="setAccent('green')"><span class="accent-swatch" style="background:#35996B"></span><span class="accent-label">Зелёный</span></div>
+<div class="accent-item" data-accent="red" onclick="setAccent('red')"><span class="accent-swatch" style="background:#E31E24"></span><span class="accent-label">Красный</span></div>
+<div class="accent-item" data-accent="blue" onclick="setAccent('blue')"><span class="accent-swatch" style="background:#0A2896"></span><span class="accent-label">Синий</span></div>
+<div class="accent-item" data-accent="green" onclick="setAccent('green')"><span class="accent-swatch" style="background:#21A038"></span><span class="accent-label">Зелёный</span></div>
 </div>
 </div>
 <div class="settings-card">
